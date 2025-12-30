@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta content="width=device-width, initial-scale=1.0" name="viewport">
+	<title>通用數學編輯器 2.0</title>
+</head>
+<body>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js">
+	</script> 
+	<script src="https://polyfill.io/v3/polyfill.min.js?features=es6">
+	</script> 
+	<script async id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+	</script>
+	<style type="text/css">
+	   #editor,
+	   #preview {
+	       width: 100%;
+	       height: 300px;
+	       border: 1px solid black;
+	       padding: 5px;
+	       box-sizing: border-box;
+	       font-family: sans-serif;
+	       font-size: 16px;
+	   }
+
+	   #preview {
+	       overflow-y: scroll;
+	   }
+
+    button {
+      cursor: pointer;
+      position: relative;
+    }
+
+	   button:hover:after {
+      content: attr(data-text);
+      position: absolute;
+      background-color: #333;
+      color: #fff;
+      padding: 5px;
+      border-radius: 5px;
+      font-size: 14px;
+      bottom: 100%;
+      left: 30%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      z-index: 9999;
+    }
+	</style>
+	<script>
+	        function insertText() {
+	          var textarea = document.getElementById("editor");
+	          var cursorPosition = textarea.selectionStart;
+	          var textValue = textarea.value;
+
+	          // Insert text and move cursor
+	          var newTextValue =
+	            textValue.substring(0, cursorPosition) +
+	            "\\( \\)" +
+	            textValue.substring(cursorPosition, textValue.length);
+	          textarea.value = newTextValue;
+	          textarea.selectionStart = cursorPosition + 2;
+	          textarea.selectionEnd = cursorPosition + 3;
+	          textarea.focus();
+	        }
+	        function insertCustomTextA(text) {
+	          const textarea = document.getElementById("editor");
+	          const start = textarea.selectionStart;
+	          const end = textarea.selectionEnd;
+	          const before = textarea.value.substring(0, start);
+	          const after = textarea.value.substring(end, textarea.value.length);
+	          const hasBraces = /\{.*\}/.test(text);
+	          const content = hasBraces ? text : text + "{}";
+	          const cursorPosition = hasBraces ? start + content.indexOf("{") + 1 : start + content.length - 1;
+	          textarea.value = before + content + after;
+	          textarea.selectionStart = cursorPosition;
+	          textarea.selectionEnd = cursorPosition;
+	          textarea.focus();
+	        }
+	   function insertCustomText(customText) {
+	    var textarea = document.getElementById("editor");
+	    var cursorPosition = textarea.selectionStart;
+	    var textValue = textarea.value;
+
+	    // Insert text and move cursor
+	    var newTextValue =
+	      textValue.substring(0, cursorPosition) +
+	      customText +
+	      textValue.substring(cursorPosition, textValue.length);
+	    textarea.value = newTextValue;
+
+	    // Move cursor to the end of the inserted text
+	    var cursorOffset = cursorPosition + customText.length;
+	    textarea.setSelectionRange(cursorOffset, cursorOffset);
+	    textarea.focus();
+	   }
+	</script>
+	<script>
+	      $(function() {
+	          const editor = $('#editor');
+	          const preview = $('#preview');
+
+	          // 监听编辑器输入事件，更新预览区域
+	          editor.on('input', function() {
+	              const content = editor.val();
+	              preview.html(content);
+	              MathJax.typesetPromise([preview[0]]);
+	          });
+	          
+	          	 // 添加 processText 函数，处理文本
+        	 function processText() {
+        	   var textarea = document.getElementById("editor");
+        	   var text = textarea.value;
+        	   var index = 65; // ASCII码中65表示字母"A"
+        	   text = text.replace(/\s*\([A-D]\)\s*/g, function(match) {
+        	     return "\n" + match;
+        	   });
+        	   text = text.replace(/^\([A-D]\)/gm, "\n$&");
+        	   text = text.replace(/　/g, " ");
+        	   text = text.replace(/ {2}/g, " ");
+        
+        	   // Add an extra newline after each line containing "(D)"
+        	   text = text.replace(/\(D\).*/g, function(match) {
+        	     return match + "\n";
+        	   });
+        
+        	   textarea.value = text;
+        	 }
+        	 
+        	 
+          	 // 监听「断行选项」按钮点击事件，调用 processText 函数
+          	 $('#process-btn').on('click', function() {
+          	   processText();
+          	 });
+
+	          
+	               // 監聽按鈕點擊事件，檢查每行行尾是否有 <br>，沒有則加上
+	               $('#add-br-btn').on('click', function() {
+	                   const content = editor.val();
+	                   const lines = content.split('\n');
+	                   let newContent = '';
+	                   for (let i = 0; i < lines.length; i++) {
+	                       if (!lines[i].endsWith('<br>')) {
+	                           newContent += lines[i] + '<br>';
+	                       } else {
+	                           newContent += lines[i];
+	                       }
+	                       if (i < lines.length - 1) {
+	                           newContent += '\n';
+	                       }
+	                   }
+	                   editor.val(newContent);
+	                   preview.html(newContent);
+	                   MathJax.typesetPromise([preview[0]]);
+	               });
+	                      // 監聽「開啟草稿」按鈕點擊事件，將內容讀取到編輯器
+	          $('#open-btn').on('click', function() {
+	              const fileInput = $('<input type="file">');
+	              fileInput.on('change', function() {
+	                  const file = fileInput[0].files[0];
+	                  const reader = new FileReader();
+	                  reader.onload = function(event) {
+	                      const content = event.target.result;
+	                      editor.val(content);
+	                      preview.html(content);
+	                      MathJax.typesetPromise([preview[0]]);
+	                  };
+	                  reader.readAsText(file);
+	              });
+	              fileInput.click();
+	          });
+
+	      // 監聽「儲存草稿」按鈕點擊事件，將內容存為 txt 檔案
+	      $('#savetxt-btn').on('click', function() {
+	          const content = editor.val();
+	          const a = document.createElement('a');
+	          const file = new Blob([content], {type: 'text/html'});
+	          a.href = URL.createObjectURL(file);
+	          a.download = 'my_file.txt';
+	          a.click();
+	      });
+
+	      // 監聽「另存成 HTML 檔」按鈕點擊事件，將內容存為 HTML 檔案
+	      $('#save-btn').on('click', function() {
+	          const content = editor.val();
+	          const mathjaxContent = '\\( ' + content + ' \\)';
+
+	          // 載入 mathjax.txt 檔案
+	          $.get('mathjax.txt', function(data) {
+
+	              // 將 mathjax.txt 檔案內容加到 textarea 最前方
+	              editor.val(data + '\n' + content);
+
+	              // 存檔
+	              const a = document.createElement('a');
+	              const file = new Blob([editor.val()], {type: 'text/html'});
+	              a.href = URL.createObjectURL(file);
+	              a.download = 'my_file.html';
+	              a.click();
+	          });
+	      });
+
+    	  // 監聽「清除內容」按鈕點擊事件，清空textarea內容及預覽區
+    		$('#clear-btn').on('click', function() {
+    			editor.val('');
+    			preview.html('');
+    		});
+	    });
+	</script>
+  <script>
+    function updateTextarea() {
+      var selectBox = document.getElementById("select-letter");
+      var selectedValue = selectBox.options[selectBox.selectedIndex].value;
+      var outputBox = document.getElementById("editor");
+  
+      // 獲取游標位置
+      var cursorPos = outputBox.selectionStart;
+  
+      // 插入字串
+      outputBox.value = outputBox.value.slice(0, cursorPos) + selectedValue + outputBox.value.slice(cursorPos);
+  
+      // 更新游標位置
+      outputBox.selectionStart = cursorPos + selectedValue.length;
+      outputBox.selectionEnd = cursorPos + selectedValue.length;
+    }
+  </script>
+
+
+	<h1>通用數學編輯器</h1>
+	<p>
+	<button data-text="開啟 .txt" id="open-btn">開啟草稿</button>
+	<button data-text="存成 .txt" id="savetxt-btn">儲存草稿</button>
+	<button data-text="匯出 .html" id="save-btn">匯出網頁</button>
+	<button data-text="注意！無法復原！" id="clear-btn">清除編輯區</button>
+	</p>
+	<textarea id="editor"></textarea> 
+  <p>
+    編輯功能
+  	<button data-text="\( 數學語法 \)" onclick="insertText()">插入數學式</button>
+  	<button data-text="把選項(A)(B)(C)(D)獨立成一行" id="process-btn">選項分行</button>
+  	<button data-text="在行尾加&lt;br&gt;" id="add-br-btn">換行</button><br>
+  	運算符號
+  	<button data-text="乘號" onclick="insertCustomText('\\times\ ')">×</button>
+  	<button data-text="除號" onclick="insertCustomText('\\div\ ')">÷</button>
+  	<button data-text="加減/正負" onclick="insertCustomText('\\pm\ ')">\(\pm\)</button>
+  	關係符號
+  	<button data-text="小於等於" onclick="insertCustomText('\\le\ ')">\(\le\)</button>
+  	<button data-text="大於等於" onclick="insertCustomText('\\ge\ ')">\(\ge\)</button>
+  	<button data-text="不等於" onclick="insertCustomText('\\ne\ ')">\(\ne\)</button>
+  	<button data-text="近似於" onclick="insertCustomText('\\approx\ ')">\(\approx\)</button>
+  	<button data-text="全等" onclick="insertCustomText('\\cong\ ')">\(\cong\)</button>
+  	<button data-text="相似" onclick="insertCustomText('\\sim\ ')">\(\sim\)</button>
+  	<button data-text="平行" onclick="insertCustomText('\\parallel\ ')">\(\parallel\)</button>
+  	<button data-text="垂直" onclick="insertCustomText('\\perp\ ')">\(\perp\)</button><br>
+    其他符號
+  	<button data-text="因為" onclick="insertCustomText('\\because\ ')">\(\because\)</button>
+  	<button data-text="所以" onclick="insertCustomText('\\therefore\ ')">\(\therefore\)</button>
+  	<button data-text="度" onclick="insertCustomText('^{\\circ} ')">\(^{\circ}\)</button>
+  	<button data-text="圓週率" onclick="insertCustomText('\\pi\ ')">\(\pi\)</button>
+  	<button data-text="無限" onclick="insertCustomText('\\infty\ ')">\(\infty\)</button>
+  	<button data-text="交集" onclick="insertCustomText('\\cap\ ')">\(\cap\)</button>
+  	<button data-text="聯集" onclick="insertCustomText('\\cup\ ')">\(\cup\)</button>
+  	<button data-text="右箭頭" onclick="insertCustomText('\\rightarrow\ ')">\(\rightarrow\)</button>
+  	<button data-text="左箭頭" onclick="insertCustomText('\\leftarrow\ ')">\(\leftarrow\)</button>
+  	<button data-text="左右鍵頭" onclick="insertCustomText('\\leftrightarrow\ ')">\(\leftrightarrow\)</button>
+  	<button data-text="上箭頭" onclick="insertCustomText('\\uparrow\ ')">\(\uparrow\)</button>
+  	<button data-text="下箭頭" onclick="insertCustomText('\\downarrow\ ')">\(\downarrow\)</button>
+  	<button data-text="百分率" onclick="insertCustomText('\\%\ ')">\(\%\)</button>
+  	<button data-text="千分率" onclick="insertCustomText('‰\ ')">‰</button>
+  	<button data-text="大括號 { }" onclick="insertCustomTextA('\\\{ \\\}')">{ }</button>
+  	<br>
+  	幾何
+  	<button data-text="角 \angle{端點}" onclick="insertCustomTextA('\\angle{}')">\(\angle\)</button>
+  	<button data-text="三角形 \triangle{頂點}" onclick="insertCustomTextA('\\triangle{}')">\(\triangle\)</button>
+  	<button data-text="線段 \overline{端點}" onclick="insertCustomTextA('\\overline{}')">線段</button>
+  	<button data-text="射線 \overrightarrow{端點}" onclick="insertCustomTextA('\\overrightarrow{}')">射線</button>
+  	<button data-text="射線 \overleftrightarrow{端點}" onclick="insertCustomTextA('\\overleftrightarrow{}')">直線</button>
+  	<button data-text="弧 \overset{\frown}{端點}" onclick="insertCustomTextA('\\overset{\\frown}{}')">弧</button>
+  	<button data-text="向量 \vec{文字}" onclick="insertCustomTextA('\\vec{}')">向量</button>
+  	希臘字母
+  	<select id="select-letter" onchange="updateTextarea()">
+      <option value="">請選擇</option>
+      <option value="">小寫</option>
+      <option value="\alpha">α</option>
+      <option value="\beta">β</option>
+      <option value="\gamma">γ</option>
+      <option value="\delta">δ</option>
+      <option value="\epsilon">ε</option>
+      <option value="\zeta">ζ</option>
+      <option value="\eta">η</option>
+      <option value="\theta">θ</option>
+      <option value="\iota">ι</option>
+      <option value="\kappa">κ</option>
+      <option value="\lambda">λ</option>
+      <option value="\mu">μ</option>
+      <option value="\nu">ν</option>
+      <option value="\xi">ξ</option>
+      <option value="\omicron">ο</option>
+      <option value="\pi">π</option>
+      <option value="\rho">ρ</option>
+      <option value="\sigma">σ</option>
+      <option value="\tau">τ</option>
+      <option value="\upsilon">υ</option>
+      <option value="\phi">φ</option>
+      <option value="\chi">χ</option>
+      <option value="\psi">ψ</option>
+      <option value="\omega">ω</option>
+      <option value="">大寫</option>
+      <option value="\Alpha">Α</option>
+      <option value="\Beta">Β</option>
+      <option value="\Gamma">Γ</option>
+      <option value="\Delta">Δ</option>
+      <option value="\Epsilon">Ε</option>
+      <option value="\Zeta">Ζ</option>
+      <option value="\Eta">Η</option>
+      <option value="\Theta">Θ</option>
+      <option value="\Iota">Ι</option>
+      <option value="\Kappa">Κ</option>
+      <option value="\Lambda">Λ</option>
+      <option value="\Mu">Μ</option>
+      <option value="\Nu">Ν</option>
+      <option value="\Xi">Ξ</option>
+      <option value="\Omicron">Ο</option>
+      <option value="\Pi">Π</option>
+      <option value="\Rho">Ρ</option>
+      <option value="\Sigma">Σ</option>
+      <option value="\Tau">Τ</option>
+      <option value="\Upsilon">Υ</option>
+      <option value="\Phi">Φ</option>
+      <option value="\Chi">Χ</option>
+      <option value="\Psi">Ψ</option>
+      <option value="\Omega">Ω</option>
+    </select>
+  	<br>
+  	層次
+  	<button data-text="分數 \frac{分子}{分母}" onclick="insertCustomTextA('\\frac{}{}')">分數</button>
+  	<button data-text="上標/指數 ^{n}" onclick="insertCustomTextA('^{}')">\(x^{n}\)</button>
+  	<button data-text="下標/底數 _{n}" onclick="insertCustomTextA('_{}')">\(x_{n}\)</button>
+  	<button data-text="根號 \sqrt{n}" onclick="insertCustomTextA('\\sqrt{}')">\(\sqrt{n}\)</button>
+  	<button data-text="n 次方根 \sqrt[n]{m}" onclick="insertCustomTextA('\\sqrt[n]{}')">\(\sqrt[n]{m}\)</button>
+  	<button data-text="聯立方程式 \begin{cases} {第一式} &amp;{註記} \\ {第二式} &amp;{註記} \end{cases}" onclick="insertCustomTextA('\\begin{cases} {} &{} \\\\ {} &{} \\end{cases}')">聯立方程式</button>
+  	<button data-text="總和 \sum_{起點}^{終點}" onclick="insertCustomTextA('\\sum_{}^{}')">\(\sum\)</button>
+  	<button data-text="極值 \lim_{{起點} \to {終點}}" onclick="insertCustomTextA('\\lim_{{} \\to {}}')">\(\lim\)</button>
+  	<button data-text="數對 \log_{基數/底}" onclick="insertCustomTextA('\\log_{}')">\(\log\)</button>
+  	<button data-text="矩陣 \left [ \begin{matrix} {} &{} \\ {} &{} \end{matrix} \right ]" onclick="insertCustomTextA('\\left [ \\begin{matrix} {} &{} \\\\ {} &{} \\end{matrix} \\right ]')">矩陣</button>
+  	<button data-text="行列式 \left | \begin{array} {cc} {} &{} \\ {} &{} \end{array} \right |" onclick="insertCustomTextA('\\left | \\begin{array} {cc} {} &{} \\\\ {} &{} \\end{array} \\right |')">行列式</button>
+	</p>
+	<div id="preview"></div>
+</body>
+</html>

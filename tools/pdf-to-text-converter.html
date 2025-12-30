@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF 轉換器 (自動處理與文本編輯)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.9.359/pdf.min.js"></script>
+    <style>
+        body, html {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background-color: #f4f4f4;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        h1, h2 {
+            color: #333;
+            margin: 0;
+        }
+        .controls {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+        }
+        #file-input {
+            flex: 1;
+            margin-right: 10px;
+        }
+        .btn {
+            padding: 10px 20px;
+            margin: 0 5px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        #zoom-controls {
+            display: flex;
+            align-items: center;
+        }
+        #zoom-value {
+            width: 50px;
+            text-align: center;
+        }
+        .content {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        .panel {
+            flex: 1;
+            overflow-y: scroll;
+            overflow-x: scroll;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        #output {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-family: monospace;
+            font-size: 14px;
+            line-height: 1.2;
+            border: 1px solid #ccc;
+            padding: 10px;
+            min-height: 100%;
+            box-sizing: border-box;
+        }
+        #pages {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .page-container {
+            margin: 10px 0;
+            position: relative;
+        }
+        canvas {
+            border: 1px solid #ddd;
+        }
+        .text-layer {
+            position: absolute;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            overflow: hidden;
+            opacity: 0.2;
+            line-height: 1.0;
+        }
+        .text-layer > span {
+            color: transparent;
+            position: absolute;
+            white-space: pre;
+            cursor: text;
+            transform-origin: 0% 0%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>PDF 轉換器 (自動處理與文本編輯)</h1>
+            <div class="controls">
+                <input type="file" id="file-input" accept=".pdf">
+                <a id="download-btn" class="btn" download="edited_text.txt">下載文字檔</a>
+                <div id="zoom-controls">
+                    <button id="zoom-out" class="btn">-</button>
+                    <span id="zoom-value">100%</span>
+                    <button id="zoom-in" class="btn">+</button>
+                </div>
+            </div>
+        </div>
+        <div class="content">
+            <div class="panel" id="text-panel">
+                <h2>純文字輸出 (可編輯)</h2>
+                <div id="output" contenteditable="true"></div>
+            </div>
+            <div class="panel" id="pdf-panel">
+                <h2>PDF 頁面預覽</h2>
+                <div id="pages"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.9.359/pdf.worker.min.js';
+
+        let pdfDoc = null;
+        let currentZoom = 1.0;
+        
+        const textPanel = document.getElementById('text-panel');
+        const pdfPanel = document.getElementById('pdf-panel');
+        const outputDiv = document.getElementById('output');
+
+        document.getElementById('file-input').addEventListener('change', loadPdf);
+        document.getElementById('zoom-in').addEventListener('click', () => changeZoom(0.1));
+        document.getElementById('zoom-out').addEventListener('click', () => changeZoom(-0.1));
+        document.getElementById('download-btn').addEventListener('click', downloadEditedText);
+
+        textPanel.addEventListener('scroll', () => syncScroll(textPanel, pdfPanel));
+        pdfPanel.addEventListener('scroll', () => syncScroll(pdfPanel, textPanel));
+
+        function loadPdf(event) {
+            const file = event.target.files[0];
+            if (file && file.type === 'application/pdf') {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const typedarray = new Uint8Array(e.target.result);
+                    pdfjsLib.getDocument(typedarray).promise.then(pdf => {
+                        pdfDoc = pdf;
+                        convertAndRender();
+                    });
+                };
+                reader.readAsArrayBuffer(file);
+            } else {
+                alert('請選擇一個有效的 PDF 文件。');
+            }
+        }
+
+        function convertAndRender() {
+            convertToText();
+            renderPages();
+        }
+
+        function convertToText() {
+            outputDiv.textContent = '正在處理PDF...';
+            const totalPages = pdfDoc.numPages;
+            let convertedText = '';
+
+            function processPage(pageNum) {
+                return pdfDoc.getPage(pageNum).then(page => page.getTextContent())
+                .then(textContent => {
+                    let text = '';
+                    let lastY;
+                    const items = textContent.items;
+
+                    for (let i = 0; i < items.length; i++) {
+                        const item = items[i];
+                        if (lastY != item.transform[5] && i > 0) {
+                            text += '\n';
+                        }
+                        text += item.str;
+                        lastY = item.transform[5];
+                    }
+
+                    convertedText += `--- 第 ${pageNum} 頁 ---\n\n${text}\n\n`;
+
+                    if (pageNum < totalPages) {
+                        return processPage(pageNum + 1);
+                    } else {
+                        outputDiv.textContent = convertedText;
+                    }
+                });
+            }
+
+            processPage(1);
+        }
+
+        function renderPages() {
+            const pagesDiv = document.getElementById('pages');
+            pagesDiv.innerHTML = '';
+
+            for (let pageNum = 1; pageNum <= pdfDoc.numPages; pageNum++) {
+                pdfDoc.getPage(pageNum).then(page => {
+                    const scale = currentZoom;
+                    const viewport = page.getViewport({ scale });
+                    
+                    const pageContainer = document.createElement('div');
+                    pageContainer.className = 'page-container';
+                    
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.height = viewport.height;
+                    canvas.width = viewport.width;
+
+                    const renderContext = {
+                        canvasContext: context,
+                        viewport: viewport
+                    };
+
+                    pageContainer.appendChild(canvas);
+
+                    const textLayerDiv = document.createElement('div');
+                    textLayerDiv.className = 'text-layer';
+                    pageContainer.appendChild(textLayerDiv);
+
+                    pagesDiv.appendChild(pageContainer);
+
+                    page.render(renderContext);
+
+                    page.getTextContent().then(textContent => {
+                        pdfjsLib.renderTextLayer({
+                            textContent: textContent,
+                            container: textLayerDiv,
+                            viewport: viewport,
+                            textDivs: []
+                        });
+                    });
+                });
+            }
+        }
+
+        function changeZoom(delta) {
+            currentZoom = Math.max(0.1, Math.min(currentZoom + delta, 3.0));
+            document.getElementById('zoom-value').textContent = `${Math.round(currentZoom * 100)}%`;
+            renderPages();
+        }
+
+        function downloadEditedText() {
+            const editedText = outputDiv.textContent;
+            const blob = new Blob([editedText], {type: 'text/plain'});
+            const downloadBtn = document.getElementById('download-btn');
+            downloadBtn.href = URL.createObjectURL(blob);
+        }
+
+        function syncScroll(sourcePanel, targetPanel) {
+            const percentage = sourcePanel.scrollTop / (sourcePanel.scrollHeight - sourcePanel.clientHeight);
+            targetPanel.scrollTop = percentage * (targetPanel.scrollHeight - targetPanel.clientHeight);
+        }
+    </script>
+</body>
+</html>

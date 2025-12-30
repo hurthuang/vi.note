@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>互動式鋼琴鍵盤</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      background-color: #f5f5f5;
+      touch-action: manipulation; /* 防止雙擊縮放 */
+    }
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    .piano-container {
+      position: relative;
+      width: 600px;
+      height: 170px;
+      margin-bottom: 30px;
+      max-width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch; /* 提升iOS滾動體驗 */
+    }
+    .white-key {
+      position: absolute;
+      width: 39px;
+      height: 150px;
+      background-color: white;
+      border: 1px solid black;
+      cursor: pointer;
+    }
+    .white-key.active {
+      background-color: #AAAAFF;
+    }
+    .black-key {
+      position: absolute;
+      width: 24px;
+      height: 100px;
+      background-color: black;
+      border: 1px solid black;
+      z-index: 10;
+      cursor: pointer;
+    }
+    .black-key.active {
+      background-color: #7777BB;
+    }
+    .controls {
+      margin-top: 20px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    
+    @media (max-width: 600px) {
+      .piano-container {
+        width: 100%;
+        height: 120px;
+        overflow-x: auto;
+      }
+      
+      h1 {
+        font-size: 20px;
+      }
+      
+      .controls {
+        flex-direction: column;
+      }
+      
+      .keyboard-info {
+        font-size: 14px;
+      }
+    }
+    .reset-button {
+      background-color: #3B82F6;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .reset-button:hover {
+      background-color: #2563EB;
+    }
+    .stop-button {
+      background-color: #10B981;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .stop-button:hover {
+      background-color: #059669;
+    }
+    .keyboard-info {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .keyboard-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+      color: #4B5563;
+    }
+    .white-keys-map {
+      margin-bottom: 5px;
+      color: #6B7280;
+    }
+    .black-keys-map {
+      color: #6B7280;
+    }
+  </style>
+</head>
+<body>
+  <h1>互動式鋼琴鍵盤</h1>
+  <div class="piano-container" id="piano-container"></div>
+  
+  <div class="keyboard-info">
+    <div class="keyboard-title">鍵盤控制：</div>
+    <div class="white-keys-map">白鍵: A S D F G H J K L ; ' \</div>
+    <div class="black-keys-map">黑鍵: W E T Y U O P ]</div>
+  </div>
+  
+  <div>使用滑鼠點擊或鍵盤按鍵來彈奏鋼琴</div>
+  
+  <div class="controls">
+    <button class="reset-button" id="reset-button">重置音頻引擎</button>
+    <button class="stop-button" id="stop-button">快速停止全部聲音</button>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // 音頻上下文和節點
+      let audioContext = null;
+      const oscillators = {};
+      const gainNodes = {};
+      const activeKeys = {};
+      const keysPressed = {};
+      
+      // 定義鋼琴的音符
+      const whiteKeys = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+      const blackKeyMap = {
+        'C#': 0,
+        'D#': 1,
+        'F#': 3,
+        'G#': 4,
+        'A#': 5
+      };
+      const octaves = [4, 5]; // 使用兩個八度
+      
+      // 音符頻率映射
+      const noteFrequencies = {
+        'C4': 261.63, 'C#4': 277.18, 'D4': 293.66, 'D#4': 311.13, 'E4': 329.63,
+        'F4': 349.23, 'F#4': 369.99, 'G4': 392.00, 'G#4': 415.30, 'A4': 440.00,
+        'A#4': 466.16, 'B4': 493.88, 'C5': 523.25, 'C#5': 554.37, 'D5': 587.33,
+        'D#5': 622.25, 'E5': 659.26, 'F5': 698.46, 'F#5': 739.99, 'G5': 783.99,
+        'G#5': 830.61, 'A5': 880.00, 'A#5': 932.33, 'B5': 987.77
+      };
+      
+      // 計算白鍵和黑鍵的位置
+      const whiteKeyWidth = 40;
+      const blackKeyWidth = 24;
+      const blackKeyHeight = 100;
+      
+      // 定義鍵盤映射
+      const keyboardMap = {
+        'a': 'C4', 's': 'D4', 'd': 'E4', 'f': 'F4', 'g': 'G4', 'h': 'A4', 'j': 'B4',
+        'k': 'C5', 'l': 'D5', ';': 'E5', "'": 'F5', '\\': 'G5',
+        'w': 'C#4', 'e': 'D#4', 't': 'F#4', 'y': 'G#4', 'u': 'A#4',
+        'o': 'C#5', 'p': 'D#5', ']': 'F#5', 'Enter': 'G#5'
+      };
+      
+      // 建立鋼琴鍵盤
+      const pianoContainer = document.getElementById('piano-container');
+      
+      // 創建白鍵
+      let whiteKeyIndex = 0;
+      octaves.forEach(octave => {
+        whiteKeys.forEach(note => {
+          const noteWithOctave = note + octave;
+          const whiteKey = document.createElement('div');
+          whiteKey.className = 'white-key';
+          whiteKey.dataset.note = noteWithOctave;
+          whiteKey.style.left = (whiteKeyIndex * whiteKeyWidth) + 'px';
+          
+          // 滑鼠事件
+          whiteKey.addEventListener('mousedown', function() {
+            playNote(noteWithOctave);
+            this.classList.add('active');
+          });
+          
+          whiteKey.addEventListener('mouseup', function() {
+            stopNote(noteWithOctave);
+            this.classList.remove('active');
+          });
+          
+          whiteKey.addEventListener('mouseleave', function() {
+            if (activeKeys[noteWithOctave]) {
+              stopNote(noteWithOctave);
+              this.classList.remove('active');
+            }
+          });
+          
+          // 觸控事件
+          whiteKey.addEventListener('touchstart', function(e) {
+            e.preventDefault(); // 防止觸發滑鼠事件
+            playNote(noteWithOctave);
+            this.classList.add('active');
+          });
+          
+          whiteKey.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            stopNote(noteWithOctave);
+            this.classList.remove('active');
+          });
+          
+          whiteKey.addEventListener('touchcancel', function(e) {
+            e.preventDefault();
+            stopNote(noteWithOctave);
+            this.classList.remove('active');
+          });
+          
+          pianoContainer.appendChild(whiteKey);
+          whiteKeyIndex++;
+        });
+      });
+      
+      // 創建黑鍵
+      octaves.forEach(octave => {
+        Object.keys(blackKeyMap).forEach(noteName => {
+          const noteWithOctave = noteName + octave;
+          const blackKey = document.createElement('div');
+          blackKey.className = 'black-key';
+          blackKey.dataset.note = noteWithOctave;
+          
+          const octaveIndex = parseInt(octave) - octaves[0];
+          const notePosition = blackKeyMap[noteName];
+          
+          // 計算x坐標
+          const octaveOffset = octaveIndex * 7 * whiteKeyWidth;
+          const x = octaveOffset + notePosition * whiteKeyWidth + (whiteKeyWidth * 0.95) - blackKeyWidth / 2;
+          
+          blackKey.style.left = x + 'px';
+          
+          // 滑鼠事件
+          blackKey.addEventListener('mousedown', function() {
+            playNote(noteWithOctave);
+            this.classList.add('active');
+          });
+          
+          blackKey.addEventListener('mouseup', function() {
+            stopNote(noteWithOctave);
+            this.classList.remove('active');
+          });
+          
+          blackKey.addEventListener('mouseleave', function() {
+            if (activeKeys[noteWithOctave]) {
+              stopNote(noteWithOctave);
+              this.classList.remove('active');
+            }
+          });
+          
+          // 觸控事件
+          blackKey.addEventListener('touchstart', function(e) {
+            e.preventDefault(); // 防止觸發滑鼠事件
+            playNote(noteWithOctave);
+            this.classList.add('active');
+          });
+          
+          blackKey.addEventListener('touchend', function(e) {
+            e.preventDefault();
+            stopNote(noteWithOctave);
+            this.classList.remove('active');
+          });
+          
+          blackKey.addEventListener('touchcancel', function(e) {
+            e.preventDefault();
+            stopNote(noteWithOctave);
+            this.classList.remove('active');
+          });
+          
+          pianoContainer.appendChild(blackKey);
+        });
+      });
+      
+      // 確保音頻上下文可用
+      function ensureAudioContext() {
+        if (!audioContext) {
+          try {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          } catch (e) {
+            console.error("無法創建音頻上下文", e);
+            return false;
+          }
+        }
+        
+        if (audioContext.state === 'suspended') {
+          audioContext.resume().catch(e => {
+            console.error("無法恢復音頻上下文", e);
+          });
+        }
+        
+        return true;
+      }
+      
+      // 播放音符
+      function playNote(note) {
+        if (!ensureAudioContext()) return;
+        
+        try {
+          if (activeKeys[note] && oscillators[note]) {
+            return; // 已經在播放中
+          }
+          
+          const frequency = noteFrequencies[note];
+          if (!frequency) return;
+          
+          // 清理之前的節點
+          if (oscillators[note]) {
+            try {
+              oscillators[note].stop();
+              oscillators[note].disconnect();
+              gainNodes[note].disconnect();
+            } catch (err) {}
+          }
+          
+          // 創建新節點
+          const currentTime = audioContext.currentTime;
+          const oscillator = audioContext.createOscillator();
+          const gainNode = audioContext.createGain();
+          
+          oscillator.type = 'square';
+          oscillator.frequency.setValueAtTime(frequency, currentTime);
+          
+          gainNode.gain.setValueAtTime(0, currentTime);
+          gainNode.gain.linearRampToValueAtTime(0.2, currentTime + 0.01);
+          
+          oscillator.connect(gainNode);
+          gainNode.connect(audioContext.destination);
+          
+          const stopTime = currentTime + 10;
+          oscillator.start(currentTime);
+          oscillator.stop(stopTime);
+          
+          oscillator.onended = function() {
+            if (oscillators[note] === oscillator) {
+              delete oscillators[note];
+              delete gainNodes[note];
+              delete activeKeys[note];
+              
+              // 更新UI
+              const keyElement = document.querySelector(`[data-note="${note}"]`);
+              if (keyElement) keyElement.classList.remove('active');
+            }
+          };
+          
+          oscillators[note] = oscillator;
+          gainNodes[note] = gainNode;
+          activeKeys[note] = true;
+          
+          // 更新UI
+          const keyElement = document.querySelector(`[data-note="${note}"]`);
+          if (keyElement) keyElement.classList.add('active');
+          
+        } catch (e) {
+          console.error("播放音符失敗", e);
+        }
+      }
+      
+      // 停止音符
+      function stopNote(note) {
+        delete activeKeys[note];
+        
+        // 更新UI
+        const keyElement = document.querySelector(`[data-note="${note}"]`);
+        if (keyElement) keyElement.classList.remove('active');
+        
+        if (!audioContext || !oscillators[note] || !gainNodes[note]) {
+          return;
+        }
+        
+        try {
+          const currentTime = audioContext.currentTime;
+          const gainNode = gainNodes[note];
+          
+          gainNode.gain.cancelScheduledValues(currentTime);
+          gainNode.gain.setValueAtTime(gainNode.gain.value, currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.001, currentTime + 0.05);
+          
+          setTimeout(function() {
+            try {
+              if (oscillators[note]) {
+                oscillators[note].stop();
+                oscillators[note].disconnect();
+                delete oscillators[note];
+              }
+              
+              if (gainNodes[note]) {
+                gainNodes[note].disconnect();
+                delete gainNodes[note];
+              }
+            } catch (err) {}
+          }, 100);
+          
+        } catch (e) {
+          console.error("停止音符失敗", e);
+          
+          // 強制清理
+          try {
+            if (oscillators[note]) {
+              oscillators[note].disconnect();
+              delete oscillators[note];
+            }
+            if (gainNodes[note]) {
+              gainNodes[note].disconnect();
+              delete gainNodes[note];
+            }
+          } catch (err) {}
+        }
+      }
+      
+      // 鍵盤事件處理
+      window.addEventListener('keydown', function(e) {
+        const note = keyboardMap[e.key];
+        if (note && !keysPressed[e.key]) {
+          keysPressed[e.key] = true;
+          playNote(note);
+        }
+      });
+      
+      window.addEventListener('keyup', function(e) {
+        const note = keyboardMap[e.key];
+        if (note) {
+          delete keysPressed[e.key];
+          stopNote(note);
+        }
+      });
+      
+      // 處理頁面失焦
+      window.addEventListener('blur', function() {
+        for (const key in keysPressed) {
+          const note = keyboardMap[key];
+          if (note) {
+            stopNote(note);
+          }
+        }
+        // 清空記錄
+        for (const key in keysPressed) {
+          delete keysPressed[key];
+        }
+      });
+      
+      // 重置按鈕
+      document.getElementById('reset-button').addEventListener('click', function() {
+        // 停止所有聲音
+        for (const note in oscillators) {
+          try {
+            oscillators[note].stop();
+            oscillators[note].disconnect();
+          } catch (e) {}
+        }
+        
+        for (const note in gainNodes) {
+          try {
+            gainNodes[note].disconnect();
+          } catch (e) {}
+        }
+        
+        // 清空記錄
+        for (const note in oscillators) delete oscillators[note];
+        for (const note in gainNodes) delete gainNodes[note];
+        for (const note in activeKeys) delete activeKeys[note];
+        for (const key in keysPressed) delete keysPressed[key];
+        
+        // 重置UI
+        document.querySelectorAll('.white-key.active, .black-key.active').forEach(element => {
+          element.classList.remove('active');
+        });
+        
+        // 重新創建音頻上下文
+        if (audioContext) {
+          try {
+            audioContext.close().then(() => {
+              audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }).catch(() => {
+              audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            });
+          } catch (e) {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          }
+        }
+      });
+      
+      // 快速停止按鈕
+      document.getElementById('stop-button').addEventListener('click', function() {
+        // 停止所有聲音
+        for (const note in oscillators) {
+          try {
+            oscillators[note].stop();
+            oscillators[note].disconnect();
+          } catch (e) {}
+        }
+        
+        for (const note in gainNodes) {
+          try {
+            gainNodes[note].disconnect();
+          } catch (e) {}
+        }
+        
+        // 清空記錄
+        for (const note in oscillators) delete oscillators[note];
+        for (const note in gainNodes) delete gainNodes[note];
+        for (const note in activeKeys) delete activeKeys[note];
+        for (const key in keysPressed) delete keysPressed[key];
+        
+        // 重置UI
+        document.querySelectorAll('.white-key.active, .black-key.active').forEach(element => {
+          element.classList.remove('active');
+        });
+      });
+      
+      // 觸控裝置特定處理
+      let touchTracker = {};
+      
+      document.addEventListener('touchstart', function(e) {
+        // 記錄所有開始的觸摸點
+        for (let i = 0; i < e.changedTouches.length; i++) {
+          const touch = e.changedTouches[i];
+          touchTracker[touch.identifier] = { x: touch.clientX, y: touch.clientY };
+        }
+      }, { passive: false });
+      
+      document.addEventListener('touchmove', function(e) {
+        // 處理觸控移動 - 檢查是否移到了其他琴鍵上
+        for (let i = 0; i < e.changedTouches.length; i++) {
+          const touch = e.changedTouches[i];
+          const x = touch.clientX;
+          const y = touch.clientY;
+          
+          // 獲取當前觸摸點下的元素
+          const element = document.elementFromPoint(x, y);
+          if (!element || !element.classList) continue;
+          
+          // 如果是琴鍵且不是當前激活的
+          if ((element.classList.contains('white-key') || element.classList.contains('black-key'))) {
+            const noteUnderTouch = element.dataset.note;
+            
+            // 檢查之前接觸的是否是不同的琴鍵
+            if (touchTracker[touch.identifier] && 
+                touchTracker[touch.identifier].lastNote && 
+                touchTracker[touch.identifier].lastNote !== noteUnderTouch) {
+              
+              // 停止之前的音符
+              const previousElement = document.querySelector(`[data-note="${touchTracker[touch.identifier].lastNote}"]`);
+              if (previousElement) {
+                stopNote(touchTracker[touch.identifier].lastNote);
+                previousElement.classList.remove('active');
+              }
+              
+              // 播放新音符
+              playNote(noteUnderTouch);
+              element.classList.add('active');
+              
+              // 更新追蹤器
+              touchTracker[touch.identifier].lastNote = noteUnderTouch;
+            } else if (!touchTracker[touch.identifier].lastNote) {
+              // 第一次移動到琴鍵上
+              playNote(noteUnderTouch);
+              element.classList.add('active');
+              touchTracker[touch.identifier].lastNote = noteUnderTouch;
+            }
+          } else if (touchTracker[touch.identifier] && touchTracker[touch.identifier].lastNote) {
+            // 移出了任何琴鍵
+            const previousElement = document.querySelector(`[data-note="${touchTracker[touch.identifier].lastNote}"]`);
+            if (previousElement) {
+              stopNote(touchTracker[touch.identifier].lastNote);
+              previousElement.classList.remove('active');
+            }
+            delete touchTracker[touch.identifier].lastNote;
+          }
+          
+          // 更新位置
+          touchTracker[touch.identifier] = { 
+            x, 
+            y, 
+            lastNote: touchTracker[touch.identifier] ? touchTracker[touch.identifier].lastNote : null 
+          };
+        }
+      }, { passive: false });
+      
+      document.addEventListener('touchend', function(e) {
+        // 處理觸控結束
+        for (let i = 0; i < e.changedTouches.length; i++) {
+          const touch = e.changedTouches[i];
+          if (touchTracker[touch.identifier] && touchTracker[touch.identifier].lastNote) {
+            stopNote(touchTracker[touch.identifier].lastNote);
+            const element = document.querySelector(`[data-note="${touchTracker[touch.identifier].lastNote}"]`);
+            if (element) {
+              element.classList.remove('active');
+            }
+          }
+          delete touchTracker[touch.identifier];
+        }
+      }, { passive: false });
+      
+      document.addEventListener('touchcancel', function(e) {
+        // 處理觸控取消 - 清理所有相關的音符
+        for (let i = 0; i < e.changedTouches.length; i++) {
+          const touch = e.changedTouches[i];
+          if (touchTracker[touch.identifier] && touchTracker[touch.identifier].lastNote) {
+            stopNote(touchTracker[touch.identifier].lastNote);
+            const element = document.querySelector(`[data-note="${touchTracker[touch.identifier].lastNote}"]`);
+            if (element) {
+              element.classList.remove('active');
+            }
+          }
+          delete touchTracker[touch.identifier];
+        }
+      }, { passive: false });
+      
+      // 定期清理未使用的節點
+      setInterval(function() {
+        for (const note in oscillators) {
+          if (!activeKeys[note]) {
+            try {
+              oscillators[note].stop();
+              oscillators[note].disconnect();
+              delete oscillators[note];
+              
+              if (gainNodes[note]) {
+                gainNodes[note].disconnect();
+                delete gainNodes[note];
+              }
+            } catch (e) {}
+          }
+        }
+      }, 5000);
+    });
+  </script>
+</body>
+</html>

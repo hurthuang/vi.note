@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>語音報讀器</title>
+</head>
+	<style>
+		#editor {
+			font-size: 24px;
+		}
+	</style>
+<body>
+	<textarea id="editor" rows="15" cols="50"></textarea><br>
+	<button onclick="openFile()">開啟檔案</button>
+	<button onclick="saveFile()">儲存檔案</button>
+	<button onclick="startSpeaking()">整篇朗讀</button>
+	<button onclick="startSpeakingFromCursor()">從游標處開始讀</button>
+	<button onclick="stopSpeaking()">停止朗讀</button>
+	<br>
+	<select id="voiceSelect"></select><br>
+	<label for="rateSlider">速度</label><input type="range" min="0" max="2" step="0.1" value="1" id="rateSlider"><br>
+	<label for="pitchSlider">音調</label><input type="range" min="0" max="2" step="0.1" value="1" id="pitchSlider"><br>
+<script>
+		const editor = document.getElementById('editor');
+		const voiceSelect = document.getElementById('voiceSelect');
+		const rateSlider = document.getElementById('rateSlider');
+		const pitchSlider = document.getElementById('pitchSlider');
+		const synth = window.speechSynthesis;
+		let utterance;
+
+		function populateVoiceList() {
+			if (typeof synth === 'undefined') {
+				return;
+			}
+			const voices = synth.getVoices();
+			voiceSelect.innerHTML = '';
+			for (let i = 0; i < voices.length; i++) {
+				const option = document.createElement('option');
+				option.textContent = voices[i].name + ' (' + voices[i].lang + ')';
+				option.setAttribute('data-lang', voices[i].lang);
+				option.setAttribute('data-name', voices[i].name);
+				voiceSelect.appendChild(option);
+			}
+		}
+
+		populateVoiceList();
+		if (typeof synth !== 'undefined' && synth.onvoiceschanged !== undefined) {
+			synth.onvoiceschanged = populateVoiceList;
+		}
+
+		function startSpeaking() {
+			utterance = new SpeechSynthesisUtterance(editor.value);
+			const selectedVoice = voiceSelect.value;
+			const voices = synth.getVoices();
+			for (let i = 0; i < voices.length; i++) {
+				if (voices[i].name + ' (' + voices[i].lang + ')' === selectedVoice) {
+					utterance.voice = voices[i];
+					break;
+				}
+			}
+			utterance.rate = rateSlider.value;
+			utterance.pitch = pitchSlider.value;
+			synth.speak(utterance);
+		}
+
+		function startSpeakingFromCursor() {
+			utterance = new SpeechSynthesisUtterance(editor.value.substring(editor.selectionStart));
+			const selectedVoice = voiceSelect.value;
+			const voices = synth.getVoices();
+			for (let i = 0; i < voices.length; i++) {
+				if (voices[i].name + ' (' + voices[i].lang + ')' === selectedVoice) {
+					utterance.voice = voices[i];
+					break;
+				}
+			}
+			utterance.rate = rateSlider.value;
+			utterance.pitch = pitchSlider.value;
+			synth.speak(utterance);
+		}
+
+		function stopSpeaking() {
+		  if (utterance) {
+		    synth.cancel();
+		  }
+		}
+
+		function openFile() {
+			var input = document.createElement('input');
+			input.type = 'file';
+			input.accept = 'text/plain';
+
+			input.onchange = function() {
+				var file = input.files[0];
+				var reader = new FileReader();
+				reader.readAsText(file);
+				reader.onload = function() {
+					editor.value = reader.result;
+				};
+			};
+			input.click();
+		}
+
+		function saveFile() {
+			var textToSave = editor.value;
+			var textAsBlob = new Blob([textToSave], {type:"text/plain"});
+			var fileNameToSaveAs = "myFile.txt";
+			var downloadLink = document.createElement("a");
+			downloadLink.download = fileNameToSaveAs;
+			downloadLink.innerHTML = "Download File";
+			if (window.webkitURL != null) {
+				downloadLink.href = window.webkitURL.createObjectURL(textAsBlob);
+			} else {
+				downloadLink.href = window.URL.createObjectURL(textAsBlob);
+				downloadLink.onclick = destroyClickedElement;
+				downloadLink.style.display = "none";
+				document.body.appendChild(downloadLink);
+			}
+			downloadLink.click();
+		}
+
+	</script>
+</body>
+</html>

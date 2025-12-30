@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>通用數學編輯器</title>
+    <!-- The style.css file allows you to change the look of your web pages.
+         If you include the next line in all your web pages, they will all share the same look.
+         This makes it easier to make new pages for your site. -->
+    <link href="/style.css" rel="stylesheet" type="text/css" media="all">
+  </head>
+  <body>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js">
+    	</script><script src="https://polyfill.io/v3/polyfill.min.js?features=es6">
+    	</script><script async id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+    	</script>
+    <style type="text/css">
+    #editor,
+    	         #preview {
+    	             width: 100%;
+    	             height: 300px;
+    	             border: 1px solid black;
+    	             padding: 5px;
+    	             box-sizing: border-box;
+    	             font-family: sans-serif;
+    	             font-size: 16px;
+    	         }
+    
+    	         #preview {
+    	             overflow-y: scroll;
+    	         }
+    button {
+      height: 20px;
+      min-width: 2em;
+      padding: 0 7px;
+      border: none;
+      background-color: #ffffff;
+      color: blue;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      position: relative;
+    }
+    
+    button:hover:after {
+      content: attr(data-text);
+      position: absolute;
+      background-color: #333;
+      color: #fff;
+      padding: 5px;
+      border-radius: 5px;
+      font-size: 14px;
+      bottom: 100%;
+      left: 30%;
+      transform: translateX(-50%);
+      white-space: nowrap;
+      z-index: 9999;
+    }</style>
+    <script>
+    	         $(function() {
+    	             const editor = $('#editor');
+    	             const preview = $('#preview');
+    
+    	             // 监听编辑器输入事件，更新预览区域
+    	             editor.on('input', function() {
+    	                 const content = editor.val();
+    	                 preview.html(content);
+    	                 MathJax.typesetPromise([preview[0]]);
+    	             });
+    	         // 監聽按鈕點擊事件，檢查每行行尾是否有 <br>，沒有則加上
+    	         $('#add-br-btn').on('click', function() {
+    	             const content = editor.val();
+    	             const lines = content.split('\n');
+    	             let newContent = '';
+    	             for (let i = 0; i < lines.length; i++) {
+    	                 if (!lines[i].endsWith('<br>')) {
+    	                     newContent += lines[i] + '<br>';
+    	                 } else {
+    	                     newContent += lines[i];
+    	                 }
+    	                 if (i < lines.length - 1) {
+    	                     newContent += '\n';
+    	                 }
+    	             }
+    	             editor.val(newContent);
+    	             preview.html(newContent);
+    	             MathJax.typesetPromise([preview[0]]);
+    	         });
+    
+    	       // 監聽「開啟草稿」按鈕點擊事件，將內容讀取到編輯器
+    	       $('#open-btn').on('click', function() {
+    	           const fileInput = $('<input type="file">');
+    	           fileInput.on('change', function() {
+    	               const file = fileInput[0].files[0];
+    	               const reader = new FileReader();
+    	               reader.onload = function(event) {
+    	                   const content = event.target.result;
+    	                   editor.val(content);
+    	                   preview.html(content);
+    	                   MathJax.typesetPromise([preview[0]]);
+    	               };
+    	               reader.readAsText(file);
+    	           });
+    	           fileInput.click();
+    	       });
+    
+    	   // 監聽「儲存草稿」按鈕點擊事件，將內容存為 txt 檔案
+    	   $('#savetxt-btn').on('click', function() {
+    	       const content = editor.val();
+    	       const a = document.createElement('a');
+    	       const file = new Blob([content], {type: 'text/html'});
+    	       a.href = URL.createObjectURL(file);
+    	       a.download = 'my_file.txt';
+    	       a.click();
+    	   });
+    
+    	   // 監聽「另存成 HTML 檔」按鈕點擊事件，將內容存為 HTML 檔案
+    	   $('#save-btn').on('click', function() {
+    	       const content = editor.val();
+    	       const mathjaxContent = '\\( ' + content + ' \\)';
+    
+    	       // 載入 mathjax.txt 檔案
+    	       $.get('https://class.kh.edu.tw/sites/19061/upload_file/4/mathjax.txt', function(data) {
+    
+    	           // 將 mathjax.txt 檔案內容加到 textarea 最前方
+    	           editor.val(data + '\n' + content);
+    
+    	           // 存檔
+    	           const a = document.createElement('a');
+    	           const file = new Blob([editor.val()], {type: 'text/html'});
+    	           a.href = URL.createObjectURL(file);
+    	           a.download = 'my_file.html';
+    	           a.click();
+    	       });
+    	   });
+    
+    	 // 添加 processText 函数，处理文本
+    	 function processText() {
+    	   var textarea = document.getElementById("editor");
+    	   var text = textarea.value;
+    	   var index = 65; // ASCII码中65表示字母"A"
+    	   text = text.replace(/\s*\([A-D]\)\s*/g, function(match) {
+    	     return "\n" + match;
+    	   });
+    	   text = text.replace(/^\([A-D]\)/gm, "\n$&");
+    	   text = text.replace(/　/g, " ");
+    	   text = text.replace(/ {2}/g, " ");
+    
+    	   // Add an extra newline after each line containing "(D)"
+    	   text = text.replace(/\(D\).*/g, function(match) {
+    	     return match + "\n";
+    	   });
+    
+    	   textarea.value = text;
+    	 }
+    
+    	 // 监听「断行选项」按钮点击事件，调用 processText 函数
+    	 $('#process-btn').on('click', function() {
+    	   processText();
+    	 });
+    
+    		// 監聽「清除內容」按鈕點擊事件，清空textarea內容及預覽區
+    		$('#clear-btn').on('click', function() {
+    			editor.val('');
+    			preview.html('');
+    		});
+    
+    
+    	   function insertString(string) {
+    	    const el = editor.get(0);
+    	    const start = el.selectionStart;
+    	    const end = el.selectionEnd;
+    	    const content = editor.val();
+    	    const newContent = content.slice(0, start) + string + content.slice(end);
+    	    editor.val(newContent);
+    	    preview.html(newContent);
+    	    MathJax.typesetPromise([preview[0]]);
+    	   }
+    
+    	   $('#insert-math-btn').on('click', function() {
+    	    insertString('\\( \\)');
+    	   });
+    
+    	   $('#insert-frac-btn').on('click', function() {
+    	    insertString('\\frac{}{}');
+    	   });
+    
+    	   $('#insert-sqrt-btn').on('click', function() {
+    	    insertString('\\sqrt{}');
+    	   });
+    
+    	   $('#insert-sqrtn-btn').on('click', function() {
+    	    insertString('\\sqrt[]{}');
+    	   });
+    
+    	   $('#insert-sum-btn').on('click', function() {
+    	    insertString('\\sum_{}^{}');
+    	   });
+    
+    	   $('#insert-exp-btn').on('click', function() {
+    	    insertString('^{}');
+    	   });
+    
+    	   $('#insert-lower-btn').on('click', function() {
+    	    insertString('_{}');
+    	   });
+    
+    	   $('#insert-times-btn').on('click', function() {
+    	    insertString('\\times ');
+    	   });
+    
+    	   $('#insert-div-btn').on('click', function() {
+    	    insertString('\\div ');
+    	   });
+    
+    	   $('#insert-pm-btn').on('click', function() {
+    	    insertString('\\pm ');
+    	   });
+    
+    	   $('#insert-ge-btn').on('click', function() {
+    	    insertString('\\ge ');
+    	   });
+    
+    	   $('#insert-le-btn').on('click', function() {
+    	    insertString('\\le ');
+    	   });
+    
+    	   $('#insert-ne-btn').on('click', function() {
+    	    insertString('\\ne ');
+    	   });
+    
+    	   $('#insert-approx-btn').on('click', function() {
+    	    insertString('\\approx ');
+    	   });
+    
+    	   $('#insert-cong-btn').on('click', function() {
+    	    insertString('\\cong ');
+    	   });
+    
+    	   $('#insert-sim-btn').on('click', function() {
+    	    insertString('\\sim ');
+    	   });
+    
+    	   $('#insert-overline-btn').on('click', function() {
+    	    insertString('\\overline{}');
+    	   });
+    
+    	   $('#insert-overrightarrow-btn').on('click', function() {
+    	    insertString('\\overrightarrow{}');
+    	   });
+    
+    	   $('#insert-overleftrightarrow-btn').on('click', function() {
+    	    insertString('\\overleftrightarrow{}');
+    	   });
+    
+    	   $('#insert-arc-btn').on('click', function() {
+    	    insertString('\\overset{\\frown}{}');
+    	   });
+    
+    	   $('#insert-angle-btn').on('click', function() {
+    	    insertString('\\angle{}');
+    	   });
+    
+    	   $('#insert-triangle-btn').on('click', function() {
+    	    insertString('\\triangle{}');
+    	   });
+    
+    	   $('#insert-simequ-btn').on('click', function() {
+    	    insertString('\\begin{cases} {} &{} \\\\ {} &{} \\end{cases}');
+    	   });
+    
+    	   $('#insert-para-btn').on('click', function() {
+    	    insertString('\\parallel ');
+    	   });
+    
+    	   $('#insert-perp-btn').on('click', function() {
+    	    insertString('\\perp ');
+    	   });
+    
+    	   $('#insert-because-btn').on('click', function() {
+    	    insertString('\\because ');
+    	   });
+    
+    	   $('#insert-therefore-btn').on('click', function() {
+    	    insertString('\\therefore ');
+    	   });
+    
+    	   $('#insert-deg-btn').on('click', function() {
+    	    insertString('^{\\circ} ');
+    	   });
+    
+    	   $('#insert-pi-btn').on('click', function() {
+    	    insertString('\\pi ');
+    	   });
+    
+    	   $('#insert-cap-btn').on('click', function() {
+    	    insertString('\\cap ');
+    	   });
+    
+    	   $('#insert-cup-btn').on('click', function() {
+    	    insertString('\\cup ');
+    	   });
+    
+    	   $('#insert-infty-btn').on('click', function() {
+    	    insertString('\\infty');
+    	   });
+    
+    	   $('#insert-lim-btn').on('click', function() {
+    	    insertString('\\lim_{{} \\to {}}');
+    	   });
+    
+    	   $('#insert-log-btn').on('click', function() {
+    	    insertString('\\log_{}');
+    	   });
+    
+    	   $('#insert-vec-btn').on('click', function() {
+    	    insertString('\\vec{} ');
+    	   });
+    
+    	   $('#insert-lefta-btn').on('click', function() {
+    	    insertString('\\leftarrow ');
+    	   });
+    
+    	   $('#insert-righta-btn').on('click', function() {
+    	    insertString('\\rightarrow ');
+    	   });
+    
+    	   $('#insert-upa-btn').on('click', function() {
+    	    insertString('\\uparrow ');
+    	   });
+    
+    	   $('#insert-downa-btn').on('click', function() {
+    	    insertString('\\downarrow ');
+    	   });
+    
+    	   $('#insert-bigbra-btn').on('click', function() {
+    	    insertString('\\\{ \\\}');
+    	   });
+    
+    	   $('#insert-percent-btn').on('click', function() {
+    	    insertString('\\%');
+    	   });
+    
+    	   $('#insert-perth-btn').on('click', function() {
+    	    insertString('‰');
+    	   });
+    
+    	         });
+    
+    	</script>
+    <h1>
+    	編輯區</h1>
+    <div id="clear-btn" onmouseover="this.style.cursor='pointer';" style="text-align: right;">
+    	<span style="color:#ff0000;">清除內容</span></div>
+    <p>
+    	<textarea id="editor" style="width: 100%; height: 200px;"></textarea></p>
+    <p>
+    	<button data-text="\( 數學語法 \)" id="insert-math-btn">插入數學式</button>&nbsp;<button data-text="在行尾加&lt;br&gt;" id="add-br-btn">換行</button>&nbsp;<button data-text="把選項(A)(B)(C)(D)獨立成一行" id="process-btn">選項分行</button></p>
+    <table border="1">
+    	<tbody>
+    		<tr>
+    		</tr>
+    		<tr>
+    			<td>
+    				<h3>
+    					運算符號：</h3>
+    				<button data-text="乘" id="insert-times-btn">\(\times\)</button>&nbsp;<button data-text="除" id="insert-div-btn">\(\div\)</button>&nbsp;<button data-text="加減(正負)" id="insert-pm-btn">\(\pm\)</button><br />
+    				<h3>
+    					關係符號：</h3>
+    				<button data-text="大於等於" id="insert-ge-btn">\(\ge\)</button>&nbsp;<button data-text="小於等於" id="insert-le-btn">\(\le\)</button>&nbsp;<button data-text="不等於" id="insert-ne-btn">\(\ne\)</button>&nbsp;<button data-text="近似於" id="insert-approx-btn">\(\approx\)</button>&nbsp;<button data-text="全等" id="insert-cong-btn">\(\cong\)</button>&nbsp;<button data-text="相似" id="insert-sim-btn">\(\sim\)</button><br />
+    				<h3>
+    					幾何符號：</h3>
+    				<button data-text="角 \angle{頂點}" id="insert-angle-btn">\(\angle\)</button>&nbsp;<button data-text="三角形 \triangle{頂點}" id="insert-triangle-btn">\(\triangle\)</button>&nbsp;<button data-text="平行" id="insert-para-btn">\(\parallel\)</button>&nbsp;<button data-text="垂直" id="insert-perp-btn">\(\perp\)</button>&nbsp;<button data-text="線段 \overline{端點}" id="insert-overline-btn">\(\overline{AB}\)</button>&nbsp;<button data-text="射線 \overrightarrow{端點}" id="insert-overrightarrow-btn">\(\overrightarrow{AB}\)</button>&nbsp;<button data-text="直線 \overleftrightarrow{端點}" id="insert-overleftrightarrow-btn">\(\overleftrightarrow{AB}\)</button>&nbsp;<button data-text="弧 \overset{\frown}{端點}" id="insert-arc-btn">\(\overset{\frown}{AB}\)</button>
+    				<h3>
+    					其他符號：</h3>
+    				<button data-text="因為" id="insert-because-btn">\(\because\)</button>&nbsp;<button data-text="所以" id="insert-therefore-btn">\(\therefore\)</button>&nbsp;<button data-text="度" id="insert-deg-btn">\(^{\circ}\)</button>&nbsp;<button data-text="圓週率" id="insert-pi-btn">\(\pi\)</button>&nbsp;<button data-text="交集" id="insert-cap-btn">\(\cap\)</button>&nbsp;<button data-text="聯集" id="insert-cup-btn">\(\cup\)</button>&nbsp;<button data-text="無限" id="insert-infty-btn">\(\infty\)</button>&nbsp;<button data-text="向量 \vec{代號}" id="insert-vec-btn">\(\vec{a}\)</button><br />
+    				<button data-text="右箭頭" id="insert-righta-btn">\(\rightarrow\)</button>&nbsp;<button data-text="左箭頭" id="insert-lefta-btn">\(\leftarrow\)</button>&nbsp;<button data-text="上箭頭" id="insert-upa-btn">\(\uparrow\)</button>&nbsp;<button data-text="下箭頭" id="insert-downa-btn">\(\downarrow\)</button>&nbsp;<button data-text="百分率" id="insert-percent-btn">\(\%\)</button>&nbsp;<button data-text="千分率" id="insert-perth-btn">\(&permil;\)</button>&nbsp;<button data-text="大括號" id="insert-bigbra-btn">\(\{ \}\)</button></td>
+    			<td>
+    				<h3>
+    					運算式</h3>
+    				<button data-text="\frac{分子}{分母}" id="insert-frac-btn">分數</button><br />
+    				<button data-text="\sqrt{數字}" id="insert-sqrt-btn">根號</button><br />
+    				<button data-text="\sqrt[開方數]{數字}" id="insert-sqrtn-btn">n次方根</button><br />
+    				<button data-text="^{指數}" id="insert-exp-btn">上標</button><br />
+    				<button data-text="_{底數}" id="insert-lower-btn">下標</button><br />
+    				<button data-text="\begin{cases} {第一式} &amp;{註記} \\ {第二式} &amp;{註記} \end{cases}" id="insert-simequ-btn">聯立方程式</button><br />
+    				<button data-text="\sum_{起點}^{終點}" id="insert-sum-btn">總和</button><br />
+    				<button data-text="\lim_{{起點} \to {終點}}" id="insert-lim-btn">極值</button><br />
+    				<button data-text="\log_{基數/底}" id="insert-log-btn">對數</button></td>
+    		</tr>
+    	</tbody>
+    </table>
+    <p>
+    	<button data-text="開啟 .txt" id="open-btn">開啟草稿</button>&nbsp;<button data-text="存成 .txt" id="savetxt-btn">儲存草稿</button>&nbsp;<button data-text="匯出 .html" id="save-btn">匯出網頁</button></p>
+    <p>
+    	[連結]&nbsp;<a href="https://class.kh.edu.tw/19061/bulletin/msg_view/631" target="_blank">數學課綱與 LaTeX 語法</a>、<a href="https://class.kh.edu.tw/19061/bulletin/msg_view/592" target="_blank">常用的 LaTeX 數學語法</a></p>
+    <h1>
+    	預覽區</h1>
+    <div id="preview" style="width: 100%; height: 200px;">
+    	&nbsp;</div>
+  </body>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>認識倉頡鍵盤(大字+語音)</title>
+  </head>
+  <body>
+<p>
+	<span style="font-size:72px;">請按下倉頡字根：</span></p>
+<div id="output" style="font-size: 150px; text-align: center; color: blue;">
+	&nbsp;</div>
+<p>
+	選擇語音角色：</p>
+<p>
+	<select id="voice-select"></select> <script>
+      // 創建語音合成器對象
+      const synth = window.speechSynthesis;
+
+      // 創建 SpeechRecognition 對象
+      const recognition = new window.webkitSpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = false;
+      recognition.lang = 'zh-TW'; // 設置語言為中文
+
+      // 倉頡對照表
+      const bopomofo = {
+        'q': '手',
+        'a': '日',
+        'w': '田',
+        's': '尸',
+        'x': '難',
+        'e': '水',
+        'd': '木',
+        'c': '金',
+        'r': '口',
+        'f': '火',
+        'v': '女',
+        't': '廿',
+        'g': '土',
+        'b': '月',
+        'y': '卜',
+        'h': '竹',
+        'n': '弓',
+        'u': '山',
+        'j': '十',
+        'm': '一',
+        'i': '戈',
+        'k': '大',
+        'o': '人',
+        'l': '中',
+        'p': '心',
+      };
+
+      // 語音角色列表
+      const voiceSelect = document.getElementById('voice-select');
+      let voices = [];
+
+      // 當語音合成器加載完成時，填充語音角色下拉選單
+      synth.onvoiceschanged = function() {
+        voices = synth.getVoices();
+        voices.forEach(function(voice, index) {
+          const option = document.createElement('option');
+          option.value = index;
+          option.text = `${voice.name} (${voice.lang})`;
+          voiceSelect.appendChild(option);
+        });
+      };
+
+      // 綁定 keydown 事件
+      document.addEventListener('keydown', function(event) {
+        // 顯示按下的按鍵所代表的字根
+        const output = document.getElementById('output');
+        const key = event.key.toLowerCase();
+        if (key in bopomofo) {
+          const bopomofoChar = bopomofo[key];
+          output.innerHTML = `${bopomofoChar}`;
+
+          // 選擇語音角色
+          const selectedVoiceIndex = voiceSelect.value;
+          const selectedVoice = voices[selectedVoiceIndex];
+
+          // 使用語音合成器唸出字根
+          const utterance = new SpeechSynthesisUtterance(bopomofoChar);
+          utterance.voice = selectedVoice;
+          synth.speak(utterance);
+        } else {
+          output.innerHTML = '無字根';
+        }
+      });
+    </script></p>
+
+  </body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>猜數字遊戲</title>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<h1>
+	猜數字遊戲</h1>
+<p>
+	猜一個 4 位數字，每個數字不重複，猜測回饋：A 代表數字對位置也對， B 代表數字對但位置錯誤，例如： 2A1B 表示所猜測的 4 個數字中，2A 代表有 2 個數字正確位置也正確， 1B 代表有 1 個數字正確但位置錯誤。</p>
+<p>
+	<label for="guessInput">輸入你的猜測：</label> <input id="guessInput" inputmode="numeric" maxlength="4" type="text" /><button id="guessButton">猜</button></p>
+<p id="feedback">
+	&nbsp;</p>
+<h2>
+	猜測紀錄</h2>
+<ul id="guessList">
+</ul>
+<script>
+		var answer = generateAnswer();
+		var guessInput = document.getElementById("guessInput");
+		var guessButton = document.getElementById("guessButton");
+		var feedback = document.getElementById("feedback");
+		var guessList = document.getElementById("guessList");
+		var guessHistory = [];
+		var guesses = 0;
+
+		guessButton.addEventListener("click", function() {
+			var guess = guessInput.value.trim();
+			if (validateGuess(guess)) {
+				guesses++;
+				var result = checkGuess(guess);
+				feedback.textContent = result;
+				guessHistory.push(guess + " - " + result);
+				var guessItem = document.createElement("li");
+				guessItem.textContent = guessHistory[guessHistory.length - 1];
+				guessList.appendChild(guessItem);
+				if (result === "4A0B") {
+					feedback.textContent = "恭喜你猜對了！";
+					disableGame();
+				} else if (guesses >= 10) {
+					feedback.textContent = "遊戲結束，答案是 " + answer + "。";
+					disableGame();
+				}
+			} else {
+				alert("請輸入一個 4 位不重複的數字。");
+			}
+			guessInput.value = "";
+			guessInput.focus();
+		});
+
+		guessInput.addEventListener("keyup", function(event) {
+			if (event.keyCode === 13) {
+				event.preventDefault();
+				guessButton.click();
+			}
+		});
+
+		function generateAnswer() {
+			var digits = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"];
+			var answer = "";
+			for (var i = 0; i < 4; i++) {
+				var randomIndex = Math.floor(Math.random() * digits.length);
+				answer += digits[randomIndex];
+				digits.splice(randomIndex, 1);
+			}
+			return answer;
+		}
+
+		function validateGuess(guess) {
+			if (guess.length !== 4) {
+				return false;
+			}
+			for (var i = 0; i < guess.length; i++) {
+				if (guess.indexOf(guess[i]) !== i) {
+					return false;
+			}
+		}
+		return true;
+	}
+
+	function checkGuess(guess) {
+		var correct = 0;
+		var misplaced = 0;
+		for (var i = 0; i < guess.length; i++) {
+			if (guess[i] === answer[i]) {
+				correct++;
+			} else if (answer.indexOf(guess[i]) !== -1) {
+				misplaced++;
+			}
+		}
+		return correct + "A" + misplaced + "B";
+	}
+
+	function disableGame() {
+		guessInput.disabled = true;
+		guessButton.disabled = true;
+	}
+</script>
+</body>
+</html>

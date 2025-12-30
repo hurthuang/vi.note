@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>國字辨識 [9-10]</title>
+  </head>
+  <body>
+	<script>
+		window.onload = function() {
+			// 中文字，可擴充
+			var words = ["便", "前", "型", "孩", "很", "急", "指", "查", "珍", "個", "剛", "夏", "害", "弱", "效", "氣", "泰", "班", "真", "般"];
+
+			// 隨機選取一個字當題目
+			var currentWord = words[Math.floor(Math.random() * words.length)];
+
+			// 取得顯示題目的元素
+			var wordDisplay = document.getElementById("word-display");
+
+			// 設定顯示題目的文字
+			wordDisplay.innerHTML = "<strong>題目：</strong> " + currentWord;
+
+			// 取得答案按鈕
+			var answerBtns = document.querySelectorAll(".answer-btn");
+
+			// 設定每個答案按鈕的文字與點擊事件
+			for (var i = 0; i < answerBtns.length; i++) {
+				var btn = answerBtns[i];
+				btn.addEventListener("click", function() {
+					if (this.textContent === currentWord) {
+						// 如果點選與題目相同的字，則顯示「答對了」並選取下一個題目
+						window.speechSynthesis.speak(new SpeechSynthesisUtterance("答對了"));
+						currentWord = words[Math.floor(Math.random() * words.length)];
+						wordDisplay.innerHTML = "<strong>題目：</strong> " + currentWord;
+						updateAnswerOptions();
+					} else {
+						// 如果點選與題目不同的字，則顯示「答錯了」並保持原題目
+						window.speechSynthesis.speak(new SpeechSynthesisUtterance("答錯了"));
+					}
+				});
+			}
+
+			// 取得字體大小的滑桿
+			var fontSizeSlider = document.getElementById("font-size-slider");
+
+			// 設定滑桿的初始值
+			fontSizeSlider.value = parseInt(window.getComputedStyle(wordDisplay).fontSize);
+
+			// 設定滑桿變動時的事件
+			fontSizeSlider.addEventListener("input", function() {
+				// 更改題目和答案按鈕的字體大小
+				wordDisplay.style.fontSize = fontSizeSlider.value + "px";
+				for (var i = 0; i < answerBtns.length; i++) {
+					answerBtns[i].style.fontSize = fontSizeSlider.value + "px";
+				}
+			// 取得顯示字體大小的元素
+			var fontSizeDisplay = document.getElementById("font-size-display");
+
+			// 更新顯示字體大小的元素內容
+			fontSizeDisplay.textContent = fontSizeSlider.value + "px";
+
+			});
+
+			// 更新答案選項的文字
+			function updateAnswerOptions() {
+				// 隨機選擇除了題目以外的字
+				var otherWords = words.filter(function(word) {
+					return word !== currentWord;
+				});
+				var answerOptions = [currentWord];
+				for (var i = 1; i < answerBtns.length; i++) {
+					var otherWord = otherWords.splice(Math.floor(Math.random() * otherWords.length), 1)[0];
+					answerOptions.push(otherWord);
+				}
+				// 隨機排列答案選項
+				answerOptions.sort(function() {
+					return Math.random() - 0.5;
+			});
+			// 設定每個答案按鈕的文字
+			for (var i = 0; i < answerBtns.length; i++) {
+				var btn = answerBtns[i];
+				btn.textContent = answerOptions[i];
+			}
+		}
+
+		// 初始更新答案選項的文字
+		updateAnswerOptions();
+	}
+</script>
+	<style type="text/css">
+#word-display {
+		font-size: 36px;
+		margin-bottom: 20px;
+	}
+	button {
+		margin-right: 10px;
+		margin-bottom: 10px;
+		font-size: 24px;
+		padding: 10px 20px;
+		border-radius: 5px;
+		background-color: #ddd;
+		border: none;
+		cursor: pointer;
+	}
+	button:hover {
+		background-color: #bbb;
+	}
+	button:active {
+		background-color: #999;
+	}
+	#font-size-slider {
+		margin-bottom: 20px;
+	}	</style>
+<div id="word-display">
+	&nbsp;</div>
+<p>
+	<button class="answer-btn"></button><button class="answer-btn"></button><button class="answer-btn"></button><button class="answer-btn"></button><button class="answer-btn"></button></p>
+<div>
+	<label for="font-size-slider">字體大小：</label> <input id="font-size-slider" max="79" min="8" name="font-size-slider" type="range" value="36" /><span id="font-size-display">36px</span></div>
+  </body>
+</html>

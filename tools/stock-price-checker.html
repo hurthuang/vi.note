@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台灣股票簡易查詢工具</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.1/chart.min.js"></script>
+    <style>
+        /* 保留之前的樣式 */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: 700px;
+            width: 100%;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, button {
+            padding: 5px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #result, #chartContainer, #chartDescription {
+            margin-top: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+        #chartDescription {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" role="main">
+        <h1>台灣股票簡易查詢工具</h1>
+        <p>本工具僅供教學使用</p>
+        <form id="stockForm" aria-labelledby="formTitle">
+            <h2 id="formTitle" class="sr-only">股票查詢表單</h2>
+            <div class="form-group">
+                <label for="symbol">股票代號：</label>
+                <input type="text" id="symbol" placeholder="輸入股票代號（例如：2330）" aria-required="true">
+            </div>
+            <div class="form-group">
+                <label for="queryDate">查詢日期：</label>
+                <input type="date" id="queryDate" aria-required="true">
+            </div>
+            <button type="submit" aria-label="查詢股票資訊">查詢資訊</button>
+        </form>
+        <div id="result" aria-live="polite"></div>
+        <div id="chartContainer">
+            <canvas id="priceChart" aria-label="股票價格走勢圖" role="img"></canvas>
+        </div>
+        <div id="chartDescription" aria-live="polite"></div>
+    </div>
+
+    <script>
+        document.getElementById('queryDate').valueAsDate = new Date();
+        let chart;
+
+        document.getElementById('stockForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            getStockInfo();
+        });
+
+        async function getStockInfo() {
+            const symbol = document.getElementById('symbol').value;
+            const queryDate = new Date(document.getElementById('queryDate').value);
+            const resultDiv = document.getElementById('result');
+            const chartDescriptionDiv = document.getElementById('chartDescription');
+            
+            resultDiv.innerHTML = '<p>正在加載數據，請稍候...</p>';
+            chartDescriptionDiv.innerHTML = '';
+            
+            try {
+                // 獲取股票名稱
+                const nameResponse = await axios.get(`https://www.twse.com.tw/zh/api/codeQuery?query=${symbol}`);
+                const nameData = nameResponse.data;
+                let stockName = "未知";
+                if (nameData.suggestions && nameData.suggestions.length > 0) {
+                    const nameParts = nameData.suggestions[0].split('\t');
+                    if (nameParts.length > 1) {
+                        stockName = nameParts[1];
+                    } else {
+                        throw new Error('無法找到該股票代號');
+                    }
+                } else {
+                    throw new Error('無法找到該股票代號');
+                }
+
+                // 獲取股票數據
+                const processedData = await fetchCrossMonthData(symbol, queryDate);
+                
+                if (processedData.length > 0) {
+                    const targetData = findClosestDate(processedData, queryDate);
+
+                    if (targetData) {
+                        const { date, tradingVolume, tradingValue, openPrice, highestPrice, lowestPrice, closingPrice, change, transactions } = targetData;
+
+                        resultDiv.innerHTML = `
+                            <h2>${symbol} - ${stockName}</h2>
+                            <p>顯示日期：${formatDate(date)}（最接近您查詢的日期）</p>
+                            <table aria-label="股票詳細資訊">
+                                <tr><th>收盤價</th><td>${closingPrice}</td></tr>
+                                <tr><th>漲跌價差</th><td>${change}</td></tr>
+                                <tr><th>開盤價</th><td>${openPrice}</td></tr>
+                                <tr><th>最高價</th><td>${highestPrice}</td></tr>
+                                <tr><th>最低價</th><td>${lowestPrice}</td></tr>
+                                <tr><th>成交股數</th><td>${tradingVolume}</td></tr>
+                                <tr><th>成交金額</th><td>${tradingValue}</td></tr>
+                                <tr><th>成交筆數</th><td>${transactions}</td></tr>
+                            </table>
+                        `;
+
+                        updateChart(processedData, targetData.date);
+                    } else {
+                        resultDiv.innerHTML = '<p class="error">在選擇的日期範圍內沒有找到有效的交易數據。</p>';
+                    }
+                } else {
+                    resultDiv.innerHTML = '<p class="error">無法獲取股票資訊。請確保您輸入了正確的股票代號和有效的交易日期。</p>';
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                resultDiv.innerHTML = `<p class="error">發生錯誤：${error.message || '未知錯誤'}。請稍後再試。</p>`;
+            }
+        }
+
+        async function fetchCrossMonthData(symbol, queryDate) {
+            const months = [-1, 0, 1];  // 前一個月、當前月、下一個月
+            let allData = [];
+
+            for (const monthOffset of months) {
+                const date = new Date(queryDate.getFullYear(), queryDate.getMonth() + monthOffset, 1);
+                const formattedDate = `${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, '0')}01`;
+                try {
+                    const response = await axios.get(`https://www.twse.com.tw/rwd/zh/afterTrading/STOCK_DAY`, {
+                        params: {
+                            date: formattedDate,
+                            stockNo: symbol,
+                            response: 'json'
+                        }
+                    });
+                    if (response.data.stat === 'OK' && response.data.data) {
+                        allData = allData.concat(response.data.data);
+                    }
+                } catch (error) {
+                    console.error(`Error fetching data for ${formattedDate}:`, error);
+                }
+            }
+
+            return processData(allData);
+        }
+
+        function processData(data) {
+            return data.map(item => {
+                const [dateStr, tradingVolume, tradingValue, openPrice, highestPrice, lowestPrice, closingPrice, change, transactions] = item;
+                const [year, month, day] = dateStr.split('/').map(num => parseInt(num));
+                const date = new Date(year + 1911, month - 1, day);  // 轉換民國年到西元年
+                return {
+                    date,
+                    tradingVolume: parseFloat(tradingVolume.replace(/,/g, '')),
+                    tradingValue: parseFloat(tradingValue.replace(/,/g, '')),
+                    openPrice: parseFloat(openPrice.replace(/,/g, '')),
+                    highestPrice: parseFloat(highestPrice.replace(/,/g, '')),
+                    lowestPrice: parseFloat(lowestPrice.replace(/,/g, '')),
+                    closingPrice: parseFloat(closingPrice.replace(/,/g, '')),
+                    change,
+                    transactions: parseFloat(transactions.replace(/,/g, ''))
+                };
+            }).filter(item => 
+                !isNaN(item.closingPrice) && 
+                item.closingPrice > 0 && 
+                item.tradingVolume > 0 && 
+                item.tradingValue > 0 &&
+                item.transactions > 0 &&
+                item.openPrice > 0 &&
+                item.highestPrice > 0 &&
+                item.lowestPrice > 0
+            ).sort((a, b) => a.date - b.date);
+        }
+
+        function findClosestDate(data, targetDate) {
+            return data.reduce((closest, current) => {
+                const currentDiff = Math.abs(current.date - targetDate);
+                const closestDiff = Math.abs(closest.date - targetDate);
+                return currentDiff < closestDiff ? current : closest;
+            });
+        }
+
+        function updateChart(data, targetDate) {
+            const ctx = document.getElementById('priceChart').getContext('2d');
+            const chartDescriptionDiv = document.getElementById('chartDescription');
+            
+            const targetIndex = data.findIndex(item => item.date.getTime() === targetDate.getTime());
+            const startIndex = Math.max(0, targetIndex - 5);
+            const endIndex = Math.min(data.length - 1, startIndex + 10);
+            const relevantData = data.slice(startIndex, endIndex + 1);
+
+            const labels = relevantData.map(item => formatDate(item.date));
+            const prices = relevantData.map(item => item.closingPrice);
+
+            if (chart) {
+                chart.destroy();
+            }
+
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '收盤價',
+                        data: prices,
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1,
+                        pointBackgroundColor: relevantData.map(item => 
+                            item.date.getTime() === targetDate.getTime() ? 'red' : 'rgb(75, 192, 192)'
+                        ),
+                        pointRadius: relevantData.map(item => 
+                            item.date.getTime() === targetDate.getTime() ? 6 : 3
+                        )
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '股票價格走勢圖'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const dataIndex = context.dataIndex;
+                                    const data = relevantData[dataIndex];
+                                    return [
+                                        `日期: ${formatDate(data.date)}`,
+                                        `收盤價: ${data.closingPrice.toFixed(2)}`,
+                                        `開盤價: ${data.openPrice.toFixed(2)}`,
+                                        `最高價: ${data.highestPrice.toFixed(2)}`,
+                                        `最低價: ${data.lowestPrice.toFixed(2)}`,
+                                        `成交量: ${data.tradingVolume.toLocaleString()}`
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false
+                        }
+                    }
+                }
+            });
+
+            // 生成並顯示圖表描述
+            let descriptionText = `股票價格走勢圖顯示了從 ${formatDate(relevantData[0].date)} 到 ${formatDate(relevantData[relevantData.length - 1].date)} 的收盤價變化。\n`;
+            descriptionText += `在此期間，最低收盤價為 ${Math.min(...prices).toFixed(2)}，最高收盤價為 ${Math.max(...prices).toFixed(2)}。\n`;
+            descriptionText += `逐日收盤價如下：\n`;
+            
+            relevantData.forEach(item => {
+                descriptionText += `${formatDate(item.date)}: ${item.closingPrice.toFixed(2)}元\n`;
+            });
+
+            chartDescriptionDiv.textContent = descriptionText;
+        }
+
+        function formatDate(date) {
+            return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
+        }
+    </script>
+</body>
+</html>

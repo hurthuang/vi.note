@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <title>HTML 編輯器</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+        #editor, #htmlcode {
+            width: 45%;
+            height: 300px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            overflow-y: auto;
+        }
+        #htmlcode {
+            white-space: pre-wrap;
+            overflow-wrap: break-word;
+        }
+        .toolbar {
+            margin-bottom: 10px;
+        }
+        .toolbar select, .toolbar button {
+            margin: 2px;
+        }
+        button {
+            width: auto;
+            height: 30px;
+            padding: 2px 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>HTML 編輯器</h1>
+    
+    <div class="toolbar">
+        <button onclick="openFile()" title="開啟檔案"><i class="fas fa-folder-open"></i></button>
+        <button onclick="saveFile()" title="儲存檔案"><i class="fas fa-save"></i></button>
+        <select onchange="formatDoc('formatblock', this.value)">
+            <option value="">格式</option>
+            <option value="<h1>">標題 1</option>
+            <option value="<h2>">標題 2</option>
+            <option value="<h3>">標題 3</option>
+            <option value="<p>">段落</option>
+        </select>
+        <select onchange="formatDoc(this.value)">
+            <option value="">對齊</option>
+            <option value="justifyLeft">靠左</option>
+            <option value="justifyCenter">置中</option>
+            <option value="justifyRight">靠右</option>
+            <option value="justifyFull">兩端對齊</option>
+        </select>
+        <button onclick="formatDoc('bold')" title="粗體"><i class="fas fa-bold"></i></button>
+        <button onclick="formatDoc('italic')" title="斜體"><i class="fas fa-italic"></i></button>
+        <button onclick="formatDoc('underline')" title="底線"><i class="fas fa-underline"></i></button>
+        <button onclick="formatDoc('removeFormat')" title="清除格式"><i class="fas fa-remove-format"></i></button><br>
+        <button onclick="formatDoc('undo')" title="復原"><i class="fas fa-undo"></i></button>
+        <button onclick="formatDoc('redo')" title="取消復原"><i class="fas fa-redo"></i></button>
+        <button onclick="findAndReplace()" title="尋找與取代"><i class="fas fa-search"></i></button>
+        <button onclick="insertTable()" title="插入表格"><i class="fas fa-table"></i></button>
+        <button onclick="formatDoc('insertunorderedlist')" title="無序列表"><i class="fas fa-list-ul"></i></button>
+        <button onclick="formatDoc('insertorderedlist')" title="有序列表"><i class="fas fa-list-ol"></i></button>
+        <button onclick="formatDoc('indent')" title="縮排"><i class="fas fa-indent"></i></button>
+        <button onclick="formatDoc('outdent')" title="減少縮排"><i class="fas fa-outdent"></i></button>
+        <button onclick="insertElement('img')" title="插入圖片"><i class="fas fa-image"></i></button>
+        <button onclick="insertElement('a')" title="插入鏈接"><i class="fas fa-link"></i></button>
+        <button onclick="insertElement('iframe')" title="插入 iframe"><i class="fas fa-window-maximize"></i></button>
+    </div>
+    
+    <div class="container">
+        <div contenteditable="true" id="editor" oninput="updateHtmlCode()"></div>
+        <textarea id="htmlcode" oninput="updateEditor()"></textarea>
+    </div>
+
+    <script>
+        function formatDoc(cmd, value = null) {
+            document.execCommand(cmd, false, value);
+            document.getElementById("editor").focus();
+            updateHtmlCode();
+        }
+
+        function updateHtmlCode() {
+            var editorContent = document.getElementById('editor').innerHTML;
+            var formattedHtml = formatHtml(editorContent);
+            document.getElementById('htmlcode').value = formattedHtml;
+        }
+
+        function updateEditor() {
+            var htmlContent = document.getElementById('htmlcode').value;
+            document.getElementById('editor').innerHTML = htmlContent;
+            ensureParagraph();
+        }
+
+        function formatHtml(html) {
+            var formatted = '';
+            var reg = /(>)(<)(\/*)/g;
+            html = html.replace(reg, '$1\r\n$2$3');
+            var pad = 0;
+            html.split('\r\n').forEach(function(node) {
+                var indent = 0;
+                if (node.match(/.+<\/\w[^>]*>$/)) {
+                    indent = 0;
+                } else if (node.match(/^<\/\w/)) {
+                    if (pad != 0) pad -= 1;
+                } else if (node.match(/^<\w[^>]*[^\/]>.*$/)) {
+                    indent = 1;
+                } else {
+                    indent = 0;
+                }
+                var padding = '';
+                for (var i = 0; i < pad; i++) {
+                    padding += '  ';
+                }
+                formatted += padding + node + '\r\n';
+                pad += indent;
+            });
+            return formatted;
+        }
+
+        function findAndReplace() {
+            var find = prompt("請輸入要查找的文字:");
+            if (find) {
+                var replace = prompt("請輸入要替換的文字:");
+                var content = document.getElementById('editor').innerHTML;
+                content = content.replace(new RegExp(find, 'g'), replace);
+                document.getElementById('editor').innerHTML = content;
+                updateHtmlCode();
+            }
+        }
+
+        function insertTable() {
+            var rows = prompt("請輸入行數:", "2");
+            var cols = prompt("請輸入列數:", "2");
+            if (rows && cols) {
+                var table = '<table border="1">';
+                for (var i = 0; i < rows; i++) {
+                    table += '<tr>';
+                    for (var j = 0; j < cols; j++) {
+                        table += '<td>&nbsp;</td>';
+                    }
+                    table += '</tr>';
+                }
+                table += '</table>';
+                formatDoc('insertHTML', table);
+            }
+        }
+
+        function insertElement(type) {
+            let value = '';
+            if (type === 'img') {
+                value = prompt('請輸入圖片URL:');
+                if (value) {
+                    document.execCommand('insertImage', false, value);
+                }
+            } else if (type === 'a') {
+                value = prompt('請輸入鏈接URL:');
+                if (value) {
+                    document.execCommand('createLink', false, value);
+                }
+            } else if (type === 'iframe') {
+                let src = prompt('請輸入 iframe 的 src:');
+                let width = prompt('請輸入 iframe 的寬度:', '560');
+                let height = prompt('請輸入 iframe 的高度:', '315');
+                if (src) {
+                    let iframeHtml = `<iframe src="${src}" width="${width}" height="${height}" frameborder="0" allowfullscreen></iframe>`;
+                    document.execCommand('insertHTML', false, iframeHtml);
+                }
+            }
+            updateHtmlCode();
+        }
+
+        function ensureParagraph() {
+            var editor = document.getElementById('editor');
+            if (editor.innerHTML.trim() === '') {
+                editor.innerHTML = '<p><br></p>';
+            }
+        }
+
+        function openFile() {
+            var input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.html, .htm';
+            input.onchange = function(e) {
+                var file = e.target.files[0];
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('editor').innerHTML = e.target.result;
+                    updateHtmlCode();
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        function saveFile() {
+            var content = document.getElementById('htmlcode').value;
+            var blob = new Blob([content], {type: 'text/html'});
+            var a = document.createElement('a');
+            a.download = 'document.html';
+            a.href = URL.createObjectURL(blob);
+            a.click();
+        }
+
+        // 初始化編輯器
+        ensureParagraph();
+        updateHtmlCode();
+
+        // 確保按 Enter 鍵時創建新段落或列表項
+        document.getElementById('editor').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                var selection = window.getSelection();
+                var range = selection.getRangeAt(0);
+                var startNode = range.startContainer;
+                
+                // 檢查是否在列表中
+                var inList = false;
+                var node = startNode;
+                while (node !== this) {
+                    if (node.nodeName === 'UL' || node.nodeName === 'OL') {
+                        inList = true;
+                        break;
+                    }
+                    node = node.parentNode;
+                }
+
+                if (!inList) {
+                    e.preventDefault();
+                    document.execCommand('insertParagraph', false);
+                    document.execCommand('formatBlock', false, 'p');
+                }
+                updateHtmlCode();
+            }
+        });
+
+        // 監聽編輯器的內容變化
+        document.getElementById('editor').addEventListener('input', function() {
+            ensureParagraph();
+        });
+    </script>
+</body>
+</html>

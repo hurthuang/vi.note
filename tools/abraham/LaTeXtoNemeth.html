@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LaTeX to Nemeth Converter</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="abraham.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .container { display: flex; gap: 20px; }
+        .column { flex: 1; }
+        textarea { width: 100%; height: 200px; font-size: 16px; }
+        #preview, #output { border: 1px solid #ddd; min-height: 200px; white-space: pre-wrap; }
+        #output { font-family: monospace; }
+        #mode { font-weight: bold; }
+        #fontSizeControl { margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1>LaTeX to Nemeth Converter</h1>
+    
+	<div id="fontSizeControl">
+	  文字大小: <span id="fontSizeDisplay">16px</span>
+	  <input type="range" id="fontSizeSlider" min="8" max="32" value="16" step="1">
+	</div>
+    
+    <div class="container">
+        <div class="column">
+            <h2>Input (LaTeX)</h2>
+            <textarea id="input" placeholder="Enter LaTeX here... Use \( and \) to enclose math expressions" oninput="convert()"></textarea>
+        </div>
+        <div class="column">
+            <h2>Preview</h2>
+            <div id="preview" style="height: 200px; overflow-y: auto;"></div>
+        </div>
+    </div>
+    <h2>Nemeth Output</h2>
+    <pre id="output" style="height: 200px; overflow-y: auto;"></pre>
+    
+    <div>
+        <button onclick="copyToClipboard()">複製到剪貼簿</button>
+        <button onclick="saveToFile()">存檔</button>
+    </div>
+
+    <script>
+        let previousInput = '';
+        let fontSize = 16;
+
+		const fontSizeSlider = document.getElementById('fontSizeSlider');
+		const fontSizeDisplay = document.getElementById('fontSizeDisplay');
+		const elementsToResize = document.querySelectorAll('#output, #input');
+
+		fontSizeSlider.addEventListener('input', function() {
+		  const fontSize = this.value;
+		  fontSizeDisplay.textContent = fontSize + 'px';
+		  
+		  // 更改實際字體大小
+		  elementsToResize.forEach(element => {
+			element.style.fontSize = fontSize + 'px';
+		  });
+		});
+
+        function convert() {
+            const input = document.getElementById('input').value;
+            if (input === previousInput) return;
+
+            try {
+                let output = '';
+                let previewHtml = '';
+                let lastIndex = 0;
+                const regex = /\\\((.*?)\\\)/g;
+                let match;
+
+                while ((match = regex.exec(input)) !== null) {
+                    // Add text before the match
+                    output += input.slice(lastIndex, match.index);
+                    previewHtml += input.slice(lastIndex, match.index);
+
+                    // Convert LaTeX to Nemeth
+                    const result = Abraham.latexToNemeth(match[1]);
+                    if (result.isError) {
+                        throw new Error(result.error.message);
+                    }
+                    output += result.value;
+                    previewHtml += '\\(' + match[1] + '\\)';
+
+                    lastIndex = regex.lastIndex;
+                }
+
+                // Add any remaining text
+                output += input.slice(lastIndex);
+                previewHtml += input.slice(lastIndex);
+
+                document.getElementById('output').textContent = output;
+                document.getElementById('preview').innerHTML = previewHtml;
+                MathJax.typesetPromise([document.getElementById('preview')])
+                    .catch((err) => console.log('Typeset failed: ' + err.message));
+            } catch (error) {
+                document.getElementById('output').textContent = 'Error: ' + error.message;
+                document.getElementById('preview').innerHTML = 'Error in conversion';
+            }
+
+            previousInput = input;
+        }
+
+        function copyToClipboard() {
+            const output = document.getElementById('output');
+            navigator.clipboard.writeText(output.textContent)
+                .then(() => alert('已複製到剪貼簿'))
+                .catch(err => console.error('複製失敗: ', err));
+        }
+
+        function saveToFile() {
+            const output = document.getElementById('output').textContent;
+            const blob = new Blob([output], {type: 'text/plain'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'nemeth_output.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function changeFontSize(delta) {
+            fontSize += delta;
+            document.getElementById('input').style.fontSize = `${fontSize}px`;
+            document.getElementById('output').style.fontSize = `${fontSize}px`;
+            document.getElementById('fontSizeDisplay').textContent = `${fontSize}px`;
+        }
+
+        // Initial conversion
+        convert();
+    </script>
+</body>
+</html>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>簡易報讀編輯器</title>
+    <!-- The style.css file allows you to change the look of your web pages.
+         If you include the next line in all your web pages, they will all share the same look.
+         This makes it easier to make new pages for your site. -->
+    <link href="/style.css" rel="stylesheet" type="text/css" media="all">
+  </head>
+  <body>
+    <h1>
+    	說明</h1>
+    <p>
+    	本頁面使用 Web Speech API 將編輯器中的文字報讀出來，可調整文字大小，也可開啟與儲存文字檔，大部份瀏覽器可直接使用，不需額外安裝軟體。</p>
+    <p>
+    	按下報讀後，從文字游標所在處向後報讀，可暫停、繼續與停止；調整語音、語速與音調功能，需先停止報讀，調整後再重新報讀。</p>
+    <p>
+    	使用 Microsoft Edge 瀏覽器可體驗更多 Natural Online 的語音。</p>
+    <p>
+    	&nbsp;</p>
+    <h1>
+    	編輯器</h1>
+    <p>
+    	開啟舊檔：<input id="myfile" type="file" /></p>
+    <p>
+    	<textarea id="fileContent" style="width:100%;height:300px;font-size:20px;"></textarea></p>
+    <h2>
+    	語音控制</h2>
+    <p>
+    	<button id="speak-btn">報讀</button>&nbsp;<button id="pause-btn">暫停/繼續</button>&nbsp;<button id="stop-btn">停止</button>&nbsp;<button id="faster-button">加快</button>&nbsp;<button id="slower-button">放慢</button>&nbsp;<button id="pitch-up-button">Pitch Up</button>&nbsp;<button id="pitch-down-button">Pitch Down</button>&nbsp;<button id="tspeak-button">邊打邊唸</button></p>
+    <p>
+    	<label for="voice-select">語音：</label> <select id="voice-select"> </select></p>
+    <h2>
+    	排版功能</h2>
+    <p>
+    	<button onclick="javascript:increaseFontSize();">字體放大</button>&nbsp;<button onclick="javascript:decreaseFontSize();">字體縮小</button>&nbsp;字體大小：<label id="showPi" style="color:#0000ff;">20px</label></p>
+    <p>
+    	<button onclick="processText()">選項斷行</button>整理試題適用&nbsp;<button onclick="punctuationA()">標點斷行</button>語音報讀適用&nbsp;<button onclick="punctuationB()">標點斷行</button>製作字幕適用(刪除標點符號)</p>
+    <p>
+    	儲存檔案：請輸入存檔檔名&nbsp;<input id="inputFileNameToSaveAs" />&nbsp;<button onclick="saveTextAsFile()">存檔</button></p>
+    <script>
+    
+    	        const textArea = document.getElementById('fileContent');
+    	        const speakButton = document.getElementById('speak-btn');
+    	        const pauseResumeButton = document.getElementById('pause-btn');
+    	        const stopButton = document.getElementById('stop-btn');
+    	        const fasterButton = document.querySelector('#faster-button');
+    	        const slowerButton = document.querySelector('#slower-button');
+    	        const pitchUpButton = document.querySelector('#pitch-up-button');
+    	        const pitchDownButton = document.querySelector('#pitch-down-button');
+    	        const voiceSelect = document.querySelector('#voice-select');
+    	        const editableTextarea = document.querySelector('#fileContent');
+    	        const tspeakButton = document.querySelector('#tspeak-button');
+    	        let utterance = null;
+    	        let isPaused = false;
+    	        let rate = 1.0;
+    	        let pitch = 1.0;
+    
+    	    const speakLastChar = () => {
+    	      const lastChar = editableTextarea.value.slice(-1);
+    	      const isChineseChar = /^[\u4e00-\u9fa5]$/.test(lastChar);
+    	      const isEnglishChar = /^[A-Za-z]$/.test(lastChar);
+    	      if (isChineseChar) {
+    	        utterance = new SpeechSynthesisUtterance(lastChar);
+    	          utterance.rate = rate;
+    	          utterance.pitch = pitch;
+    	          const selectedVoice = voiceSelect.selectedOptions[0].getAttribute('data-name');
+    	          const voices = window.speechSynthesis.getVoices();
+    	          for (let i = 0; i < voices.length; i++) {
+    	            if (voices[i].name === selectedVoice) {
+    	              utterance.voice = voices[i];
+    	            }
+    	          }
+    
+    	        window.speechSynthesis.speak(utterance);
+    	      } else if (isEnglishChar) {
+    	        utterance = new SpeechSynthesisUtterance(lastChar.toLowerCase());
+    	        window.speechSynthesis.speak(utterance);
+    	      }
+    	    };
+    
+    	    editableTextarea.addEventListener('input', () => {
+    	      stop();
+    	      speakLastChar();
+    	    });
+    
+    	    tspeakButton.addEventListener('click', speakLastChar);
+    
+    	        speakButton.addEventListener('click', () => {
+    	          const selectedText = textArea.value.slice(textArea.selectionStart);
+    	          if (!selectedText) {
+    	            return;
+    	          }
+    
+    	          if (utterance) {
+    	            window.speechSynthesis.cancel();
+    	          }
+    
+    	          utterance = new SpeechSynthesisUtterance(selectedText);
+    	          utterance.rate = rate;
+    	          utterance.pitch = pitch;
+    	          const selectedVoice = voiceSelect.selectedOptions[0].getAttribute('data-name');
+    	          const voices = window.speechSynthesis.getVoices();
+    	          for (let i = 0; i < voices.length; i++) {
+    	            if (voices[i].name === selectedVoice) {
+    	              utterance.voice = voices[i];
+    	            }
+    	          }
+    
+    
+    	          utterance.addEventListener('end', () => {
+    	            utterance = null;
+    	          });
+    
+    	          window.speechSynthesis.speak(utterance);
+    	        });
+    
+    	        pauseResumeButton.addEventListener('click', () => {
+    	          if (utterance) {
+    	            if (isPaused) {
+    	              window.speechSynthesis.resume();
+    	              isPaused = false;
+    	            } else {
+    	              window.speechSynthesis.pause();
+    	              isPaused = true;
+    	            }
+    	          }
+    	        });
+    
+    	        stopButton.addEventListener('click', () => {
+    	          if (utterance) {
+    	            window.speechSynthesis.cancel();
+    	            utterance = null;
+    	          }
+    	        });
+    
+    	   fasterButton.addEventListener('click', () => {
+    	    rate += 1.0;
+    	    if (utterance) {
+    	      utterance.rate = rate;
+    	    }
+    	   });
+    
+    	   slowerButton.addEventListener('click', () => {
+    	    rate -= 1.0;
+    	    if (utterance) {
+    	      utterance.rate = rate;
+    	    }
+    	   });
+    
+    	   pitchUpButton.addEventListener('click', () => {
+    	    pitch += 0.5;
+    	   });
+    
+    	   pitchDownButton.addEventListener('click', () => {
+    	    pitch -= 0.5;
+    	   });
+    
+    	   function populateVoiceList() {
+    	    const voices = window.speechSynthesis.getVoices();
+    	    for (let i = 0; i < voices.length; i++) {
+    	      const option = document.createElement('option');
+    	      option.textContent = `${voices[i].name} (${voices[i].lang})`;
+    	      option.setAttribute('data-lang', voices[i].lang);
+    	      option.setAttribute('data-name', voices[i].name);
+    	      voiceSelect.appendChild(option);
+    	    }
+    	   }
+    
+    	   populateVoiceList();
+    
+    	   if (speechSynthesis.onvoiceschanged !== undefined) {
+    	    speechSynthesis.onvoiceschanged = populateVoiceList;
+    	   }
+    
+    	</script><script>
+    	   window.onload = function () {
+    	      document.getElementById('myfile').onchange = readFile;
+    	   };
+    	   function readFile() {
+    	      file = this.files[0];
+    	      var fReader = new FileReader();           
+    	      fReader.onload = function (event) {
+    	          document.getElementById('fileContent').value = event.target.result;
+    	      };
+    	      fReader.readAsText(file);
+    	   }
+    
+    	</script><script type="text/javascript">
+    
+    	   function saveTextAsFile()
+    	   {
+    	      var textToSave = document.getElementById("fileContent").value;
+    	      var textToSaveAsBlob = new Blob([textToSave], {type:"text/plain"});
+    	      var textToSaveAsURL = window.URL.createObjectURL(textToSaveAsBlob);
+    	      var fileNameToSaveAs = document.getElementById("inputFileNameToSaveAs").value;
+    
+    	      var downloadLink = document.createElement("a");
+    	      downloadLink.download = fileNameToSaveAs;
+    	      downloadLink.innerHTML = "Download File";
+    	      downloadLink.href = textToSaveAsURL;
+    	      downloadLink.onclick = destroyClickedElement;
+    	      downloadLink.style.display = "none";
+    	      document.body.appendChild(downloadLink);
+    
+    	      downloadLink.click();
+    	   }
+    
+    	   function destroyClickedElement(event)
+    	   {
+    	      document.body.removeChild(event.target);
+    	   }
+    
+    	   function loadFileAsText()
+    	   {
+    	      var fileToLoad = document.getElementById("fileToLoad").files[0];
+    
+    	      var fileReader = new FileReader();
+    	      fileReader.onload = function(fileLoadedEvent) 
+    	      {
+    	          var textFromFileLoaded = fileLoadedEvent.target.result;
+    	          document.getElementById("fileContent").value = textFromFileLoaded;
+    	      };
+    	      fileReader.readAsText(fileToLoad, "UTF-8");
+    	   }
+    
+    	</script><script language="JavaScript" type="text/javascript">
+    	   var min=12;
+    	   var max=250;
+    	   function increaseFontSize() {
+    	     var p = document.getElementsByTagName('textarea');
+    	     for(i=0;i<p.length;i++) {
+    	        if(p[i].style.fontSize) {
+    	           var s = parseInt(p[i].style.fontSize.replace("px",""));
+    	        } else {
+    	           var s = 12;
+    	        }
+    	        if(s!=max) {
+    	           s += 2;
+    	        }
+    	        p[i].style.fontSize = s+"px";
+    	        document.getElementById('showPi').innerHTML = s+"px";
+    	     }
+    	   }
+    	   function decreaseFontSize() {
+    	     var p = document.getElementsByTagName('textarea');
+    	     for(i=0;i<p.length;i++) {
+    	        if(p[i].style.fontSize) {
+    	           var s = parseInt(p[i].style.fontSize.replace("px",""));
+    	        } else {
+    	           var s = 12;
+    	        }
+    	        if(s!=min) {
+    	           s -= 2;
+    	        }
+    	        p[i].style.fontSize = s+"px"
+    	        document.getElementById('showPi').innerHTML = s+"px";
+    	     }   
+    	   }
+    
+    	</script><script>
+    	function processText() {
+    	 var textarea = document.getElementById("fileContent");
+    	 var text = textarea.value;
+    	 var index = 65; // ASCII碼中65表示字母"A"
+    	 text = text.replace(/（/g, "(");
+    	 text = text.replace(/）/g, ")");
+    	 text = text.replace(/Ａ/g, "A");
+    	 text = text.replace(/Ｂ/g, "B");
+    	 text = text.replace(/Ｃ/g, "C");
+    	 text = text.replace(/Ｄ/g, "D");
+    	 text = text.replace(/\s*\([A-D]\)\s*/g, function(match) {
+    	   return "\n" + match;
+    	 });
+    
+    	 text = text.replace(/　/g, " ");
+    	 text = text.replace(/ {2}/g, " ");
+    	 text = text.replace(/	/g, " ");
+    
+    	 // Add an extra newline after each line containing "(D)"
+    	 text = text.replace(/\(D\).*/g, function(match) {
+    	   return match + "\n";
+    	 });
+    
+    	 textarea.value = text;
+    	}
+    
+    	          function punctuationA() {
+    	              var textarea = document.getElementById("fileContent");
+    	              var text = textarea.value;
+    	              text = text.replace(/[，；。？！]\s*/g, function(match) {
+    	                  return match + "\n";
+    	              });
+    	              text = text.replace(/\n/g, "\n");
+    	              textarea.value = text;
+    	          }
+    
+    	          function punctuationB() {
+    	              var textarea = document.getElementById("fileContent");
+    	              var text = textarea.value;
+    	              text = text.replace(/[，；。？！]\s*/g, function(match) {
+    	                  return "\n";
+    	              });
+    	              text = text.replace(/\n/g, "\n");
+    	              textarea.value = text;
+    	          }
+    	</script>
+  </body>
+</html>

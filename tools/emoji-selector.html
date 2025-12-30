@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>無障礙 Emoji 選擇器</title>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@^1/index.js"></script>
+    <style>
+        #status {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        emoji-picker {
+            --num-columns: 8;
+            --category-emoji-size: 1.5rem;
+            --emoji-size: 3rem;
+            --input-font-size: 1rem;
+            --input-line-height: 1.5;
+            --input-padding: 0.5rem;
+            width: 100%;
+            max-width: 600px;
+        }
+        #copy-textarea {
+            position: absolute;
+            left: -9999px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Emoji 選擇器</h1>
+    <emoji-picker></emoji-picker>
+    <div id="status" aria-live="polite"></div>
+    <textarea id="copy-textarea" aria-hidden="true"></textarea>
+
+    <script>
+        const picker = document.querySelector('emoji-picker');
+        const statusDiv = document.getElementById('status');
+        const copyTextarea = document.getElementById('copy-textarea');
+
+        picker.addEventListener('emoji-click', event => {
+            const emoji = event.detail.unicode;
+            copyEmoji(emoji);
+        });
+
+        function copyEmoji(emoji) {
+            // 首先嘗試使用 Clipboard API
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(emoji).then(() => {
+                    updateStatus(`已複製 ${emoji} 到剪貼簿`);
+                }).catch(err => {
+                    console.error('Clipboard API 複製失敗:', err);
+                    fallbackCopyEmoji(emoji);
+                });
+            } else {
+                fallbackCopyEmoji(emoji);
+            }
+        }
+
+        function fallbackCopyEmoji(emoji) {
+            copyTextarea.value = emoji;
+            copyTextarea.select();
+            
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    updateStatus(`已複製 ${emoji} 到剪貼簿`);
+                } else {
+                    throw new Error('複製命令未成功執行');
+                }
+            } catch (err) {
+                console.error('Fallback 複製失敗:', err);
+                updateStatus('複製失敗，請手動複製');
+            }
+            
+            // 清除選擇
+            window.getSelection().removeAllRanges();
+        }
+
+        function updateStatus(message) {
+            statusDiv.textContent = message;
+            setTimeout(() => {
+                statusDiv.textContent = '';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

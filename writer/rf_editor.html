@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>文字調整</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>流動版型與固定版型</title>
+    <!-- The style.css file allows you to change the look of your web pages.
+         If you include the next line in all your web pages, they will all share the same look.
+         This makes it easier to make new pages for your site. -->
+    <link href="/style.css" rel="stylesheet" type="text/css" media="all">
+    <style>
+        /* 初始文本區域樣式 */
+        #text-area {
+            white-space: pre-wrap;
+        }
+        #text-area {
+            white-space: pre-wrap;
+            width: 600px; /* 设置宽度 */
+            height: 200px; /* 设置高度 */
+        }
+    </style>
+    <script>
+        // JavaScript函數，用於調整textarea的文字大小、橫書/直書、流動版面或固定版面
+        function adjustText(action) {
+            var textArea = document.getElementById("text-area");
+
+            if (action === "increaseFontSize") {
+                var currentSize = parseInt(getComputedStyle(textArea).fontSize);
+                textArea.style.fontSize = (currentSize + 2) + "px";
+            } else if (action === "decreaseFontSize") {
+                var currentSize = parseInt(getComputedStyle(textArea).fontSize);
+                textArea.style.fontSize = (currentSize - 2) + "px";
+            } else if (action === "flowLayout") {
+                textArea.style.whiteSpace = "pre-wrap";
+            } else if (action === "fixedLayout") {
+                textArea.style.whiteSpace = "pre";
+            }
+        }
+    </script>
+</head>
+<body>
+    <h2>流動版型與固定版型比較</h2>
+    <p>請點選下方按鈕比較效果(預設為「流動版型」)</p>
+    <textarea id="text-area" rows="10" cols="50">
+流式/流動版型(reflowable layout)：
+可自行調整字體大小，版面會依調整後的字體大字重新配置，適合低視力的視障者放大字體閱讀。
+版式/固定版型(fixed layout)：
+縮放時為整個版面一起放大縮小，放大時易造成文字溢出版面，需移動畫面才能看到完整內容。
+    </textarea>
+    <br>
+    <button onclick="adjustText('increaseFontSize')">放大</button>
+    <button onclick="adjustText('decreaseFontSize')">縮小</button>
+    <button onclick="adjustText('flowLayout')">流動版型</button>
+    <button onclick="adjustText('fixedLayout')">固定版型</button>
+</body>
+</html>

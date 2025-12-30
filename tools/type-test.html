@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>打字練習</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        #text-input, #font-size, #line-width, #start-btn {
+            margin-bottom: 20px;
+        }
+        .practice-line {
+            margin-bottom: 10px;
+        }
+        .target-text {
+            white-space: pre-wrap;
+            margin-bottom: 5px;
+        }
+        .input-field {
+            width: 100%;
+            box-sizing: border-box;
+        }
+        #results {
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        .highlight-error {
+            background-color: #fdd;
+        }
+        .highlight-correct {
+            background-color: #dfd;
+        }
+    </style>
+</head>
+<body>
+    <h1>打字練習</h1>
+    <textarea id="text-input" rows="5" cols="50" placeholder="在此輸入練習文章"></textarea><br>
+    <label for="font-size">字體大小：</label>
+    <input type="number" id="font-size" min="12" max="36" value="18">
+    <label for="line-width">每行字數：</label>
+    <input type="number" id="line-width" min="10" max="50" value="20"><br>
+    <button id="start-btn">開始練習</button>
+    <a id="timer">時間：00:00</a>
+    <a id="progress">進度：0/0</a>
+    <a id="speed">速度：0 字/分鐘</a>
+    <div id="practice-area"></div>
+    <div id="results"></div>
+
+    <script>
+        const textInput = document.getElementById('text-input');
+        const fontSize = document.getElementById('font-size');
+        const lineWidth = document.getElementById('line-width');
+        const startBtn = document.getElementById('start-btn');
+        const practiceArea = document.getElementById('practice-area');
+        const results = document.getElementById('results');
+        const timer = document.getElementById('timer');
+        const progress = document.getElementById('progress');
+        const speed = document.getElementById('speed');
+
+        let startTime, endTime, timerInterval;
+        let currentLineIndex = 0;
+        let lines = [];
+        let totalChars = 0;
+
+        startBtn.addEventListener('click', () => {
+            const text = textInput.value.trim();
+            if (text === '') {
+                alert('請輸入練習文章');
+                return;
+            }
+
+            practiceArea.innerHTML = '';
+            results.innerHTML = '';
+            lines = splitTextIntoLines(text, parseInt(lineWidth.value));
+            currentLineIndex = 0;
+            renderLines();
+
+            startTime = new Date();
+            totalChars = lines.join('').replace(/\n/g, '').length; // 忽略換行符計算
+            updateProgress();
+            startTimer();
+        });
+
+function splitTextIntoLines(text, lineLength) {
+    const lines = [];
+    // 首先，將文本按換行符分割，並過濾掉空行
+    const paragraphs = text.split('\n').filter(p => p.trim() !== '');
+    
+    for (let paragraph of paragraphs) {
+        let currentLine = '';
+        for (let char of paragraph.trim()) {
+            if (currentLine.length < lineLength) {
+                currentLine += char;
+            } else {
+                lines.push(currentLine);
+                currentLine = char;
+            }
+        }
+        if (currentLine) {
+            lines.push(currentLine);
+        }
+        // 在每個段落之後添加一個空行，除非是最後一個段落
+        if (paragraph !== paragraphs[paragraphs.length - 1]) {
+            lines.push('');
+        }
+    }
+    return lines;
+}
+
+function renderLines() {
+    practiceArea.innerHTML = '';
+    lines.forEach((line, index) => {
+        const div = document.createElement('div');
+        div.className = 'practice-line';
+        if (line === '') {
+            // 為空行創建一個隱藏的輸入框
+            div.innerHTML = `
+                <div class="target-text" style="font-size: ${fontSize.value}px; height: ${fontSize.value}px;"></div>
+                <input type="text" class="input-field" style="font-size: ${fontSize.value}px; display: none;" data-index="${index}">
+            `;
+            div.style.marginBottom = '10px';
+        } else {
+            div.innerHTML = `
+                <div class="target-text" style="font-size: ${fontSize.value}px;">${line}</div>
+                <input type="text" class="input-field" style="font-size: ${fontSize.value}px;" data-index="${index}">
+            `;
+        }
+        practiceArea.appendChild(div);
+    });
+
+    const inputs = practiceArea.querySelectorAll('.input-field');
+    inputs.forEach(input => {
+        input.addEventListener('keydown', handleInputKeydown);
+        input.addEventListener('blur', handleInputBlur);
+        input.addEventListener('input', updateLineResult);
+    });
+
+    if (inputs.length > 0) {
+        inputs[0].focus();
+    }
+}
+
+function handleInputKeydown(event) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        const input = event.target;
+        const lineIndex = parseInt(input.dataset.index);
+        const maxLength = lines[lineIndex].length;
+
+        if (input.value.length >= maxLength) {
+            moveToNextLine(lineIndex);
+        }
+    }
+}
+
+function handleInputBlur(event) {
+    const input = event.target;
+    const lineIndex = parseInt(input.dataset.index);
+    const maxLength = lines[lineIndex].length;
+
+    if (input.value.length === maxLength) {
+        moveToNextLine(lineIndex);
+    }
+}
+
+function moveToNextLine(currentIndex) {
+    const inputs = practiceArea.querySelectorAll('.input-field');
+    let nextIndex = currentIndex + 1;
+    while (nextIndex < inputs.length && inputs[nextIndex].style.display === 'none') {
+        nextIndex++;
+    }
+    if (nextIndex < inputs.length) {
+        inputs[nextIndex].focus();
+    } else {
+        endTime = new Date();
+        clearInterval(timerInterval);
+        showResults();
+    }
+    updateProgress();
+}
+
+function updateLineResult(event) {
+    const input = event.target;
+    const lineIndex = parseInt(input.dataset.index);
+    const targetText = lines[lineIndex];
+    const userInput = input.value;
+    let lineResult = '';
+    
+    for (let i = 0; i < targetText.length; i++) {
+        if (i < userInput.length) {
+            if (userInput[i] === targetText[i]) {
+                lineResult += `<span class="highlight-correct">${targetText[i]}</span>`;
+            } else {
+                lineResult += `<span class="highlight-error">${targetText[i]}</span>`;
+            }
+        } else {
+            lineResult += targetText[i];
+        }
+    }
+    
+    const targetTextDiv = input.previousElementSibling;
+    targetTextDiv.innerHTML = lineResult;
+    updateProgress();
+}
+
+function showResults() {
+    const timeTaken = (endTime - startTime) / 1000 / 60; // 分鐘
+    const speedValue = Math.round(totalChars / timeTaken); // 每分鐘中文字數
+
+    let correctChars = 0;
+    let totalTargetChars = 0;
+    const inputs = practiceArea.querySelectorAll('.input-field');
+    inputs.forEach((input, index) => {
+        const targetText = lines[index];
+        const userInput = input.value;
+        
+        if (targetText !== '') {  // 只計算非空行
+            totalTargetChars += targetText.length;
+            for (let i = 0; i < targetText.length; i++) {
+                if (i < userInput.length && userInput[i] === targetText[i]) {
+                    correctChars++;
+                }
+            }
+        }
+    });
+
+    const accuracy = totalTargetChars > 0 ? Math.round((correctChars / totalTargetChars) * 100) : 100;
+
+    results.innerHTML = `
+        練習完成！<br>
+        速度：${speedValue} 字/分鐘<br>
+        正確率：${accuracy}%
+    `;
+
+    // 確保速度顯示正確
+    speed.textContent = `速度：${speedValue} 字/分鐘`;
+}
+
+function startTimer() {
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        const now = new Date();
+        const elapsedTime = Math.floor((now - startTime) / 1000);
+        const minutes = String(Math.floor(elapsedTime / 60)).padStart(2, '0');
+        const seconds = String(elapsedTime % 60).padStart(2, '0');
+        timer.textContent = `時間：${minutes}:${seconds}`;
+        updateSpeed(elapsedTime);
+    }, 1000);
+}
+
+function updateProgress() {
+    let enteredChars = 0;
+    const inputs = practiceArea.querySelectorAll('.input-field');
+    inputs.forEach((input) => {
+        enteredChars += input.value.length;
+    });
+    progress.textContent = `進度：${enteredChars}/${totalChars}`;
+}
+
+function updateSpeed(elapsedTime) {
+    if (elapsedTime > 0) {
+        let enteredChars = 0;
+        const inputs = practiceArea.querySelectorAll('.input-field');
+        inputs.forEach((input) => {
+            enteredChars += input.value.length;
+        });
+        const speedValue = Math.round((enteredChars / elapsedTime) * 60); // 每分鐘字數
+        speed.textContent = `速度：${speedValue} 字/分鐘`;
+    }
+}
+
+fontSize.addEventListener('change', updateFontSize);
+lineWidth.addEventListener('change', () => {
+    if (lines.length > 0) {
+        lines = splitTextIntoLines(textInput.value.trim(), parseInt(lineWidth.value));
+        renderLines();
+    }
+});
+
+function updateFontSize() {
+    const targetTexts = practiceArea.querySelectorAll('.target-text');
+    const inputs = practiceArea.querySelectorAll('.input-field');
+    targetTexts.forEach(text => text.style.fontSize = `${fontSize.value}px`);
+    inputs.forEach(input => input.style.fontSize = `${fontSize.value}px`);
+}
+    </script>
+</body>
+</html>

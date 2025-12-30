@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>打字練習</title>
+  <style>
+    #container {
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-start;
+    }
+    textarea {
+      width: 90%;
+      padding: 10px;
+      font-size: 16px;
+      height: 200px;
+      overflow-y: scroll; /* 啟用垂直捲軸 */
+    }
+    .no-paste {
+      pointer-events: none;
+    }
+    .font-size-indicator {
+      font-size: 14px;
+      margin-top: 5px;
+    }
+
+    #feedbackMessage {
+      font-size: 16px; /* 與textarea相同的初始字體大小 */
+      display: inline-block; /* 讓feedbackMessage元素能夠接收font-size的調整 */
+    }
+
+  </style>
+</head>
+<body>
+  <textarea id="leftTextarea" placeholder="在這裡放入文件檔作為範本" onpaste="insertText(event, 'leftTextarea')" onscroll="syncScroll('leftTextarea')"></textarea><br>
+  <textarea id="rightTextarea" placeholder="在這裡開始打字" onscroll="syncScroll('rightTextarea')"></textarea>
+  <div>
+    <label for="fontSizeRange">字體大小調整：</label>
+    <input type="range" min="16" max="60" value="16" id="fontSizeRange" oninput="changeFontSize(this.value)">
+    <span class="font-size-indicator" id="fontSizeIndicator">目前字體大小: 16px</span>
+    <br>
+    <input type="file" id="fileInput" onchange="loadFile()">
+    <button onclick="startReading()">開始朗讀</button>
+    <button onclick="stopReading()">停止朗讀</button>
+  </div>
+  <p>
+    <button onclick="checkSimilarity()">批改</button>
+    <span class="feedback" id="feedbackMessage" style="color:#ff0000;"></span>
+  </p>
+
+  <script>
+    let speechSynthesisUtterance;
+  
+    function changeFontSize(size) {
+      const textAreas = document.querySelectorAll('textarea');
+      textAreas.forEach(textArea => {
+        textArea.style.fontSize = size + 'px';
+      });
+
+      const fontSizeIndicator = document.getElementById('fontSizeIndicator');
+      fontSizeIndicator.textContent = `目前字體大小: ${size}px`;
+      
+      const feedbackMessage = document.getElementById('feedbackMessage');
+      feedbackMessage.style.fontSize = size + 'px';
+    }
+
+    function loadFile() {
+      const fileInput = document.getElementById('fileInput');
+      const leftTextarea = document.getElementById('leftTextarea');
+
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        leftTextarea.value = event.target.result;
+      };
+      reader.readAsText(file);
+    }
+
+    function insertText(event, target) {
+      const text = event.clipboardData.getData('text');
+      document.getElementById(target).setSelectionRange(0, 0);
+      document.execCommand('insertText', false, text);
+    }
+    
+    function syncScroll(source) {
+      const sourceTextarea = document.getElementById(source);
+      const otherTextarea = source === 'leftTextarea' ? document.getElementById('rightTextarea') : document.getElementById('leftTextarea');
+      otherTextarea.scrollTop = sourceTextarea.scrollTop;
+    }
+    const rightTextarea = document.getElementById('rightTextarea');
+    rightTextarea.addEventListener('paste', function(e) {
+      e.preventDefault();
+    });
+    
+    function startReading() {
+      const leftTextarea = document.getElementById('leftTextarea');
+      const textToRead = leftTextarea.value.substring(leftTextarea.selectionStart);
+
+      if (textToRead.trim() !== '') {
+        speechSynthesisUtterance = new SpeechSynthesisUtterance(textToRead);
+        window.speechSynthesis.speak(speechSynthesisUtterance);
+      }
+    }
+
+    function stopReading() {
+      if (speechSynthesisUtterance) {
+        window.speechSynthesis.cancel();
+      }
+    }
+    
+    function checkSimilarity() {
+      const leftTextarea = document.getElementById('leftTextarea');
+      const rightTextarea = document.getElementById('rightTextarea');
+      const feedbackMessage = document.getElementById('feedbackMessage');
+
+      const leftText = leftTextarea.value.trim();
+      const rightText = rightTextarea.value.trim();
+
+      if (leftText === rightText) {
+        feedbackMessage.textContent = '恭喜完成！';
+      } else {
+        feedbackMessage.textContent = '請再檢查！';
+      }
+    }
+  </script>
+</body>
+</html>

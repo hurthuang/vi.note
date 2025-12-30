@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+	<title>顏色辨識</title>
+	<style type="text/css">
+		body {
+			background-color: #FFF;
+		}
+		#target-color {
+			width: 100px;
+			height: 100px;
+			margin: 50px auto;
+			border-radius: 50%;
+		}
+		#color-picker {
+			margin-top: 20px;
+			text-align: center;
+		}
+		.color-option {
+			display: inline-block;
+			width: 50px;
+			height: 50px;
+			margin: 10px;
+			border-radius: 50%;
+			cursor: pointer;
+		}
+	</style>
+</head>
+<body onload="generateColor();">
+	<div id="target-color"></div>
+	<div id="color-picker">
+		<div class="color-option" onclick="checkColor(this.style.backgroundColor);"></div>
+		<div class="color-option" onclick="checkColor(this.style.backgroundColor);"></div>
+		<div class="color-option" onclick="checkColor(this.style.backgroundColor);"></div>
+		<div class="color-option" onclick="checkColor(this.style.backgroundColor);"></div>
+		<div class="color-option" onclick="checkColor(this.style.backgroundColor);"></div>
+		<div class="color-option" onclick="checkColor(this.style.backgroundColor);"></div>
+	</div>
+
+	<script type="text/javascript">
+		var targetColor;
+		var colorOptions = document.querySelectorAll(".color-option");
+
+		// generate random color for target
+		function generateColor() {
+			var r = Math.floor(Math.random() * 256);
+			var g = Math.floor(Math.random() * 256);
+			var b = Math.floor(Math.random() * 256);
+			targetColor = "rgb(" + r + ", " + g + ", " + b + ")";
+			document.getElementById("target-color").style.backgroundColor = targetColor;
+
+			// generate random colors for options
+			var optionColors = [];
+			optionColors.push(targetColor);
+			for (var i = 0; i < colorOptions.length - 1; i++) {
+				var optionColor = "rgb(" + Math.floor(Math.random() * 256) + ", " + Math.floor(Math.random() * 256) + ", " + Math.floor(Math.random() * 256) + ")";
+				while (optionColors.indexOf(optionColor) >= 0) {
+					optionColor = "rgb(" + Math.floor(Math.random() * 256) + ", " + Math.floor(Math.random() * 256) + ", " + Math.floor(Math.random() * 256) + ")";
+				}
+				optionColors.push(optionColor);
+			}
+
+			// assign random colors to options
+			shuffleArray(optionColors);
+			for (var i = 0; i < colorOptions.length; i++) {
+				colorOptions[i].style.backgroundColor = optionColors[i];
+			}
+		}
+
+		// check if selected color is the same as target color
+		function checkColor(color) {
+			if (color === targetColor) {
+				generateColor();
+			}
+		}
+
+		// shuffle array
+		function shuffleArray(array) {
+			for (var i = array.length - 1; i > 0; i--) {
+				var j = Math.floor(Math.random() * (i + 1));
+				var temp = array[i];
+				array[i] = array[j];
+				array[j] = temp;
+			}
+			return array;
+		}
+	</script>
+</body>
+</html>

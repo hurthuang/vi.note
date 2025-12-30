@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f0f0f0;
+        }
+        .game-container {
+            margin: 20px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .grid {
+            display: grid;
+            gap: 5px;
+            margin: 20px 0;
+        }
+        .cell {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            user-select: none;
+            background-color: white;
+            transition: all 0.2s;
+        }
+        .cell:hover {
+            background-color: #f0f0f0;
+        }
+        .controls {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            align-items: center;
+        }
+        .game-info {
+            text-align: center;
+            margin: 10px 0;
+        }
+        input[type="number"] {
+            width: 60px;
+            padding: 5px;
+        }
+        input[type="text"] {
+            width: 30px;
+            padding: 5px;
+            text-align: center;
+        }
+        input[type="range"] {
+            width: 150px;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .win-message {
+            color: #4CAF50;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin: 10px 0;
+            display: none;
+        }
+        .found-count {
+            font-size: 1.1em;
+            margin: 10px 0;
+        }
+        .size-value {
+            min-width: 30px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h2>尋找不同的符號</h2>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label>
+                    行數：
+                    <input type="number" id="rows" value="5" min="2" max="10" oninput="updatePreview()">
+                </label>
+                <label>
+                    列數：
+                    <input type="number" id="cols" value="5" min="2" max="10" oninput="updatePreview()">
+                </label>
+            </div>
+            <div class="control-group">
+                <label>
+                    背景符號：
+                    <input type="text" id="bgSymbol" value="○" maxlength="1" oninput="updatePreview()">
+                </label>
+                <label>
+                    目標符號：
+                    <input type="text" id="targetSymbol" value="●" maxlength="1" oninput="updatePreview()">
+                </label>
+            </div>
+            <div class="control-group">
+                <label>
+                    目標數量：
+                    <input type="number" id="targetCount" value="1" min="1" max="10" oninput="updatePreview()">
+                </label>
+                <input type="range" id="symbolSize" min="12" max="36" value="20" oninput="updateSymbolSize(this.value)">
+                <label>符號大小：<span id="sizeValue" class="size-value">20</span>px</label>
+            </div>
+        </div>
+
+        <div class="game-info">
+            <div class="found-count">符號可自訂，已找到：<span id="foundCount">0</span> / <span id="totalTargets">1</span></div>
+        </div>
+        <div id="grid" class="grid"></div>
+        <div id="winMessage" class="win-message">恭喜你找到了所有不同的符號！</div>
+        
+        <button onclick="startGame()">開始遊戲</button>
+    </div>
+
+    <script>
+        let targetPositions = [];
+        let foundCount = 0;
+        let currentSymbolSize = 20;
+        let isPlaying = false;
+
+        function updateSymbolSize(size) {
+            currentSymbolSize = size;
+            document.getElementById('sizeValue').textContent = size;
+            
+            // 更新所有符號大小
+            const cells = document.getElementsByClassName('cell');
+            Array.from(cells).forEach(cell => {
+                cell.style.fontSize = `${size}px`;
+            });
+        }
+
+        function updatePreview() {
+            if (isPlaying) return; // 如果遊戲已經開始，不更新預覽
+            
+            const rows = parseInt(document.getElementById('rows').value);
+            const cols = parseInt(document.getElementById('cols').value);
+            const bgSymbol = document.getElementById('bgSymbol').value || '○';
+            const targetSymbol = document.getElementById('targetSymbol').value || '●';
+            let targetCount = parseInt(document.getElementById('targetCount').value);
+            
+            // 確保目標數量不超過格子總數
+            const maxPossibleTargets = rows * cols;
+            targetCount = Math.min(targetCount, maxPossibleTargets);
+            document.getElementById('targetCount').value = targetCount;
+            
+            const grid = document.getElementById('grid');
+            document.getElementById('totalTargets').textContent = targetCount;
+
+            // 設置網格樣式
+            grid.style.gridTemplateColumns = `repeat(${cols}, 40px)`;
+
+            // 清空網格
+            grid.innerHTML = '';
+
+            // 隨機生成目標位置
+            const positions = new Set();
+            while (positions.size < targetCount) {
+                const row = Math.floor(Math.random() * rows);
+                const col = Math.floor(Math.random() * cols);
+                positions.add(`${row},${col}`);
+            }
+
+            // 生成預覽網格
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.textContent = positions.has(`${i},${j}`) ? targetSymbol : bgSymbol;
+                    cell.style.fontSize = `${currentSymbolSize}px`;
+                    grid.appendChild(cell);
+                }
+            }
+        }
+
+        function startGame() {
+            isPlaying = true;
+            foundCount = 0;
+            document.getElementById('foundCount').textContent = '0';
+            document.getElementById('winMessage').style.display = 'none';
+            
+            const rows = parseInt(document.getElementById('rows').value);
+            const cols = parseInt(document.getElementById('cols').value);
+            const bgSymbol = document.getElementById('bgSymbol').value || '○';
+            const targetSymbol = document.getElementById('targetSymbol').value || '●';
+            let targetCount = parseInt(document.getElementById('targetCount').value);
+            
+            // 確保目標數量不超過格子總數
+            const maxPossibleTargets = rows * cols;
+            targetCount = Math.min(targetCount, maxPossibleTargets);
+            
+            // 重置遊戲狀態
+            targetPositions = [];
+            const grid = document.getElementById('grid');
+
+            // 生成目標位置
+            while (targetPositions.length < targetCount) {
+                const row = Math.floor(Math.random() * rows);
+                const col = Math.floor(Math.random() * cols);
+                const posString = `${row},${col}`;
+                
+                if (!targetPositions.includes(posString)) {
+                    targetPositions.push(posString);
+                }
+            }
+
+            // 更新網格為遊戲狀態
+            Array.from(grid.children).forEach((cell, index) => {
+                const row = Math.floor(index / cols);
+                const col = index % cols;
+                cell.textContent = targetPositions.includes(`${row},${col}`) ? targetSymbol : bgSymbol;
+                cell.style.backgroundColor = 'white';
+                cell.onclick = () => checkCell(row, col);
+            });
+        }
+
+        function checkCell(row, col) {
+            if (!isPlaying) return;
+            
+            const posString = `${row},${col}`;
+            if (targetPositions.includes(posString)) {
+                // 檢查是否已經點擊過
+                const cells = document.getElementsByClassName('cell');
+                const index = row * parseInt(document.getElementById('cols').value) + col;
+                if (cells[index].style.backgroundColor !== 'rgb(144, 238, 144)') { // 檢查是否已經變綠
+                    cells[index].style.backgroundColor = '#90EE90';
+                    foundCount++;
+                    document.getElementById('foundCount').textContent = foundCount;
+
+                    // 檢查是否找到所有目標
+                    if (foundCount === targetPositions.length) {
+                        document.getElementById('winMessage').style.display = 'block';
+                        isPlaying = false;
+                    }
+                }
+            }
+        }
+
+        // 初始化預覽
+        updatePreview();
+    </script>
+</body>
+</html>

@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>國字轉注音點字</title>
+	<style type="text/css">
+	       textarea {
+	           width: 100%;
+	           height: 250px;
+	           padding: 10px;
+	           box-sizing: border-box;
+	           font-size: 24px;
+	       }
+	</style>
+	<script>
+	var dots = [0, 0, 0, 0, 0, 0];
+	var brailleCode = 0;
+
+	function keypressFunction(event) {
+	   if ((event.keyCode == 37) || (event.keyCode == 39) || (event.keyCode == 8) || (event.keyCode == 9) || (event.keyCode == 46) || (event.keyCode == 13)) {
+	       return true;
+	   }
+	   event.preventDefault();
+	   return false;
+	}
+
+	function keydownFunction(event) {
+	   if ((event.keyCode != 37) && (event.keyCode != 39) && (event.keyCode != 8) && (event.keyCode != 9) && (event.keyCode != 46) && (event.keyCode != 13)) {
+	       if (event.keyCode == 83) {
+	           dots[0] = 1;
+	           brailleCode = brailleCode | 4;
+	       } else if (event.keyCode == 68) {
+	           dots[1] = 1;
+	           brailleCode = brailleCode | 2;
+	       } else if (event.keyCode == 70) {
+	           dots[2] = 1;
+	           brailleCode = brailleCode | 1;
+	       } else if (event.keyCode == 74) {
+	           dots[3] = 1;
+	           brailleCode = brailleCode | 8;
+	       } else if (event.keyCode == 75) {
+	           dots[4] = 1;
+	           brailleCode = brailleCode | 16;
+	       } else if (event.keyCode == 76) {
+	           dots[5] = 1;
+	           brailleCode = brailleCode | 32;
+	       } else if (event.keyCode == 32) {
+	           brailleCode = 65;
+	           return true;
+	       } else if (event.keyCode == 8) {  // 处理 backspace 键
+	           var element = document.getElementById('brailleInput');
+	           var sPos = element.selectionStart;
+	           var ePos = element.selectionEnd;
+	           if (sPos == ePos) {
+	               // 如果沒有選擇文本，刪除前一個字符
+	               var a = document.getElementById('brailleInput').value;
+	               var output = a.slice(0, sPos - 1) + a.slice(ePos);
+	               document.getElementById('brailleInput').value = output;
+	               convertBraille();
+	               return false;
+	           }
+	       }
+	       return false;
+	   }
+	}
+
+	function keyupFunction(event, eb_tag) {
+	   for (i = 0; i < 6; i++) {
+	       dots[i] = 0;
+	   }
+	   if (brailleCode == 0) {
+	       return false;
+	   } else {
+	       if (brailleCode == 65) {
+	           brailleCode = 0;
+	       }
+	       var element = document.getElementById(eb_tag);
+	       var sPos = element.selectionStart;
+	       var ePos = element.selectionEnd;
+	       var brl = String.fromCharCode(0x2800 + brailleCode);
+	       var a = document.getElementById(eb_tag).value;
+	       var output = a.slice(0, sPos) + brl + a.slice(ePos);
+	       document.getElementById(eb_tag).value = output;
+	       setCaretPosition(document.getElementById(eb_tag), sPos + 1);
+	   }
+	   brailleCode = 0;
+	   convertBraille();
+	   return false;
+	}
+
+	function setCaretPosition(ctrl, pos) {
+	   if (ctrl.setSelectionRange) {
+	       ctrl.focus();
+	       ctrl.setSelectionRange(pos, pos);
+	   } else if (ctrl.createTextRange) {
+	       var range = ctrl.createTextRange();
+	       range.collapse(true);
+	       range.moveEnd('character', pos);
+	       range.moveStart('character', pos);
+	       range.select();
+	   }
+	}
+	</script>
+	<script>
+	function convertBraille() {
+	   const brailleInput = document.getElementById('brailleInput').value;
+	   const zhuyinOutput = brailleToZhuyin(brailleInput);
+	   document.getElementById('zhuyinOutput').value = zhuyinOutput;
+	}
+
+	function brailleToZhuyin(braille) {
+	   const brailleRules = {
+	   '⠅⠔': 'ㄍㄨㄚ',
+	   '⠅⠒': 'ㄍㄨㄛ',
+	   '⠅⠶': 'ㄍㄨㄞ',
+	   '⠅⠫': 'ㄍㄨㄟ',
+	   '⠅⠻': 'ㄍㄨㄢ',
+	   '⠅⠿': 'ㄍㄨㄣ',
+	   '⠅⠸': 'ㄍㄨㄤ',
+	   '⠅⠯': 'ㄍㄨㄥ',
+	   '⠅⠾': 'ㄐㄧㄚ',
+	   '⠅⠬': 'ㄐㄧㄝ',
+	   '⠅⠦': 'ㄐㄩㄝ',
+	   '⠅⠪': 'ㄐㄧㄠ',
+	   '⠅⠎': 'ㄐㄧㄡ',
+	   '⠅⠞': 'ㄐㄧㄢ',
+	   '⠅⠘': 'ㄐㄩㄢ',
+	   '⠅⠹': 'ㄐㄧㄣ',
+	   '⠅⠨': 'ㄐㄧㄤ',
+	   '⠅⠽': 'ㄐㄧㄥ',
+	   '⠅⠖': 'ㄐㄩㄥ',
+	   '⠑⠒': 'ㄙㄨㄛ',
+	   '⠑⠫': 'ㄙㄨㄟ',
+	   '⠑⠻': 'ㄙㄨㄢ',
+	   '⠑⠿': 'ㄙㄨㄣ',
+	   '⠑⠯': 'ㄙㄨㄥ',
+	   '⠑⠾': 'ㄒㄧㄚ',
+	   '⠑⠬': 'ㄒㄧㄝ',
+	   '⠑⠦': 'ㄒㄩㄝ',
+	   '⠑⠪': 'ㄒㄧㄠ',
+	   '⠑⠎': 'ㄒㄧㄡ',
+	   '⠑⠞': 'ㄒㄧㄢ',
+	   '⠑⠘': 'ㄒㄩㄢ',
+	   '⠑⠹': 'ㄒㄧㄣ',
+	   '⠑⠨': 'ㄒㄧㄤ',
+	   '⠑⠽': 'ㄒㄧㄥ',
+	   '⠑⠖': 'ㄒㄩㄥ',
+	   '⠚⠒': 'ㄘㄨㄛ',
+	   '⠚⠫': 'ㄘㄨㄟ',
+	   '⠚⠻': 'ㄘㄨㄢ',
+	   '⠚⠿': 'ㄘㄨㄣ',
+	   '⠚⠸': 'ㄘㄨㄤ',
+	   '⠚⠯': 'ㄘㄨㄥ',
+	   '⠚⠾': 'ㄑㄧㄚ',
+	   '⠚⠬': 'ㄑㄧㄝ',
+	   '⠚⠦': 'ㄑㄩㄝ',
+	   '⠚⠪': 'ㄑㄧㄠ',
+	   '⠚⠎': 'ㄑㄧㄡ',
+	   '⠚⠞': 'ㄑㄧㄢ',
+	   '⠚⠘': 'ㄑㄩㄢ',
+	   '⠚⠹': 'ㄑㄧㄣ',
+	   '⠚⠨': 'ㄑㄧㄤ',
+	   '⠚⠽': 'ㄑㄧㄥ',
+	   '⠚⠖': 'ㄑㄩㄥ',
+	   '⠅⠌': 'ㄍㄨ',
+	   '⠅⠜': 'ㄍㄚ',
+	   '⠅⠮': 'ㄍㄜ',
+	   '⠅⠺': 'ㄍㄞ',
+	   '⠅⠴': 'ㄍㄟ',
+	   '⠅⠩': 'ㄍㄠ',
+	   '⠅⠷': 'ㄍㄡ',
+	   '⠅⠧': 'ㄍㄢ',
+	   '⠅⠥': 'ㄍㄣ',
+	   '⠅⠭': 'ㄍㄤ',
+	   '⠅⠵': 'ㄍㄥ',
+	   '⠅⠡': 'ㄐㄧ',
+	   '⠅⠳': 'ㄐㄩ',
+	   '⠑⠌': 'ㄙㄨ',
+	   '⠑⠜': 'ㄙㄚ',
+	   '⠑⠮': 'ㄙㄜ',
+	   '⠑⠺': 'ㄙㄞ',
+	   '⠑⠩': 'ㄙㄠ',
+	   '⠑⠷': 'ㄙㄡ',
+	   '⠑⠧': 'ㄙㄢ',
+	   '⠑⠥': 'ㄙㄣ',
+	   '⠑⠭': 'ㄙㄤ',
+	   '⠑⠵': 'ㄙㄥ',
+	   '⠑⠡': 'ㄒㄧ',
+	   '⠑⠳': 'ㄒㄩ',
+	   '⠚⠌': 'ㄘㄨ',
+	   '⠚⠜': 'ㄘㄚ',
+	   '⠚⠮': 'ㄘㄜ',
+	   '⠚⠺': 'ㄘㄞ',
+	   '⠚⠩': 'ㄘㄠ',
+	   '⠚⠷': 'ㄘㄡ',
+	   '⠚⠧': 'ㄘㄢ',
+	   '⠚⠥': 'ㄘㄣ',
+	   '⠚⠭': 'ㄘㄤ',
+	   '⠚⠵': 'ㄘㄥ',
+	   '⠚⠡': 'ㄑㄧ',
+	   '⠚⠳': 'ㄑㄩ',
+	   '⠱⠁': '˙',
+	   '⠜⠁': 'ㄚ˙',
+	   '⠣⠁': 'ㄛ˙',
+	   '⠮⠁': 'ㄜ˙',
+	   '⠥⠁': 'ㄣ˙',
+	   '⠾': 'ㄧㄚ',
+	   '⠔': 'ㄨㄚ',
+	   '⠒': 'ㄨㄛ',
+	   '⠬': 'ㄧㄝ',
+	   '⠦': 'ㄩㄝ',
+	   '⠢': 'ㄧㄞ',
+	   '⠶': 'ㄨㄞ',
+	   '⠫': 'ㄨㄟ',
+	   '⠪': 'ㄧㄠ',
+	   '⠎': 'ㄧㄡ',
+	   '⠞': 'ㄧㄢ',
+	   '⠻': 'ㄨㄢ',
+	   '⠘': 'ㄩㄢ',
+	   '⠹': 'ㄧㄣ',
+	   '⠿': 'ㄨㄣ',
+	   '⠲': 'ㄩㄣ',
+	   '⠨': 'ㄧㄤ',
+	   '⠸': 'ㄨㄤ',
+	   '⠽': 'ㄧㄥ',
+	   '⠯': 'ㄨㄥ',
+	   '⠖': 'ㄩㄥ',
+	   '⠇⠀': '！',
+	   '⠕⠀': '？',
+	   '⠕': 'ㄅ',
+	   '⠏': 'ㄆ',
+	   '⠍': 'ㄇ',
+	   '⠟': 'ㄈ',
+	   '⠙': 'ㄉ',
+	   '⠋': 'ㄊ',
+	   '⠝': 'ㄋ',
+	   '⠉': 'ㄌ',
+	   '⠅': 'ㄍ/ㄐ',
+	   '⠇': 'ㄎ',
+	   '⠗': 'ㄏ',
+	   '⠚': 'ㄑ/ㄘ',
+	   '⠑': 'ㄒ/ㄙ',
+	   '⠁': 'ㄓ',
+	   '⠃': 'ㄔ',
+	   '⠊': 'ㄕ',
+	   '⠛': 'ㄖ',
+	   '⠓': 'ㄗ',
+	   '⠜': 'ㄚ',
+	   '⠣': 'ㄛ',
+	   '⠮': 'ㄜ',
+	   '⠺': 'ㄞ',
+	   '⠴': 'ㄟ',
+	   '⠩': 'ㄠ',
+	   '⠷': 'ㄡ',
+	   '⠧': 'ㄢ',
+	   '⠥': 'ㄣ',
+	   '⠭': 'ㄤ',
+	   '⠵': 'ㄥ',
+	   '⠱': 'ㄦ',
+	   '⠡': 'ㄧ',
+	   '⠌': 'ㄨ',
+	   '⠳': 'ㄩ',
+	   '⠄': '-',
+	   '⠂': 'ˊ',
+	   '⠈': 'ˇ',
+	   '⠐': 'ˋ',
+	   '⠒⠒': '：',
+	   '⠰⠤': '「',
+	   '⠤⠆': '」',
+	   '⠆': '，',
+	   '⠤⠀': '。',
+	   '⠰': '；'
+	   };
+
+	   let result = '';
+	   let currentIndex = 0;
+
+	   while (currentIndex < braille.length) {
+	       let matchFound = false;
+
+	       for (const rule in brailleRules) {
+	           if (braille.startsWith(rule, currentIndex)) {
+	               result += brailleRules[rule];
+	               currentIndex += rule.length;
+	               matchFound = true;
+	               break;
+	           }
+	       }
+
+	       if (!matchFound) {
+	           result += braille[currentIndex];
+	           currentIndex++;
+	       }
+	   }
+
+	   return result;
+	}
+	</script>
+	<title></title>
+</head>
+<body>
+	<h1>六點輸入國語點字轉注音</h1><label for="brailleInput">請用六點輸入法輸入國語點字</label><br>
+	<textarea cols="30" id="brailleInput" oninput="convertBraille()" onkeydown="return keydownFunction(event)" onkeypress="return keypressFunction(event)" onkeyup="return keyupFunction(event, 'brailleInput')" rows="5"></textarea><br>
+	<label for="zhuyinOutput">注音</label><br>
+	<textarea cols="30" id="zhuyinOutput" readonly rows="5"></textarea>
+</body>
+</html>

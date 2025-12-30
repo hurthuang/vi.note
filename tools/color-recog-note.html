@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+	<title>顏色辨識 [RGB 註記版]</title>
+	<style type="text/css">
+	          body {
+	              background-color: #FFF;
+	          }
+	          #target-color {
+	              width: 100px;
+	              height: 100px;
+	              margin: 50px auto;
+	              border-radius: 50%;
+	          }
+	          #color-picker {
+	              margin-top: 20px;
+	              text-align: center;
+	          }
+	          .color-option {
+	              display: inline-block;
+	              width: 50px;
+	              height: 50px;
+	              margin: 10px;
+	              border-radius: 50%;
+	              cursor: pointer;
+	          }
+	          #result {
+	              margin-top: 20px;
+	              text-align: center;
+	              font-size: 24px;
+	          }
+	     table {
+	       margin: 0 auto; /* 將表格的左右邊界設為自動，讓其在頁面中間對齊 */
+	     }
+	</style>
+</head>
+<body onload="generateColor();">
+	<div id="target-color"></div>
+	<div id="color-picker">
+		<div class="color-option" onclick="checkColor(this.style.backgroundColor);"></div>
+		<div class="color-option" onclick="checkColor(this.style.backgroundColor);"></div>
+		<div class="color-option" onclick="checkColor(this.style.backgroundColor);"></div>
+		<div class="color-option" onclick="checkColor(this.style.backgroundColor);"></div>
+		<div class="color-option" onclick="checkColor(this.style.backgroundColor);"></div>
+		<div class="color-option" onclick="checkColor(this.style.backgroundColor);"></div>
+	</div>
+	<div id="result"></div>
+	<hr>
+	<div style="text-align: center;">
+		<table>
+			<tbody>
+				<tr>
+					<td colspan="2">顏色對比器 [將 RGB 值貼上即可顯示]</td>
+				</tr>
+				<tr>
+					<td>
+						<div>
+							<label for="color1">顏色1</label> <input id="color1" name="color1" pattern="\(([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5]),\s*([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5]),\s*([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\)" type="text">
+							<div id="color-box1" style="width: 250px; height: 200px; background-color: black;"></div>
+						</div>
+					</td>
+					<td>
+						<div>
+							<label for="color2">顏色2</label> <input id="color2" name="color2" pattern="\(([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5]),\s*([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5]),\s*([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\)" type="text">
+							<div id="color-box2" style="width: 250px; height: 200px; background-color: black;"></div>
+						</div>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+	<script type="text/javascript">
+	          var targetColor;
+	          var colorOptions = document.querySelectorAll(".color-option");
+
+	          // generate random color for target
+	          function generateColor() {
+	              var r = Math.floor(Math.random() * 256);
+	              var g = Math.floor(Math.random() * 256);
+	              var b = Math.floor(Math.random() * 256);
+	              targetColor = "rgb(" + r + ", " + g + ", " + b + ")";
+	              document.getElementById("target-color").style.backgroundColor = targetColor;
+
+	              // generate random colors for options
+	              var optionColors = [];
+	              optionColors.push(targetColor);
+	              for (var i = 0; i < colorOptions.length - 1; i++) {
+	                  var optionColor = "rgb(" + Math.floor(Math.random() * 256) + ", " + Math.floor(Math.random() * 256) + ", " + Math.floor(Math.random() * 256) + ")";
+	                  while (optionColors.indexOf(optionColor) >= 0) {
+	                      optionColor = "rgb(" + Math.floor(Math.random() * 256) + ", " + Math.floor(Math.random() * 256) + ", " + Math.floor(Math.random() * 256) + ")";
+	                  }
+	                  optionColors.push(optionColor);
+	              }
+
+	              // assign random colors to options
+	              shuffleArray(optionColors);
+	              for (var i = 0; i < colorOptions.length; i++) {
+	                  colorOptions[i].style.backgroundColor = optionColors[i];
+	              }
+
+	              // reset result
+	              document.getElementById("result").innerHTML = "";
+	          }
+
+	          // check if selected color is the same as target color
+	   function checkColor(color) {
+	    if (color === targetColor) {
+	      generateColor();
+	    } else {
+	      var selectedColor = color.substring(3); // remove "rgb" from the string
+	      var targetRGB = targetColor.substring(3);
+	      document.getElementById("result").innerHTML = "你選的顏色是 " + selectedColor + "<br>" +" 題目的顏色是 " + targetRGB ;
+	    }
+	   }
+
+	          // helper function to shuffle array
+	          function shuffleArray(array) {
+	              for (var i = array.length - 1; i > 0; i--) {
+	                  var j = Math.floor(Math.random() * (i + 1));
+	                  var temp = array[i];
+	                  array[i] = array[j];
+	                  array[j] = temp;
+	              }
+	              return array;
+	          }
+	</script> 
+	<script>
+	        const colorInput1 = document.getElementById('color1');
+	        const colorBox1 = document.getElementById('color-box1');
+	        
+	        const colorInput2 = document.getElementById('color2');
+	        const colorBox2 = document.getElementById('color-box2');
+	        
+	        colorInput1.addEventListener('input', updateColor1);
+	        colorInput2.addEventListener('input', updateColor2);
+	        
+	        function updateColor1() {
+	          const [red, green, blue] = colorInput1.value.match(/\d+/g);
+	          colorBox1.style.backgroundColor = `rgb(${red}, ${green}, ${blue})`;
+	        }
+	        
+	        function updateColor2() {
+	          const [red, green, blue] = colorInput2.value.match(/\d+/g);
+	          colorBox2.style.backgroundColor = `rgb(${red}, ${green}, ${blue})`;
+	        }
+	</script>
+</body>
+</html>

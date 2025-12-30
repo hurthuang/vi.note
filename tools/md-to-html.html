@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown to HTML Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            display: flex;
+            height: 400px;
+        }
+        textarea, #htmlOutput {
+            width: 50%;
+            height: 100%;
+            margin: 0;
+            padding: 10px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+        textarea {
+            border: 1px solid #ccc;
+            resize: none;
+        }
+        #htmlOutput {
+            border: 1px solid #ccc;
+        }
+        #htmlCode {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Markdown to HTML Converter</h1>
+	<button onclick="saveMarkdown()">Save Markdown as .md</button>
+    <button onclick="saveHTML()">Save HTML as .html</button>
+    <div class="container">
+        <textarea id="markdownInput" placeholder="Enter your Markdown here..."># Markdown Examples
+
+## Headers 標題
+
+# Header 1 標題 1
+## Header 2 標題 2
+### Header 3 標題 3
+
+## Emphasis 加強
+
+*Italic 斜體*  
+**Bold 粗體**  
+~~Strikethrough 刪除線~~
+
+## Lists 清單
+
+- Item 1 項目 1
+- Item 2 項目 2
+  - Subitem 1 子項目 1
+  - Subitem 2 子項目 2
+
+1. First item 第 1 項
+2. Second item 第 2 項
+3. Third item 第 3 項
+
+## Links 連結
+
+[OpenAI](https://www.openai.com)
+
+## Code 原碼
+
+Inline `code`
+
+        </textarea>
+        <div id="htmlOutput"></div>
+    </div>
+    <h2>HTML Code</h2>
+    <pre id="htmlCode"></pre>
+
+    <button onclick="saveMarkdown()">Save Markdown as .md</button>
+    <button onclick="saveHTML()">Save HTML as .html</button>
+
+    <!-- 引入 marked 庫 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        const markdownInput = document.getElementById('markdownInput');
+        const htmlOutput = document.getElementById('htmlOutput');
+        const htmlCode = document.getElementById('htmlCode');
+
+        markdownInput.addEventListener('input', convertMarkdown);
+        markdownInput.addEventListener('scroll', syncScroll);
+        htmlOutput.addEventListener('scroll', syncScroll);
+
+        function convertMarkdown() {
+            var markdownText = markdownInput.value;
+            var htmlContent = marked.parse(markdownText);
+            htmlOutput.innerHTML = htmlContent;
+            htmlCode.textContent = formatHTML(htmlContent);
+        }
+
+        function syncScroll(e) {
+            const other = e.target === markdownInput ? htmlOutput : markdownInput;
+            other.scrollTop = e.target.scrollTop;
+        }
+
+        function saveFile(content, filename) {
+            const blob = new Blob([content], { type: 'text/plain' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+
+        function saveMarkdown() {
+            const markdownText = markdownInput.value;
+            saveFile(markdownText, 'document.md');
+        }
+
+        function saveHTML() {
+            const htmlContent = htmlCode.textContent;
+            saveFile(htmlContent, 'document.html');
+        }
+
+        function formatHTML(html) {
+            const tab = '  ';
+            let result = '';
+            let indent = '';
+
+            html.split(/>\s*</).forEach((element) => {
+                if (element.match(/^\/\w/)) {
+                    indent = indent.substring(tab.length);
+                }
+                result += indent + '<' + element + '>\n';
+                if (element.match(/^<?\w[^>]*[^\/]$/) && !element.startsWith('input') && !element.startsWith('img') && !element.startsWith('br')) {
+                    indent += tab;
+                }
+            });
+
+            return result.substring(1, result.length - 2);
+        }
+
+        // 初始加載時轉換預設的 Markdown 文本
+        convertMarkdown();
+    </script>
+</body>
+</html>

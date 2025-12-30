@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>閱讀測驗產生器</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .highlight {
+            background-color: yellow;
+        }
+    </style>
+</head>
+<body>
+    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md">
+        <h1 id="quizGeneratorTitle" class="text-3xl font-bold mb-6">閱讀測驗產生器</h1>
+
+        <div id="inputSection">
+            <div class="mb-4">
+                文章：<br>
+                <textarea id="articleInput" rows="10" class="w-full p-2 border rounded"></textarea><br />
+			          <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onclick="copyCmd()">複製 ChatGPT 生成題目指令</button>
+            </div>
+
+            <div class="mb-4">
+                題目（每題格式：問題、選項A、選項B、選項C、選項D，每行一個，題與題之間用空行分隔）：<br>
+                <textarea id="questionsInput" rows="10" class="w-full p-2 border rounded"></textarea>
+            </div>
+
+            <div class="mb-4">
+                解答（每行一個，與題目對應，請使用A、B、C或D）：<br>
+                <textarea id="answersInput" rows="5" class="w-full p-2 border rounded"></textarea>
+            </div>
+
+            <div class="mb-4">
+                詳解（每行一個，與題目對應）：<br>
+                <textarea id="explanationsInput" rows="5" class="w-full p-2 border rounded"></textarea>
+            </div>
+
+            <button id="generateButton" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                生成測驗
+            </button>
+
+            <button id="saveQuizButton" class="hidden mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                保存測驗為HTML
+            </button>
+			<div class="mb-4">
+				<input type="checkbox" id="highlightToggle" checked>
+				<label for="highlightToggle">啟用高亮顯示</label>
+			</div>
+        </div>
+
+        <div id="quizSection" class="hidden mt-8">
+            <h2 id="閱讀測驗" class="text-2xl font-bold mb-4">閱讀測驗</h2>
+
+            <div class="mb-4">
+                字體大小： <span id="fontSizeValue">16px</span>
+                <input type="range" id="fontSizeSlider" min="12" max="48" value="16" class="w-full">
+            </div>
+
+            <div class="mb-4">
+                <button id="readButton" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-2">朗讀文章</button>
+                <button id="pauseButton" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded mr-2">暫停</button>
+                <button id="resumeButton" class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded mr-2">繼續</button>
+                <button id="stopButton" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mr-2">停止</button>
+                語速： <span id="rateValue">1x</span>
+                <input type="range" id="rateSlider" min="0.5" max="2" step="0.1" value="1" class="w-full">
+            </div>
+
+            <div id="articleContent" class="mb-6 p-4 border rounded"></div>
+
+            <div id="questionsContent"></div>
+
+            <button id="submitButton" class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                提交答案
+            </button>
+
+            <div id="results" class="hidden mt-6"></div>
+        </div>
+    </div>
+
+    <script>
+        const generateButton = document.getElementById('generateButton');
+        const quizSection = document.getElementById('quizSection');
+        const articleContent = document.getElementById('articleContent');
+        const questionsContent = document.getElementById('questionsContent');
+        const submitButton = document.getElementById('submitButton');
+        const results = document.getElementById('results');
+        const fontSizeSlider = document.getElementById('fontSizeSlider');
+        const fontSizeValue = document.getElementById('fontSizeValue');
+        const readButton = document.getElementById('readButton');
+        const pauseButton = document.getElementById('pauseButton');
+        const resumeButton = document.getElementById('resumeButton');
+        const stopButton = document.getElementById('stopButton');
+        const rateSlider = document.getElementById('rateSlider');
+        const rateValue = document.getElementById('rateValue');
+
+        let synth = window.speechSynthesis;
+        let utterance = new SpeechSynthesisUtterance();
+
+        generateButton.addEventListener('click', generateQuiz);
+        submitButton.addEventListener('click', checkAnswers);
+        fontSizeSlider.addEventListener('input', changeFontSize);
+        readButton.addEventListener('click', readArticle);
+        pauseButton.addEventListener('click', pauseReading);
+        resumeButton.addEventListener('click', resumeReading);
+        stopButton.addEventListener('click', stopReading);
+        rateSlider.addEventListener('input', changeRate);
+
+		function generateQuiz() {
+			const article = document.getElementById('articleInput').value;
+			const questions = document.getElementById('questionsInput').value;
+			const answers = document.getElementById('answersInput').value;
+			const explanations = document.getElementById('explanationsInput').value;
+
+			articleContent.innerHTML = article.split('').map(char => 
+				`<span>${char}</span>`
+			).join('').replace(/<span>\n<\/span>/g, '<br>');
+
+			const questionList = questions.split('\n\n');
+			const answerList = answers.split('\n');
+			const explanationList = explanations.split('\n');
+
+			let quizHTML = '';
+			questionList.forEach((question, index) => {
+				const lines = question.split('\n');
+				quizHTML += `<div class="mb-4">
+					<p class="font-bold">${index + 1}. ${lines[0]}</p>
+					<div class="ml-4">
+						<label><input type="radio" name="q${index}" value="A"> ${lines[1]}</label><br>
+						<label><input type="radio" name="q${index}" value="B"> ${lines[2]}</label><br>
+						<label><input type="radio" name="q${index}" value="C"> ${lines[3]}</label><br>
+						<label><input type="radio" name="q${index}" value="D"> ${lines[4]}</label>
+					</div>
+					<div class="hidden answer" data-answer="${answerList[index]}"></div>
+					<div class="hidden explanation">${explanationList[index]}</div>
+				</div>`;
+			});
+
+			questionsContent.innerHTML = quizHTML;
+			quizSection.classList.remove('hidden');
+			document.querySelector('#saveQuizButton').classList.remove('hidden');
+		}
+
+        function checkAnswers() {
+            let score = 0;
+            let resultsHTML = '';
+
+            const questions = document.querySelectorAll('#questionsContent > div');
+            questions.forEach((question, index) => {
+                const selectedAnswer = question.querySelector('input[type="radio"]:checked');
+                const correctAnswer = question.querySelector('.answer').dataset.answer;
+                const explanation = question.querySelector('.explanation').textContent;
+
+                if (selectedAnswer) {
+                    if (selectedAnswer.value === correctAnswer) {
+                        score++;
+                        resultsHTML += `<p class="text-green-600">第 ${index + 1} 題正確！</p>`;
+                    } else {
+                        resultsHTML += `<p class="text-red-600">第 ${index + 1} 題錯誤。正確答案是 ${correctAnswer}。</p>`;
+                    }
+                } else {
+                    resultsHTML += `<p class="text-gray-600">第 ${index + 1} 題未作答。正確答案是 ${correctAnswer}。</p>`;
+                }
+                resultsHTML += `<p class="ml-4">${explanation}</p>`;
+            });
+
+            resultsHTML = `<h3 class="font-bold text-xl mb-2">得分：${score} / ${questions.length}</h3>` + resultsHTML;
+            results.innerHTML = resultsHTML;
+            results.classList.remove('hidden');
+        }
+
+        function changeFontSize() {
+            const fontSize = fontSizeSlider.value;
+            articleContent.style.fontSize = `${fontSize}px`;
+            questionsContent.style.fontSize = `${fontSize}px`;
+            fontSizeValue.textContent = `${fontSize}px`;
+        }
+
+		function readArticle() {
+			const text = articleContent.innerText;
+			const highlightToggle = document.getElementById('highlightToggle').checked;
+			utterance = new SpeechSynthesisUtterance(text);
+			utterance.lang = 'zh-TW';
+			utterance.rate = parseFloat(rateSlider.value);
+
+			const spans = articleContent.querySelectorAll('span');
+
+			utterance.onboundary = function(event) {
+				if (event.name === 'word' && highlightToggle) {
+					// Remove previous highlights
+					spans.forEach(span => span.classList.remove('highlight'));
+
+					// Calculate the end index of the current word
+					const wordEnd = Math.min(event.charIndex + event.charLength, spans.length);
+
+					// Highlight the current word
+					for (let i = event.charIndex; i < wordEnd; i++) {
+						spans[i].classList.add('highlight');
+					}
+
+					// Scroll to the current word
+					spans[event.charIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+				}
+			};
+
+			utterance.onend = function() {
+				// Remove all highlights
+				spans.forEach(span => span.classList.remove('highlight'));
+			};
+
+			synth.cancel(); // Cancel any previous speech
+			synth.speak(utterance);
+		}
+
+
+				function pauseReading() {
+					synth.pause();
+				}
+
+				function resumeReading() {
+					synth.resume();
+				}
+
+				function stopReading() {
+					synth.cancel();
+					// 移除所有高亮
+					const spans = articleContent.querySelectorAll('span');
+					spans.forEach(span => span.classList.remove('highlight'));
+				}
+				
+				function changeRate() {
+					const rate = rateSlider.value;
+					utterance.rate = parseFloat(rate);
+					rateValue.textContent = `${rate}x`;
+				}
+
+		function saveQuizAsHTML() {
+			const clonedDoc = document.cloneNode(true);
+
+			// 修改標題
+			const titleElement = clonedDoc.querySelector('title');
+			if (titleElement) {
+				titleElement.textContent = '閱讀測驗';
+			} else {
+				const newTitleElement = clonedDoc.createElement('title');
+				newTitleElement.textContent = '閱讀測驗';
+				clonedDoc.head.appendChild(newTitleElement);
+			}
+
+			// 隱藏標題
+			const title = clonedDoc.getElementById('quizGeneratorTitle');
+			if (title) {
+				title.classList.add('hidden');
+			}
+
+			const inputSection = clonedDoc.querySelector('#inputSection');
+			if (inputSection) {
+				inputSection.remove();
+			}
+
+			const saveButton = clonedDoc.querySelector('#saveQuizButton');
+			if (saveButton) {
+				saveButton.remove();
+			}
+
+			const scripts = clonedDoc.querySelectorAll('script');
+			scripts.forEach(script => script.remove());
+
+			const highlightToggle = document.getElementById('highlightToggle').checked;
+			const newScript = clonedDoc.createElement('script');
+			newScript.textContent = `
+				const submitButton = document.getElementById('submitButton');
+				const results = document.getElementById('results');
+				const fontSizeSlider = document.getElementById('fontSizeSlider');
+				const fontSizeValue = document.getElementById('fontSizeValue');
+				const readButton = document.getElementById('readButton');
+				const pauseButton = document.getElementById('pauseButton');
+				const resumeButton = document.getElementById('resumeButton');
+				const stopButton = document.getElementById('stopButton');
+				const rateSlider = document.getElementById('rateSlider');
+				const rateValue = document.getElementById('rateValue');
+				const highlightToggle = document.getElementById('highlightToggle');
+
+				let synth = window.speechSynthesis;
+				let utterance = new SpeechSynthesisUtterance();
+
+				submitButton.addEventListener('click', checkAnswers);
+				fontSizeSlider.addEventListener('input', changeFontSize);
+				readButton.addEventListener('click', readArticle);
+				pauseButton.addEventListener('click', pauseReading);
+				resumeButton.addEventListener('click', resumeReading);
+				stopButton.addEventListener('click', stopReading);
+				rateSlider.addEventListener('input', changeRate);
+
+				function checkAnswers() {
+					let score = 0;
+					let resultsHTML = '';
+
+					const questions = document.querySelectorAll('#questionsContent > div');
+					questions.forEach((question, index) => {
+						const selectedAnswer = question.querySelector('input[type="radio"]:checked');
+						const correctAnswer = question.querySelector('.answer').dataset.answer;
+						const explanation = question.querySelector('.explanation').textContent;
+
+						if (selectedAnswer) {
+							if (selectedAnswer.value === correctAnswer) {
+								score++;
+								resultsHTML += \`<p class="text-green-600">第 \${index + 1} 題正確！</p>\`;
+							} else {
+								resultsHTML += \`<p class="text-red-600">第 \${index + 1} 題錯誤。正確答案是 \${correctAnswer}。</p>\`;
+							}
+						} else {
+							resultsHTML += \`<p class="text-gray-600">第 \${index + 1} 題未作答。正確答案是 \${correctAnswer}。</p>\`;
+						}
+						resultsHTML += \`<p class="ml-4">\${explanation}</p>\`;
+					});
+
+					resultsHTML = \`<h3 class="font-bold text-xl mb-2">得分：\${score} / \${questions.length}</h3>\` + resultsHTML;
+					results.innerHTML = resultsHTML;
+					results.classList.remove('hidden');
+				}
+
+				function changeFontSize() {
+					const fontSize = fontSizeSlider.value;
+					document.getElementById('articleContent').style.fontSize = \`\${fontSize}px\`;
+					document.getElementById('questionsContent').style.fontSize = \`\${fontSize}px\`;
+					fontSizeValue.textContent = \`\${fontSize}px\`;
+				}
+
+				function readArticle() {
+					const text = document.getElementById('articleContent').innerText;
+					const highlightToggleChecked = ${highlightToggle};
+
+					utterance = new SpeechSynthesisUtterance(text);
+					utterance.lang = 'zh-TW';
+					utterance.rate = parseFloat(rateSlider.value);
+
+					let currentIndex = 0;
+					const spans = document.querySelectorAll('#articleContent span');
+
+					utterance.onboundary = function(event) {
+						if (event.name === 'word' && highlightToggleChecked) {
+							// 移除之前的高亮
+							spans.forEach(span => span.classList.remove('highlight'));
+
+							// 計算當前單詞的結束索引
+							const wordEnd = Math.min(event.charIndex + event.charLength, spans.length);
+
+							// 高亮當前單詞
+							for (let i = event.charIndex; i < wordEnd; i++) {
+								spans[i].classList.add('highlight');
+							}
+
+							// 滾動到當前單詞
+							spans[event.charIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+						}
+					};
+
+					utterance.onend = function() {
+						// 移除所有高亮
+						spans.forEach(span => span.classList.remove('highlight'));
+					};
+
+					synth.cancel(); // 取消之前的朗讀
+					synth.speak(utterance);
+				}
+
+				function pauseReading() {
+					synth.pause();
+				}
+
+				function resumeReading() {
+					synth.resume();
+				}
+
+				function stopReading() {
+					synth.cancel();
+					// 移除所有高亮
+					const spans = document.querySelectorAll('#articleContent span');
+					spans.forEach(span => span.classList.remove('highlight'));
+				}
+
+				function changeRate() {
+					const rate = rateSlider.value;
+					utterance.rate = parseFloat(rate);
+					rateValue.textContent = \`\${rate}x\`;
+				}
+			`;
+			clonedDoc.body.appendChild(newScript);
+
+			const htmlContent = clonedDoc.documentElement.outerHTML;
+
+			const blob = new Blob([htmlContent], { type: 'text/html' });
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = '閱讀測驗.html';
+			document.body.appendChild(a);
+			a.click();
+			document.body.removeChild(a);
+			URL.revokeObjectURL(url);
+		}
+
+		document.querySelector('#saveQuizButton').addEventListener('click', saveQuizAsHTML);
+
+        function copyCmd() {
+            // 要被複製的文字
+            var text = "請幫以下文章設計三題閱讀測驗，單選題每題四個選項(每個選項一行，不用編號)，題目與題目間空一行，接著列出答案(ABCD)每個答案一行，最後列出詳解，每題一行，不用空行";
+
+            // 建立一個暫時的文本框以便複製文字
+            var textArea = document.createElement("textarea");
+            textArea.value = text;
+
+            // 使文本框不可見
+            textArea.style.position = "fixed";
+            textArea.style.left = "-999999px";
+            document.body.appendChild(textArea);
+
+            // 選取文本框的文字
+            textArea.select();
+
+            // 執行複製命令
+            try {
+                var successful = document.execCommand('copy');
+                var msg = successful ? '成功' : '失敗';
+                console.log('複製文字操作 ' + msg);
+
+                // 如果複製成功，顯示彈出訊息
+                if (successful) {
+                    alert("複製成功！");
+                }
+            } catch (err) {
+                console.error('無法複製文字', err);
+            }
+
+            // 移除文本框
+            document.body.removeChild(textArea);
+        }
+
+    </script>
+</body>
+</html>

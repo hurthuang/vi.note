@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LaTeX 數學語法查詢器</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+        #sidebar {
+            width: 300px;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 20px;
+            border-right: 1px solid #ddd;
+        }
+        #content {
+            flex-grow: 1;
+            padding: 20px;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        #search {
+            width: 100%;
+            padding: 5px;
+            margin-bottom: 10px;
+        }
+        .category {
+            margin-bottom: 10px;
+        }
+        .category-title {
+            cursor: pointer;
+            font-weight: bold;
+            padding: 5px;
+            background-color: #f0f0f0;
+            border: 1px solid #ddd;
+            width: 100%;
+            text-align: left;
+        }
+        .symbol-list {
+            display: none;
+            margin-left: 20px;
+        }
+        .symbol-item {
+            cursor: pointer;
+            margin: 5px 0;
+            padding: 3px;
+        }
+        #syntax {
+            background-color: #f0f0f0;
+            padding: 15px;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        #copy-btn {
+            margin-bottom: 15px;
+            font-size: 1em;
+            padding: 5px 10px;
+        }
+        #preview {
+            border: 1px solid #ddd;
+            padding: 15px;
+            font-size: 1.2em;
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar" role="navigation" aria-label="符號類別導覽">
+        <h2 id="category-heading">符號類別</h2>
+        <input type="text" id="search" placeholder="搜尋符號..." aria-label="搜尋符號">
+    </div>
+    <div id="content" role="main">
+        <h1>LaTeX 數學語法</h1>
+        <pre id="syntax" aria-label="LaTeX 語法"></pre>
+        <button id="copy-btn">複製語法</button>
+        <div id="preview" aria-label="數學符號預覽"></div>
+    </div>
+
+    <script>
+	const symbols = {
+	  "基本運算": [
+		{name: "加法 +", latex: "a + b"},
+		{name: "減法 -", latex: "a - b"},
+		{name: "乘法 ×", latex: "a \\times b"},
+		{name: "點乘 ·", latex: "a \\cdot b"},
+		{name: "除法 ÷", latex: "a \\div b"},
+		{name: "取模", latex: "a \\bmod b"},
+		{name: "加減 ±", latex: "a \\pm b"},
+		{name: "減加 ∓", latex: "a \\mp b"}
+	  ],
+	  "指數與根號": [
+		{name: "指數", latex: "a^{b}"},
+		{name: "平方根 √", latex: "\\sqrt{a}"},
+		{name: "n次方根", latex: "\\sqrt[n]{a}"},
+		{name: "對數", latex: "\\log_{b}(x)"},
+		{name: "自然對數", latex: "\\ln(x)"},
+		{name: "指數函數", latex: "e^x"}
+	  ],
+	  "分數與比例": [
+		{name: "分數", latex: "\\frac{a}{b}"},
+		{name: "大分數", latex: "\\dfrac{a}{b}"},
+		{name: "連分數", latex: "\\cfrac{1}{a + \\cfrac{1}{b + \\cfrac{1}{c}}}"},
+		{name: "比例", latex: "a:b"},
+		{name: "百分比 %", latex: "a\\%"}
+	  ],
+	  "集合與邏輯": [
+		{name: "屬於 ∈", latex: "a \\in A"},
+		{name: "不屬於 ∉", latex: "a \\notin A"},
+		{name: "子集 ⊂", latex: "A \\subset B"},
+		{name: "真子集 ⊊", latex: "A \\subsetneq B"},
+		{name: "空集 ∅", latex: "\\emptyset"},
+		{name: "聯集 ∪", latex: "A \\cup B"},
+		{name: "交集 ∩", latex: "A \\cap B"},
+		{name: "差集 \\", latex: "A \\setminus B"},
+		{name: "對稱差 △", latex: "A \\triangle B"},
+		{name: "笛卡爾積 ×", latex: "A \\times B"},
+		{name: "且 ∧", latex: "P \\land Q"},
+		{name: "或 ∨", latex: "P \\lor Q"},
+		{name: "非 ¬", latex: "\\neg P"},
+		{name: "蘊涵 →", latex: "P \\implies Q"},
+		{name: "等價 ↔", latex: "P \\iff Q"},
+		{name: "全稱量詞 ∀", latex: "\\forall x"},
+		{name: "存在量詞 ∃", latex: "\\exists x"}
+	  ],
+	  "關係與不等式": [
+		{name: "等於 =", latex: "a = b"},
+		{name: "不等於 ≠", latex: "a \\neq b"},
+		{name: "小於 <", latex: "a < b"},
+		{name: "大於 >", latex: "a > b"},
+		{name: "小於等於 ≤", latex: "a \\leq b"},
+		{name: "大於等於 ≥", latex: "a \\geq b"},
+		{name: "約等於 ≈", latex: "a \\approx b"},
+		{name: "恆等於 ≡", latex: "a \\equiv b"},
+		{name: "同餘 ≡", latex: "a \\equiv b \\pmod{m}"},
+		{name: "遠小於 ≪", latex: "a \\ll b"},
+		{name: "遠大於 ≫", latex: "a \\gg b"}
+	  ],
+	  "幾何與三角": [
+		{name: "角度 ∠", latex: "\\angle {ABC}"},
+		{name: "平行 ∥", latex: "\\overline{AB} \\parallel \\overline{CD}"},
+		{name: "垂直 ⊥", latex: "\\overline{AB} \\perp \\overline{CD}"},
+		{name: "三角形 △", latex: "\\triangle {ABC}"},
+		{name: "相似 ∼", latex: "\\triangle {ABC} \\sim \\triangle {DEF}"},
+		{name: "全等 ≅", latex: "\\triangle {ABC} \\cong \\triangle {DEF}"},
+		{name: "度數 °", latex: "90^{\\circ}"},
+		{name: "線段 ̅", latex: "\\overline{AB}"},
+		{name: "射線 →", latex: "\\overrightarrow{AB}"},
+		{name: "直線 ↔", latex: "\\overleftrightarrow{AB}"},
+		{name: "弧 ⌒", latex: "\\overset{\\frown}{AB}"},
+		{name: "正弦 sin", latex: "\\sin(x)"},
+		{name: "餘弦 cos", latex: "\\cos(x)"},
+		{name: "正切 tan", latex: "\\tan(x)"},
+		{name: "餘切 cot", latex: "\\cot(x)"},
+		{name: "正割 sec", latex: "\\sec(x)"},
+		{name: "餘割 csc", latex: "\\csc(x)"}
+	  ],
+		"方程式": [
+		{name: "方程式", latex: "ax + b = c"},
+		{name: "聯立方程式", latex: "\\begin{cases} a_{1}x + b_{1}y = c_{1} \\\\ a_{2}x + b_{2}y = c_{2} \\end{cases}"},
+		{name: "不等式", latex: "a < x < b"},
+		{name: "二次方程式", latex: "ax^2 + bx + c = 0"}
+	  ],
+	  "微積分": [
+		{name: "導數", latex: "f'(x)"},
+		{name: "偏導數 ∂", latex: "\\frac{\\partial f}{\\partial x}"},
+		{name: "不定積分 ∫", latex: "\\int f(x) dx"},
+		{name: "定積分", latex: "\\int_{a}^{b} f(x) dx"},
+		{name: "曲線積分 ∮", latex: "\\oint_C f(x,y) ds"},
+		{name: "極限 lim", latex: "\\lim_{x \\to a} f(x)"},
+		{name: "無窮大 ∞", latex: "\\infty"},
+		{name: "求和 Σ", latex: "\\sum_{i=1}^{n} a_i"},
+		{name: "求積 Π", latex: "\\prod_{i=1}^{n} a_i"}
+	  ],
+	  "矩陣與向量": [
+		{name: "矩陣", latex: "\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix}"},
+		{name: "行列式", latex: "\\begin{vmatrix} a & b \\\\ c & d \\end{vmatrix}"},
+		{name: "向量", latex: "\\vec{v}"},
+		{name: "單位向量", latex: "\\hat{v}"},
+		{name: "矩陣乘法", latex: "AB"},
+		{name: "點積 ·", latex: "\\mathbf{a} \\cdot \\mathbf{b}"},
+		{name: "叉積 ×", latex: "\\mathbf{a} \\times \\mathbf{b}"}
+	  ],
+	  "希臘字母": [
+		{name: "阿爾法 α", latex: "\\alpha"},
+		{name: "貝塔 β", latex: "\\beta"},
+		{name: "伽瑪 γ", latex: "\\gamma"},
+		{name: "德爾塔 δ", latex: "\\delta"},
+		{name: "厄普西隆 ε", latex: "\\epsilon"},
+		{name: "派 π", latex: "\\pi"},
+		{name: "西格瑪 σ", latex: "\\sigma"},
+		{name: "歐米加 ω", latex: "\\omega"}
+	  ],
+	  "箭頭與符號": [
+		{name: "右箭頭 →", latex: "\\rightarrow"},
+		{name: "左箭頭 ←", latex: "\\leftarrow"},
+		{name: "雙向箭頭 ↔", latex: "\\leftrightarrow"},
+		{name: "長右箭頭 ⟶", latex: "\\longrightarrow"},
+		{name: "映射 ↦", latex: "\\mapsto"},
+		{name: "因此 ∴", latex: "\\therefore"},
+		{name: "因為 ∵", latex: "\\because"},
+		{name: "垂直省略號 ⋮", latex: "\\vdots"},
+		{name: "水平省略號 ⋯", latex: "\\cdots"}
+	  ],
+	  "集合論": [
+		{name: "自然數集 ℕ", latex: "\\mathbb{N}"},
+		{name: "整數集 ℤ", latex: "\\mathbb{Z}"},
+		{name: "有理數集 ℚ", latex: "\\mathbb{Q}"},
+		{name: "實數集 ℝ", latex: "\\mathbb{R}"},
+		{name: "複數集 ℂ", latex: "\\mathbb{C}"},
+		{name: "空集 ∅", latex: "\\emptyset"},
+		{name: "冪集 𝒫", latex: "\\mathcal{P}(A)"}
+	  ],
+	  "排序與組合": [
+		{name: "階乘 !", latex: "n!"},
+		{name: "二項式係數", latex: "\\binom{n}{k}"},
+		{name: "排列", latex: "P(n,r)"},
+		{name: "組合", latex: "C(n,r)"}
+	  ],
+		"大型運算符": [
+		{name: "求和 Σ", latex: "\\sum_{i=1}^{n} a_i"},
+		{name: "求積 Π", latex: "\\prod_{i=1}^{n} a_i"},
+		{name: "餘積 ∐", latex: "\\coprod_{i=1}^{n} A_i"},
+		{name: "並集 ⋃", latex: "\\bigcup_{i=1}^{n} A_i"},
+		{name: "交集 ⋂", latex: "\\bigcap_{i=1}^{n} A_i"},
+		{name: "析取 ⋁", latex: "\\bigvee_{i=1}^{n} P_i"},
+		{name: "合取 ⋀", latex: "\\bigwedge_{i=1}^{n} P_i"},
+		{name: "極限 lim", latex: "\\lim_{x \\to \\infty} f(x)"},
+		{name: "不定積分 ∫", latex: "\\int f(x) dx"},
+		{name: "定積分", latex: "\\int_{a}^{b} f(x) dx"},
+		{name: "二重積分", latex: "\\iint_{D} f(x,y) dxdy"},
+		{name: "三重積分", latex: "\\iiint_{V} f(x,y,z) dxdydz"},
+		{name: "曲線積分 ∮", latex: "\\oint_C f(x,y) ds"},
+		{name: "曲面積分", latex: "\\iint_S f(x,y,z) dS"}
+	  ]
+	};
+
+    const sidebar = document.getElementById('sidebar');
+    const syntaxPre = document.getElementById('syntax');
+    const copyBtn = document.getElementById('copy-btn');
+    const preview = document.getElementById('preview');
+    const searchInput = document.getElementById('search');
+
+    // 生成側邊欄
+    for (const [category, items] of Object.entries(symbols)) {
+        const categoryDiv = document.createElement('div');
+        categoryDiv.className = 'category';
+        
+        const categoryTitle = document.createElement('button');
+        categoryTitle.className = 'category-title';
+        categoryTitle.textContent = category;
+        categoryTitle.setAttribute('aria-expanded', 'false');
+        categoryTitle.setAttribute('aria-controls', `list-${category}`);
+        
+        const symbolList = document.createElement('div');
+        symbolList.id = `list-${category}`;
+        symbolList.className = 'symbol-list';
+        
+        items.forEach(symbol => {
+            const symbolItem = document.createElement('div');
+            symbolItem.className = 'symbol-item';
+            symbolItem.textContent = symbol.name;
+            symbolItem.onclick = () => showSymbol(symbol);
+            symbolList.appendChild(symbolItem);
+        });
+        
+        categoryTitle.onclick = () => toggleCategory(categoryTitle, symbolList);
+        
+        categoryDiv.appendChild(categoryTitle);
+        categoryDiv.appendChild(symbolList);
+        sidebar.appendChild(categoryDiv);
+    }
+
+    function toggleCategory(title, list) {
+        const expanded = title.getAttribute('aria-expanded') === 'true';
+        
+        // 收合所有類別
+        document.querySelectorAll('.symbol-list').forEach(l => {
+            l.style.display = 'none';
+            l.previousElementSibling.setAttribute('aria-expanded', 'false');
+        });
+
+        // 如果當前類別是收合的，則展開它
+        if (!expanded) {
+            list.style.display = 'block';
+            title.setAttribute('aria-expanded', 'true');
+        }
+    }
+
+    function showSymbol(symbol) {
+        syntaxPre.textContent = `\\( ${symbol.latex} \\)`;
+        preview.innerHTML = `\\[${symbol.latex}\\]`;
+        MathJax.typeset();
+        
+        // 更新 ARIA 標籤
+        syntaxPre.setAttribute('aria-label', `LaTeX 語法：${symbol.name}`);
+        preview.setAttribute('aria-label', `數學符號預覽：${symbol.name}`);
+    }
+
+    copyBtn.onclick = () => {
+        navigator.clipboard.writeText(syntaxPre.textContent)
+            .then(() => {
+                alert('語法已複製到剪貼板');
+                copyBtn.focus(); // 保持焦點在按鈕上
+            })
+            .catch(err => console.error('無法複製語法: ', err));
+    }
+
+    // 搜尋功能
+    searchInput.addEventListener('input', () => {
+        const searchTerm = searchInput.value.toLowerCase();
+        
+        document.querySelectorAll('.category').forEach(categoryDiv => {
+            const categoryTitle = categoryDiv.querySelector('.category-title');
+            const symbolList = categoryDiv.querySelector('.symbol-list');
+            let hasMatch = false;
+
+            Array.from(symbolList.children).forEach(symbolItem => {
+                const symbol = symbols[categoryTitle.textContent].find(s => s.name === symbolItem.textContent);
+                if (symbol.name.toLowerCase().includes(searchTerm) || symbol.latex.toLowerCase().includes(searchTerm)) {
+                    symbolItem.style.display = 'block';
+                    hasMatch = true;
+                } else {
+                    symbolItem.style.display = 'none';
+                }
+            });
+
+            if (hasMatch) {
+                categoryDiv.style.display = 'block';
+                symbolList.style.display = 'block';
+                categoryTitle.setAttribute('aria-expanded', 'true');
+            } else {
+                categoryDiv.style.display = 'none';
+            }
+        });
+    });
+    </script>
+</body>
+</html>

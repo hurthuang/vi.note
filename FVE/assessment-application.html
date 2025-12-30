@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>視障巡迴評估申請表</title>
+    <style type="text/css">
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 4px;
+            font-size: 14px;
+            vertical-align: top;
+        }
+        .center {
+            text-align: center;
+        }
+        input[type="text"] {
+            width: calc(100% - 8px);
+            padding: 2px 4px;
+            margin: 0;
+            border: none;
+            border-bottom: 1px solid #999;
+            font-size: 14px;
+        }
+        input[type="text"].short {
+            width: 40px;
+            display: inline-block;
+        }
+        input[type="text"].medium {
+            width: 100px;
+            display: inline-block;
+        }
+        input[type="checkbox"] {
+            margin: 0 4px;
+            vertical-align: middle;
+        }
+        label {
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+        p {
+            margin: 4px 0;
+        }
+        .button-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .action-button {
+            margin: 0 10px;
+            padding: 8px 16px;
+            font-size: 16px;
+        }
+        textarea {
+            box-sizing: border-box;
+            width: 100%;
+            min-height: 50px;
+            resize: none;
+            overflow: hidden;
+            padding: 8px;
+            line-height: 1.5;
+        }
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #applicationForm, #applicationForm * {
+                visibility: visible;
+            }
+            #applicationForm {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            .button-container {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+<form id="applicationForm">
+    <h1 style="text-align: center">視障巡迴評估申請表</h1>
+    <table>
+        <tr>
+            <td colspan="10">申請學校：<input type="text" class="medium" /></td>
+            <td colspan="4" rowspan="2">
+                <p>申請教師：<input type="text" class="medium" /></p>
+                <p>聯絡電話：<input type="text" class="medium" /></p>
+                <p>手機：<input type="text" class="medium" /></p>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="10">
+                <p>申請年度：<label><input type="checkbox" />新申請學生</label></p>
+                <p><label><input type="checkbox" />經申請已核定之巡迴輔導學生</label><input type="text" class="short" />年度</p>
+            </td>
+        </tr>
+        <tr>
+            <td rowspan="4" class="center">學生<br>基本<br>資料</td>
+            <td colspan="3">姓名：<input type="text" class="medium" /></td>
+            <td colspan="3">性別：<label><input type="checkbox" />男</label><label><input type="checkbox" />女</label></td>
+            <td colspan="4">出生日期：<input type="text" class="short" />年<input type="text" class="short" />月<input type="text" class="short" />日</td>
+            <td colspan="3">身份證字號：<input type="text" /></td>
+        </tr>
+        <tr>
+            <td colspan="3">
+                <p>監護人/實際照顧者：<input type="text" class="medium" /></p>
+            </td>
+            <td colspan="3">關係：<input type="text" /></td>
+            <td colspan="7">
+                <p>聯絡電話：<input type="text" class="medium" /></p>
+                <p>手機：<input type="text" class="medium" /></p>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="13">地址：<input type="text" /></td>
+        </tr>
+        <tr>
+            <td colspan="13">
+                安置現況：<label><input type="checkbox" />普通班</label><input type="text" class="short" />年<input type="text" class="short" />班
+                <label><input type="checkbox" />資源班</label>
+                <label><input type="checkbox" />特教班</label><input type="text" class="short" />年<input type="text" class="short" />班
+            </td>
+        </tr>
+        <tr>
+            <td rowspan="3" class="center">申請<br>資格<br>類別</td>
+            <td colspan="13">
+                <label><input type="checkbox" />鑑輔會核定文號（附影本）：</label><input type="text" class="medium" />，障礙類別：<input type="text" class="medium" />
+            </td>
+        </tr>
+        <tr>
+            <td colspan="13">
+                <label><input type="checkbox" />鑑輔會決議障礙類別(附鑑定清冊影本)：</label><input type="text" class="medium" />，決議日期：<input type="text" class="medium" />
+            </td>
+        </tr>
+        <tr>
+            <td colspan="13">
+                <p><label><input type="checkbox" />醫師診斷證明（附影本），診斷結果：</label><input type="text" class="medium" />
+                <label><input type="checkbox" />定期就診：</label><input type="text" class="medium" /></p>
+                <p>醫院名稱：<input type="text" class="medium" />，診斷日期：<input type="text" class="medium" /></p>
+            </td>
+        </tr>
+        <tr>
+            <td rowspan="2" class="center">檢附<br>文件</td>
+            <td colspan="2">必備</td>
+            <td colspan="11">
+                <label><input type="checkbox" />學籍資料卡（含校內視力檢查資料）</label>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">選備</td>
+            <td colspan="11">
+                <p>
+                    <label><input type="checkbox" />醫師診斷證明</label>
+                    <label><input type="checkbox" />個別化教育計畫</label>
+                    <label><input type="checkbox" />輔導紀錄表</label>
+                </p>
+                <p>
+                    <label><input type="checkbox" />其他輔導介入資料</label><input class="medium" type="text" />
+                </p>
+            </td>
+        </tr>
+        <tr>
+            <td class="center">具體<br>行為<br>簡述</td>
+            <td colspan="13">
+                <p><label><input type="checkbox" />閱讀後會頭疼或眼痛</label>
+                <label><input type="checkbox" />閱讀時間短暫，容易疲勞</label>
+                <label><input type="checkbox" />常邊讀書邊揉眼睛</label></p>
+                <p><label><input type="checkbox" />手眼不協調，不會接球</label>
+                <label><input type="checkbox" />不敢自行下樓梯</label>
+                <label><input type="checkbox" />走路容易碰撞東西</label></p>
+                <p><label><input type="checkbox" />讀寫速度緩慢</label>
+                <label><input type="checkbox" />筆畫多的字常寫錯</label>
+                <label><input type="checkbox" />字體結構鬆散，筆畫歪斜</label></p>
+                <p><label><input type="checkbox" />閱讀時容易跳字漏行</label>
+                <label><input type="checkbox" />重複唸過的字句</label>
+                <label><input type="checkbox" />常以手指指著一字一字唸</label></p>
+                <p><label><input type="checkbox" />部首左右顛倒</label>
+                <label><input type="checkbox" />相似的字常混淆</label>
+                <label><input type="checkbox" />看書時頭不斷晃動</label></p>
+                <p><label><input type="checkbox" />偏頭看電視</label>
+                <label><input type="checkbox" />注意力不集中</label>
+                <label><input type="checkbox" />目位不正（鬥雞眼、斜視）</label></p>
+                <p><label><input type="checkbox" />抄黑板速度慢或常漏抄</label>
+                <label><input type="checkbox" />閱讀時一直貼近書本</label>
+                <label><input type="checkbox" />常閉起一眼，以單眼看</label></p>
+                <p><label><input type="checkbox" />反應字有複影或跳動</label>
+                <label><input type="checkbox" />逃避做近距離的工作</label>
+                <label><input type="checkbox" />畏光或對光線有特殊需求</label></p>
+                <p><label><input type="checkbox" />對顏色辨識有困難</label>
+                <label><input type="checkbox" />對圖表辨識有困難</label></p>
+                <p><label><input type="checkbox" />同樣的字，隔一行或隔一頁就不認得了</label>
+                <label><input type="checkbox" />其他</label><input type="text" /></p>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="14">
+                申請日期：中華民國 <input type="text" class="short" />年<input type="text" class="short" />月<input type="text" class="short" />日
+            </td>
+        </tr>
+        <tr>
+            <td colspan="3" class="center">法定代理人<br>/實際照顧者簽名</td>
+            <td colspan="2"></td>
+            <td class="center">特教<br>組長</td>
+            <td colspan="2"></td>
+            <td class="center">輔導<br>主任</td>
+            <td colspan="2"></td>
+            <td class="center">校長</td>
+            <td colspan="2"></td>
+        </tr>
+    </table>
+    <p style="margin-top: 20px;">
+        ※備註：<br>
+        1.本申請表核章後，向視障巡迴輔導服務學校申請視障教師評估。<br>
+        2.申請「鑑輔會鑑定安置」時，應送經視障教師評估後填寫之「視障鑑定資料表」。
+    </p>
+</form>
+
+<div class="button-container">
+    <button class="action-button" onclick="window.print()">列印表單</button>
+    <button class="action-button" onclick="downloadAsDoc()">輸出成Word檔</button>
+    <button class="action-button" onclick="exportToHTML()">輸出成HTML</button>
+</div>
+
+<script>
+function collectFormData() {
+    const form = document.getElementById('applicationForm');
+    
+    // 收集所有文字輸入
+    const textInputs = form.querySelectorAll('input[type="text"]');
+    textInputs.forEach(input => {
+        if (input.value) {
+            input.setAttribute('value', input.value);
+        }
+    });
+    
+    // 收集所有核取方塊狀態
+    const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        if (checkbox.checked) {
+            checkbox.setAttribute('checked', 'checked');
+        }
+    });
+}
+
+function exportToHTML() {
+    collectFormData();
+    
+    const html = `
+        <!DOCTYPE html>
+        <html lang="zh-TW">
+        <head>
+            <meta charset="UTF-8">
+            <title>視障巡迴評估申請表</title>
+            <style>
+              table {
+                  width: 100%;
+                  border-collapse: collapse;
+                  table-layout: fixed;
+              }
+              th, td {
+                  border: 1px solid black;
+                  padding: 4px;
+                  font-size: 14px;
+                  vertical-align: top;
+              }
+              .center {
+                  text-align: center;
+              }
+              input[type="text"] {
+                  width: calc(100% - 8px);
+                  padding: 2px 4px;
+                  margin: 0;
+                  border: none;
+                  border-bottom: 1px solid #999;
+                  font-size: 14px;
+              }
+              input[type="text"].short {
+                  width: 40px;
+                  display: inline-block;
+              }
+              input[type="text"].medium {
+                  width: 100px;
+                  display: inline-block;
+              }
+              input[type="checkbox"] {
+                  margin: 0 4px;
+                  vertical-align: middle;
+              }
+              label {
+                  margin-right: 8px;
+                  vertical-align: middle;
+              }
+              p {
+                  margin: 4px 0;
+              }
+              .button-container {
+                  margin-top: 20px;
+                  text-align: center;
+              }
+              .action-button {
+                  margin: 0 10px;
+                  padding: 8px 16px;
+                  font-size: 16px;
+              }
+              textarea {
+                  box-sizing: border-box;
+                  width: 100%;
+                  min-height: 50px;
+                  resize: none;
+                  overflow: hidden;
+                  padding: 8px;
+                  line-height: 1.5;
+              }                
+            </style>
+        </head>
+        <body>
+            ${document.querySelector('#applicationForm').innerHTML}
+        </body>
+        </html>
+    `;
+
+    const blob = new Blob([html], { type: 'text/html' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = '視障巡迴評估申請表.html';
+    link.click();
+}
+
+function downloadAsDoc() {
+    collectFormData();
+    
+    const tempContainer = document.createElement('div');
+    tempContainer.innerHTML = document.querySelector('#applicationForm').innerHTML;
+    
+    // 處理所有文字輸入框
+    tempContainer.querySelectorAll('input[type="text"]').forEach(input => {
+        const value = input.value || input.getAttribute('value') || '';
+        const span = document.createElement('span');
+        span.textContent = value + '_____';
+        input.parentNode.replaceChild(span, input);
+    });
+    
+    // 處理所有核取方塊
+    tempContainer.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        const span = document.createElement('span');
+        span.textContent = checkbox.checked ? '■' : '□';
+        checkbox.parentNode.replaceChild(span, checkbox);
+    });
+    
+    const processedHtml = tempContainer.innerHTML;
+    
+    const blob = new Blob([`
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' 
+              xmlns:w='urn:schemas-microsoft-com:office:word' 
+              xmlns='http://www.w3.org/TR/REC-html40'>
+            <head>
+                <meta charset="utf-8">
+                <title>視障巡迴評估申請表</title>
+                <style>
+                    table { border-collapse: collapse; width: 100%; }
+                    td { border: 1px solid black; padding: 4px; }
+                    .center { text-align: center; }
+                    p { margin: 4px 0; white-space: pre-wrap; }
+                </style>
+            </head>
+            <body>
+                ${processedHtml}
+            </body>
+        </html>
+    `], { type: 'application/msword' });
+            
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = '視障巡迴評估申請表.doc';
+    link.click();
+}
+</script>
+</body>
+</html>

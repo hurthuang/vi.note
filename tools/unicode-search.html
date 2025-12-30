@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Unicode 代碼查詢器</title>
+	<meta charset="utf-8">
+</head>
+<body>
+	<h1>說明</h1>
+	<p>每個字元或符號都有對應的 Unicode 代碼，有些符號無法用一般輸入法打出時，可用輸入 Unicode 代碼的方式打出，本頁面為Unicode 代碼查詢器，將字元或符號貼上即可查詢其代碼，之後可在中文輸入法底下按 `U 加上代碼即可產生字元或符號。</p>
+	<p>例如查詢乘號 &times; 的代碼是 U+00D7 ，輸入 `U00D7 後按空白鍵即可產生乘號。</p>
+	<p>&nbsp;</p>
+	<h1>Unicode 代碼查詢器</h1>
+	<form>
+		<label for="char-input">請輸入一個 Unicode 字元：</label> <input id="char-input" name="char-input" type="text"><button type="submit">查詢</button>
+	</form>
+	<div id="result" style="color:#ff0000;">
+		&nbsp;
+	</div>
+	<script>
+	          // 當表單提交時，觸發此函式
+	          document.querySelector('form').addEventListener('submit', function(event) {
+	              event.preventDefault(); // 防止表單提交
+	              const charInput = document.querySelector('#char-input').value; // 取得使用者輸入的字元
+	              const codePoint = charInput.codePointAt(0).toString(16).toUpperCase().padStart(4, '0'); // 取得字元的碼點，碼點前面補齊 0
+	              document.querySelector('#result').textContent = `字元「${charInput}」的 Unicode 代碼為 U+${codePoint}`; // 顯示結果
+	          });
+	</script>
+	<p>&nbsp;</p>
+	<h1>常用符號：</h1>
+	<table border="1">
+		<tbody>
+			<tr>
+				<td>名稱</td>
+				<td>符號</td>
+				<td>代碼</td>
+			</tr>
+			<tr>
+				<td>乘號</td>
+				<td>&times;</td>
+				<td>U+00D7</td>
+			</tr>
+			<tr>
+				<td>除號</td>
+				<td>&divide;</td>
+				<td>U+00F7</td>
+			</tr>
+			<tr>
+				<td>大於等於</td>
+				<td>&ge;</td>
+				<td>U+2265</td>
+			</tr>
+			<tr>
+				<td>小於等於</td>
+				<td>&le;</td>
+				<td>U+2264</td>
+			</tr>
+			<tr>
+				<td>平行</td>
+				<td>∥</td>
+				<td>U+2225</td>
+			</tr>
+			<tr>
+				<td>垂直</td>
+				<td>&perp;</td>
+				<td>U+22A5</td>
+			</tr>
+			<tr>
+				<td>角</td>
+				<td>&ang;</td>
+				<td>U+2220</td>
+			</tr>
+			<tr>
+				<td>因為</td>
+				<td>∵</td>
+				<td>U+2235</td>
+			</tr>
+			<tr>
+				<td>所以</td>
+				<td>&there4;</td>
+				<td>U+2234</td>
+			</tr>
+			<tr>
+				<td>alpha</td>
+				<td>&alpha;</td>
+				<td>U+03B1</td>
+			</tr>
+			<tr>
+				<td>beta</td>
+				<td>&beta;</td>
+				<td>U+03B2</td>
+			</tr>
+			<tr>
+				<td>gamma</td>
+				<td>&gamma;</td>
+				<td>U+03B3</td>
+			</tr>
+			<tr>
+				<td>theta</td>
+				<td>&theta;</td>
+				<td>U+03B8</td>
+			</tr>
+			<tr>
+				<td>lamda</td>
+				<td>&lambda;</td>
+				<td>U+03BB</td>
+			</tr>
+			<tr>
+				<td>mu</td>
+				<td>&mu;</td>
+				<td>U+03BC</td>
+			</tr>
+			<tr>
+				<td>pi</td>
+				<td>&pi;</td>
+				<td>U+03C0</td>
+			</tr>
+			<tr>
+				<td>omega</td>
+				<td>&omega;</td>
+				<td>U+03C9</td>
+			</tr>
+			<tr>
+				<td>omega</td>
+				<td>&Omega;</td>
+				<td>U+03A9</td>
+			</tr>
+			<tr>
+				<td>sigma</td>
+				<td>&Sigma;</td>
+				<td>U+03A3</td>
+			</tr>
+		</tbody>
+	</table>
+	<p>&nbsp;</p>
+	<p>完整查詢：<a href="http://symbl.cc">symbl.cc</a></p>
+</body>
+</html>

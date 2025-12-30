@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>鍵盤支援六點輸入測試</title>
+  </head>
+  <body>
+    <p style="text-align: center;">
+    	<span style="font-size:36px;">請同時按下 S D F J K L 六個按鍵</span></p>
+    <p id="key-info" style="font-size:36px; color:#0000ff; text-align: center;">
+    	&nbsp;</p>
+    <script>
+    		// 建立一個物件來存放鍵的狀態
+    		var keys = {
+    			'f': false,
+    			'd': false,
+    			's': false,
+    			'j': false,
+    			'k': false,
+    			'l': false
+    		};
+    
+    		// 設定語音合成
+    		var synth = window.speechSynthesis;
+    		var utterance = new SpeechSynthesisUtterance('你的鍵盤支援六點輸入');
+    
+    		// 監聽鍵盤按下事件
+    		document.addEventListener('keydown', function(event) {
+    			// 檢查按下的鍵是否在 keys 物件中
+    			if (event.key in keys) {
+    				// 設定對應的鍵狀態為 true
+    				keys[event.key] = true;
+    
+    				// 檢查是否按下了所有鍵
+    				var allKeysPressed = true;
+    				for (var key in keys) {
+    					if (!keys[key]) {
+    						allKeysPressed = false;
+    						break;
+    					}
+    				}
+    
+    				// 如果所有鍵都按下了，顯示你的鍵盤支援六點輸入
+    				if (allKeysPressed) {
+    					document.getElementById('key-info').innerHTML = '你的鍵盤支援六點輸入';
+    					synth.speak(utterance);
+    					// 重設鍵的狀態
+    					for (var key in keys) {
+    						keys[key] = false;
+    					}
+    				}
+    			}
+    		});
+    
+    		// 監聽鍵盤鬆開事件
+    		document.addEventListener('keyup', function(event) {
+    			// 設定對應的鍵狀態為 false
+    			keys[event.key] = false;
+    		});
+    	</script>
+  </body>
+</html>

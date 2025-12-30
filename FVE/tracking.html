@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>視覺追蹤遊戲</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 1200px;
+        }
+        .game-area {
+            width: 60%;
+            height: 400px;
+            background-color: white;
+            border: 2px solid black;
+            position: relative;
+            cursor: pointer;
+        }
+        .settings {
+            width: 35%;
+        }
+        #target {
+            position: absolute;
+            user-select: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.1s linear;
+            border-radius: 50%;
+        }
+        @keyframes invert {
+            0% { filter: invert(0%); }
+            50% { filter: invert(100%); }
+            100% { filter: invert(0%); }
+        }
+        .highlight {
+            animation: invert 0.3s ease-out;
+        }
+        button {
+            font-size: 16px;
+            margin: 10px 0;
+            padding: 5px 10px;
+        }
+        .settings label {
+            display: inline-block;
+            width: 120px;
+            margin-bottom: 5px;
+        }
+        .settings input[type="range"] {
+            width: 150px;
+        }
+        #gameOver {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0,0,0,0.8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            z-index: 100;
+        }
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 1200px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>視覺追蹤遊戲</h1>
+    <div class="container">
+        <div class="game-area" id="gameArea">
+            <div id="target">😀</div>
+            <div id="gameOver">
+                <h2>遊戲結束！</h2>
+                <p id="finalScore"></p>
+                <button onclick="restartGame()">再玩一次</button>
+            </div>
+        </div>
+        <div class="settings">
+            <label for="emojiSelect">選擇Emoji:</label>
+            <select id="emojiSelect">
+                <option value="😀">😀</option>
+                <option value="🎈">🎈</option>
+                <option value="🚀">🚀</option>
+                <option value="🌟">🌟</option>
+                <option value="🍎">🍎</option>
+                <option value="⚾">⚾</option>
+                <option value="💣">💣</option>
+            </select><br>
+            <label for="widthSlider">遊戲區寬度:</label>
+            <input type="range" id="widthSlider" min="200" max="600" value="600">
+            <span id="widthValue">600</span>px<br>
+            <label for="heightSlider">遊戲區高度:</label>
+            <input type="range" id="heightSlider" min="200" max="600" value="400">
+            <span id="heightValue">400</span>px<br>
+            <label for="difficultySlider">難度:</label>
+            <input type="range" id="difficultySlider" min="1" max="10" value="3">
+            <span id="difficultyValue">5</span><br>
+            <label for="targetSizeSlider">目標物大小:</label>
+            <input type="range" id="targetSizeSlider" min="20" max="100" value="60">
+            <span id="targetSizeValue">60</span>px<br>
+            <label for="gameTimeSlider">遊戲時間:</label>
+            <input type="range" id="gameTimeSlider" min="10" max="180" value="30">
+            <span id="gameTimeValue">30</span>秒<br>
+            <button onclick="startGame()">開始遊戲</button>
+        </div>
+    </div>
+    <div class="game-info">
+        <p id="score">得分: 0</p>
+        <p id="timeLeft">剩餘時間: 30秒</p>
+    </div>
+    <p id="instruction">調整設置並點擊"開始遊戲"按鈕來開始。儘快點擊移動的Emoji！</p>
+
+    <script>
+		let score = 0;
+		let timeLeft = 30;
+		let timeInterval;
+		let animationFrameId;
+		let dx, dy;
+		let gameStartTime;
+
+        function updateGameArea() {
+            const gameArea = document.getElementById('gameArea');
+            const width = document.getElementById('widthSlider').value;
+            const height = document.getElementById('heightSlider').value;
+            gameArea.style.width = width + 'px';
+            gameArea.style.height = height + 'px';
+            document.getElementById('widthValue').textContent = width;
+            document.getElementById('heightValue').textContent = height;
+        }
+
+        function updateDifficulty() {
+            const difficulty = document.getElementById('difficultySlider').value;
+            document.getElementById('difficultyValue').textContent = difficulty;
+        }
+
+        function updateTargetSize() {
+            const target = document.getElementById('target');
+            const size = document.getElementById('targetSizeSlider').value;
+            target.style.width = size + 'px';
+            target.style.height = size + 'px';
+            target.style.fontSize = (size * 0.8) + 'px';
+            document.getElementById('targetSizeValue').textContent = size;
+        }
+
+        function updateGameTime() {
+            const gameTime = document.getElementById('gameTimeSlider').value;
+            document.getElementById('gameTimeValue').textContent = gameTime;
+            timeLeft = parseInt(gameTime);
+            updateTimeLeft();
+        }
+
+        document.getElementById('widthSlider').oninput = updateGameArea;
+        document.getElementById('heightSlider').oninput = updateGameArea;
+        document.getElementById('difficultySlider').oninput = updateDifficulty;
+        document.getElementById('targetSizeSlider').oninput = updateTargetSize;
+        document.getElementById('gameTimeSlider').oninput = updateGameTime;
+        document.getElementById('emojiSelect').onchange = function() {
+            document.getElementById('target').textContent = this.value;
+        };
+
+        function startGame() {
+            score = 0;
+            timeLeft = parseInt(document.getElementById('gameTimeSlider').value);
+            updateScore();
+            updateTimeLeft();
+            document.getElementById('target').style.display = 'flex';
+            document.getElementById('gameOver').style.display = 'none';
+            setRandomDirection();
+            moveTarget();
+            timeInterval = setInterval(updateTime, 1000);
+            document.getElementById('gameArea').onclick = clickTarget;
+        }
+
+		function setRandomDirection() {
+			const difficulty = document.getElementById('difficultySlider').value;
+			const baseSpeed = difficulty * 0.5;
+			const minSpeed = baseSpeed * 0.3; // 確保最小速度
+
+			// 為 x 和 y 方向分別生成速度
+			dx = (Math.random() > 0.5 ? 1 : -1) * (minSpeed + Math.random() * (baseSpeed - minSpeed));
+			dy = (Math.random() > 0.5 ? 1 : -1) * (minSpeed + Math.random() * (baseSpeed - minSpeed));
+
+			// 確保至少有一個方向的速度接近最大值
+			if (Math.random() > 0.5) {
+				dx = (dx > 0 ? 1 : -1) * baseSpeed;
+			} else {
+				dy = (dy > 0 ? 1 : -1) * baseSpeed;
+			}
+		}
+
+		function moveTarget() {
+			const target = document.getElementById('target');
+			const gameArea = document.getElementById('gameArea');
+
+			let x = parseFloat(target.style.left) || Math.random() * (gameArea.offsetWidth - target.offsetWidth);
+			let y = parseFloat(target.style.top) || Math.random() * (gameArea.offsetHeight - target.offsetHeight);
+
+			function animate() {
+				x += dx;
+				y += dy;
+
+				if (x <= 0 || x >= gameArea.offsetWidth - target.offsetWidth) {
+					dx = -dx;
+					x = Math.max(0, Math.min(x, gameArea.offsetWidth - target.offsetWidth));
+					setRandomDirection(); // 碰壁時重新設置方向
+				}
+				if (y <= 0 || y >= gameArea.offsetHeight - target.offsetHeight) {
+					dy = -dy;
+					y = Math.max(0, Math.min(y, gameArea.offsetHeight - target.offsetHeight));
+					setRandomDirection(); // 碰壁時重新設置方向
+				}
+
+				target.style.left = x + 'px';
+				target.style.top = y + 'px';
+
+				animationFrameId = requestAnimationFrame(animate);
+			}
+
+			animate();
+		}
+
+
+		function clickTarget(e) {
+			const target = document.getElementById('target');
+			const gameArea = document.getElementById('gameArea');
+			const rect = target.getBoundingClientRect();
+			const gameAreaRect = gameArea.getBoundingClientRect();
+
+			// 將點擊座標轉換為相對於遊戲區域的座標
+			const clickX = e.clientX - gameAreaRect.left;
+			const clickY = e.clientY - gameAreaRect.top;
+
+			// 計算目標中心
+			const centerX = rect.left - gameAreaRect.left + rect.width / 2;
+			const centerY = rect.top - gameAreaRect.top + rect.height / 2;
+
+			// 增加點擊判定範圍，使用目標大小的 1.5 倍作為判定半徑
+			const clickRadius = target.offsetWidth * 0.9;
+
+			const distance = Math.sqrt(Math.pow(clickX - centerX, 2) + Math.pow(clickY - centerY, 2));
+
+			if (distance <= clickRadius) {
+				score++;
+				updateScore();
+				target.classList.add('highlight');
+				setTimeout(() => {
+					target.classList.remove('highlight');
+				}, 300);
+				setRandomDirection();
+			}
+		}
+
+        function updateScore() {
+            document.getElementById('score').textContent = '得分: ' + score;
+        }
+
+        function updateTime() {
+            timeLeft--;
+            if (timeLeft <= 0) {
+                endGame();
+            } else {
+                updateTimeLeft();
+            }
+        }
+
+        function updateTimeLeft() {
+            document.getElementById('timeLeft').textContent = '剩餘時間: ' + timeLeft + '秒';
+        }
+
+        function endGame() {
+            clearInterval(timeInterval);
+            cancelAnimationFrame(animationFrameId);
+            document.getElementById('target').style.display = 'none';
+            document.getElementById('gameArea').onclick = null;
+            document.getElementById('timeLeft').textContent = '剩餘時間: 0秒';
+
+            const gameOver = document.getElementById('gameOver');
+            gameOver.style.display = 'block';
+            document.getElementById('finalScore').textContent = '你的最終得分是: ' + score;
+        }
+
+        function restartGame() {
+            document.getElementById('gameOver').style.display = 'none';
+            startGame();
+        }
+
+        updateGameArea();
+        updateDifficulty();
+        updateTargetSize();
+        updateGameTime();
+    </script>
+</body>
+</html>

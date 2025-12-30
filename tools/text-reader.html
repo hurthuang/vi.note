@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        .container {800px;
+            font-family: Arial, sans-serif;
+        }
+        #content {
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px 0;
+            min-height: 200px;
+            white-space: pre-wrap;
+        }
+        .control-panel {
+            margin: 10px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .control-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        select, input[type="range"] {
+            min-width: 120px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>大字語音閱讀器</h2>
+        輸入區<br>
+        <textarea id="textInput" placeholder="請輸入文字..." rows="5" style="width: 100%"></textarea>
+        <br>
+        <input type="file" id="fileInput" accept=".txt">
+        <div class="control-panel">
+            <div class="control-item">
+                <label>語音:</label>
+                <select id="voiceSelect"></select>
+            </div>
+            <div class="control-item">
+                <label>速度:</label>
+                <input type="range" id="rateSlider" min="0.5" max="2" step="0.1" value="1">
+                <span id="rateValue">1.0</span>
+            </div>
+            <div class="control-item">
+                <label>音調:</label>
+                <input type="range" id="pitchSlider" min="0.5" max="2" step="0.1" value="1">
+                <span id="pitchValue">1.0</span>
+            </div>
+            <div class="control-item">
+                <label>文字大小:</label>
+                <input type="range" id="sizeSlider" min="12" max="150" value="16">
+                <span id="sizeValue">16px</span>
+            </div>
+        </div>
+        閱讀區<br>
+        <div id="content" style="font-size: 16px"></div>
+    </div>
+
+    <script>
+        const textInput = document.getElementById('textInput');
+        const content = document.getElementById('content');
+        const fileInput = document.getElementById('fileInput');
+        const sizeSlider = document.getElementById('sizeSlider');
+        const sizeValue = document.getElementById('sizeValue');
+        const voiceSelect = document.getElementById('voiceSelect');
+        const rateSlider = document.getElementById('rateSlider');
+        const pitchSlider = document.getElementById('pitchSlider');
+        const rateValue = document.getElementById('rateValue');
+        const pitchValue = document.getElementById('pitchValue');
+        const synth = window.speechSynthesis;
+
+        // 載入可用的語音
+        function loadVoices() {
+            const voices = synth.getVoices();
+            voiceSelect.innerHTML = voices
+                .filter(voice => voice.lang.includes('zh'))
+                .map(voice => `<option value="${voice.name}">${voice.name} (${voice.lang})</option>`)
+                .join('');
+        }
+
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = loadVoices;
+        }
+
+        loadVoices();
+
+        textInput.addEventListener('input', () => {
+            content.textContent = textInput.value;
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const text = event.target.result;
+                textInput.value = text;
+                content.textContent = text;
+            };
+            reader.readAsText(file);
+        });
+
+        sizeSlider.addEventListener('input', () => {
+            const size = sizeSlider.value;
+            content.style.fontSize = `${size}px`;
+            sizeValue.textContent = `${size}px`;
+        });
+
+        rateSlider.addEventListener('input', () => {
+            rateValue.textContent = rateSlider.value;
+        });
+
+        pitchSlider.addEventListener('input', () => {
+            pitchValue.textContent = pitchSlider.value;
+        });
+
+        content.addEventListener('click', (e) => {
+            if (e.target === content) {
+                const selection = window.getSelection();
+                const selectedText = selection.toString().trim();
+                
+                if (selectedText) {
+                    const utterance = new SpeechSynthesisUtterance(selectedText);
+                    const voices = synth.getVoices();
+                    utterance.voice = voices.find(voice => voice.name === voiceSelect.value);
+                    utterance.rate = parseFloat(rateSlider.value);
+                    utterance.pitch = parseFloat(pitchSlider.value);
+                    synth.cancel();
+                    synth.speak(utterance);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

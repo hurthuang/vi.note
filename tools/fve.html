@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>功能性視覺評估工具</title>
+    <style>
+      /* 設定 textarea 的寬度和高度 */
+      textarea {
+        width: 100%;
+        height: 500pt;
+      }
+    </style>
+  </head>
+  <body>
+<style type="text/css">
+/* 設定 textarea 的寬度和高度 */
+      textarea {
+        width: 100%;
+        height: 500pt;
+      }</style>
+<div>
+	<label for="font-size">字體大小</label> <input id="font-size" max="500" min="1" name="font-size" type="range" value="16" /> <span id="font-size-value">16pt</span></div>
+<div>
+	<label for="contrast">對比度</label> <input id="contrast" max="100" min="0" name="contrast" type="range" value="100" /> <span id="contrast-value">100%</span></div>
+<div>
+	<label for="background-color">背景顏色：</label> <input id="background-color" name="background-color" type="color" value="#ffffff" /> 
+	<label for="foreground-color">前景顏色：</label> <input id="foreground-color" name="foreground-color" type="color" value="#000000" /> 
+	<label for="font-family">字體：</label> 
+	  <select id="font-family" name="font-family">
+	  <option value="Microsoft JhengHei">微軟正黑體</option>
+	  <option value="PMingLiU">新細明體</option>
+	  <option value="DFKai-SB">標楷體</option>
+	  <option value="Arial">Arial</option>
+	  <option value="Times New Roman">Times New Roman</option>
+	  <option value="Courier New">Courier New</option>
+	  <option value="Verdana">Verdana</option>
+	  <option value="fantasy">fantasy</option>
+	  <option value="monospace">monospace</option>
+	  <option value="Georgia">Georgia</option></select></div>
+<p>
+	<textarea id="editable" name="editable">這裡輸入文字，可以透過滑桿調整字體大小、對比度、前景與背景顏色</textarea><script>
+      var fontSizeInput = document.getElementById("font-size");
+      var fontSizeValue = document.getElementById("font-size-value");
+      var contrastInput = document.getElementById("contrast");
+      var contrastValue = document.getElementById("contrast-value");
+      var backgroundColorInput = document.getElementById("background-color");
+      var foregroundColorInput = document.getElementById("foreground-color");
+      var fontFamilyInput = document.getElementById("font-family");
+      var editable = document.getElementById("editable");
+      
+      fontSizeInput.addEventListener("input", function() {
+        // 更新字體大小和顯示目前的 pt 值
+        var fontSize = fontSizeInput.value;
+        fontSizeValue.innerHTML = fontSize + "pt";
+        editable.style.fontSize = fontSize + "pt";
+      });
+      
+      contrastInput.addEventListener("input", function() {
+        // 更新對比度和顯示目前的百分比值
+        var contrast = contrastInput.value;
+        contrastValue.innerHTML = contrast + "%";
+        editable.style.filter = "contrast(" + contrast + "%)";
+      });
+      
+      backgroundColorInput.addEventListener("input", function() {
+        // 更新背景顏色
+        var backgroundColor = backgroundColorInput.value;
+        editable.style.backgroundColor = backgroundColor;
+      });
+      
+      foregroundColorInput.addEventListener("input", function() {
+        // 更新前景顏色
+        var foregroundColor = foregroundColorInput.value;
+        editable.style.color = foregroundColor;
+      });
+
+      fontFamilyInput.addEventListener("change", function() {
+        // 更新字體
+        var fontFamily = fontFamilyInput.value;
+        editable.style.fontFamily = fontFamily;
+      });
+
+    </script></p>
+  </body>
+</html>

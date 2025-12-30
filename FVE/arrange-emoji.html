@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>仿排遊戲</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .game-settings {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .setting-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        select {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            font-size: 1em;
+            background-color: white;
+        }
+        .grids-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+        }
+        .section {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            flex: 1;
+        }
+        table {
+            border-collapse: collapse;
+            margin: 0 auto;
+            width: 100%;
+        }
+        th, td {
+            border: 2px solid #ddd;
+            text-align: center;
+            width: 60px;
+            height: 60px;
+            font-size: 2em;
+            /* 確保 TD 中的內容不會接收點擊事件 */
+            pointer-events: none;
+        }
+        .player-cell {
+            background-color: #e6f7ff;
+            cursor: pointer;
+            /* 重要：啟用 TD 的點擊事件 */
+            pointer-events: auto;
+        }
+        .player-cell:hover {
+            background-color: #d6f0ff;
+        }
+        .target-cell {
+            background-color: #f0f0f0;
+        }
+        .emoji-selector {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .emoji-option {
+            font-size: 2em;
+            cursor: pointer;
+            padding: 5px;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        .emoji-option:hover {
+            background-color: #f0f0f0;
+        }
+        .emoji-option.selected {
+            border-color: #1890ff;
+            background-color: #e6f7ff;
+        }
+        .clear-option {
+            background-color: #ffeeee;
+            border: 1px dashed #ffaaaa;
+            margin-left: 10px;
+        }
+        .clear-option.selected {
+            background-color: #ffe6e6;
+            border-color: #ff4d4f;
+        }
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .new-game {
+            background-color: #1890ff;
+            color: white;
+        }
+        .new-game:hover {
+            background-color: #0c7cd5;
+        }
+        .check-answer {
+            background-color: #52c41a;
+            color: white;
+        }
+        .check-answer:hover {
+            background-color: #389e0d;
+        }
+        .reset {
+            background-color: #ff4d4f;
+            color: white;
+        }
+        .reset:hover {
+            background-color: #cf1322;
+        }
+        .message {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .success {
+            background-color: #f6ffed;
+            border: 1px solid #b7eb8f;
+            color: #52c41a;
+        }
+        .error {
+            background-color: #fff2f0;
+            border: 1px solid #ffccc7;
+            color: #ff4d4f;
+        }
+        .hidden {
+            display: none;
+        }
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border-width: 0;
+        }
+        #customItemsContainer {
+            margin-top: 15px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        #customItems {
+            width: 100%;
+            min-height: 80px;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1em;
+        }
+        .custom-submit {
+            background-color: #1890ff;
+            color: white;
+            margin-top: 10px;
+        }
+        .custom-submit:hover {
+            background-color: #0c7cd5;
+        }
+    </style>
+</head>
+<body>
+    <h1>仿排遊戲</h1>
+    
+    <div class="game-container">
+        <div class="game-settings">
+            <div class="setting-group">
+                <label for="category">選擇類別：</label>
+                <select id="category" aria-label="選擇遊戲類別">
+                    <option value="vegetables">蔬菜</option>
+                    <option value="fruits">水果</option>
+                    <option value="vehicles">交通工具</option>
+                    <option value="weather">天氣</option>
+                    <option value="animals">動物</option>
+                    <option value="sports">運動</option>
+                    <option value="food">食物</option>
+                    <option value="emotions">表情</option>
+                    <option value="music">音樂</option>
+                    <option value="numbers">數字</option>
+                    <option value="uppercaseLetters">英文大寫字母</option>
+                    <option value="lowercaseLetters">英文小寫字母</option>
+                    <option value="text1">文字1</option>
+                    <option value="text2">文字2</option>
+                    <option value="text3">文字3</option>
+                    <option value="custom">自訂</option>
+                </select>
+            </div>
+            <div class="setting-group">
+                <label for="itemCount">目標圖案數量：</label>
+                <select id="itemCount" aria-label="選擇目標圖案數量">
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                    <option value="8" selected>8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="12">12</option>
+                    <option value="13">13</option>
+                    <option value="14">14</option>
+                    <option value="15">15</option>
+                    <option value="16">16</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="customItemsContainer" class="hidden">
+            <h3>自訂項目</h3>
+            <p>請輸入要用於遊戲的項目，每個項目用逗號分隔：</p>
+            <textarea id="customItems" placeholder="例如：蘋果,橘子,香蕉,葡萄,草莓" aria-label="自訂項目輸入框"></textarea>
+            <button id="submitCustomItems" class="custom-submit">確認</button>
+        </div>
+        
+        <div class="grids-container">
+            <div class="section">
+                <h2>目標圖案</h2>
+                <table id="target-grid" aria-label="目標圖案表格">
+                    <caption class="sr-only">請記住這些圖案的排列</caption>
+                    <tbody>
+                        <!-- 目標表格將會在這裡生成 -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="section">
+                <h2>您的答案</h2>
+                <table id="player-grid" aria-label="您的答案區表格">
+                    <caption class="sr-only">請在此處放置圖案以匹配目標圖案</caption>
+                    <tbody>
+                        <!-- 玩家表格將會在這裡生成 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>選擇圖案</h2>
+            <div id="emoji-selector" class="emoji-selector" aria-label="圖案選擇區">
+                <!-- 圖案選項將會在這裡生成 -->
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="new-game" id="new-game">新遊戲</button>
+            <button class="check-answer" id="check-answer">檢查答案</button>
+            <button class="reset" id="reset">重置</button>
+            <button class="help" id="help-btn" style="background-color: #8a2be2; color: white;">操作說明</button>
+        </div>
+        
+        <div id="help-text" class="message hidden" style="background-color: #f0f4ff; border: 1px solid #8a2be2; color: #333; text-align: left; margin-top: 15px; padding: 15px;">
+            <h3 style="margin-top: 0;">操作說明：</h3>
+            <ul style="padding-left: 20px; margin-bottom: 5px; text-align: left;">
+                <li>點擊底部的圖案將其選中</li>
+                <li>點擊右側表格中的空格放置選中的圖案</li>
+                <li>要移除已放置的圖案，先點擊選擇區的清除符號(❌)，再點擊要清除的格子</li>
+                <li>要更換已放置的圖案，先選擇新圖案，再點擊要更換的位置</li>
+                <li>完成後點擊「檢查答案」確認是否全部正確</li>
+            </ul>
+        </div>
+        
+        <div id="message" class="message hidden" aria-live="polite"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 各類別圖案
+            const categoryItems = {
+                vegetables: ['🥕', '🥔', '🍆', '🥦', '🥬', '🥒', '🌽', '🧅', '🍄', '🥜', '🌰', '🧄', '🥗', '🥙', '🥪', '🥯', '🍠', '🥐'],
+                fruits: ['🍎', '🍌', '🍒', '🍇', '🍊', '🍓', '🍑', '🍍', '🥑', '🥝', '🍉', '🍋', '🍈', '🍐', '🥭', '🍏', '🥥', '🍅'],
+                vehicles: ['🚗', '🚕', '🚙', '🚌', '🚎', '🏎️', '🚓', '🚑', '🚒', '🚐', '✈️', '🚚', '🚛', '🚜', '🛵', '🏍️', '🚂', '🚆'],
+                weather: ['☀️', '🌤️', '⛅', '🌥️', '☁️', '🌦️', '🌧️', '⛈️', '🌩️', '🌨️', '❄️', '💨', '🌈', '☔', '⚡', '🌊', '🌋', '🏔️'],
+                animals: ['🐶', '🐱', '🐭', '🐹', '🐰', '🦊', '🐻', '🐼', '🐨', '🐯', '🦁', '🐮', '🐷', '🐸', '🐙', '🐝', '🦋', '🐠'],
+                sports: ['⚽', '🏀', '🏈', '⚾', '🎾', '🏐', '🏉', '🎱', '🏓', '🏸', '🏒', '🥊', '🎳', '🏋️', '🚴', '🏊', '🏄', '🎮'],
+                food: ['🍕', '🍔', '🍟', '🌭', '🍿', '🍩', '🍪', '🍰', '🍦', '🍺', '🍷', '🍵', '☕', '🥤', '🍴', '🥢', '🥗', '🍱'],
+                emotions: ['😀', '😂', '🥰', '😍', '😎', '🤔', '😴', '😭', '😱', '🤯', '🥳', '😇', '🙃', '😤', '🤒', '🤠', '🤓', '🤡'],
+                music: ['🎼', '🎵', '🎶', '🎹', '🎸', '🎺', '🥁', '🎻', '🎨', '🖌️', '🎭', '🎬', '📷', '📸', '🎤', '🎧', '📚', '🖊️'],
+                numbers: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+                uppercaseLetters: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'],
+                lowercaseLetters: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'],
+                text1: ['回', '因', '固', '困', '圈', '國', '圍', '園', '圓', '圖', '團', '囝', '囡', '囫', '圃', '圇', '囚', '四'],
+                text2: ['池', '泥', '注', '泓', '洋', '洲', '派', '泉', '泰', '洞', '洪', '涌', '源', '淵', '潮', '瀑', '灌', '滙'],
+                text3: ['松', '柏', '柿', '柳', '桐', '桑', '梅', '梧', '梓', '棟', '椿', '楊', '楓', '榆', '樺', '橘', '橙', '檜'],
+                custom: []
+            };
+            
+            // 遊戲變數
+            let selectedItem = null;
+            let targetGrid = [];
+            let playerGrid = Array(16).fill(null);
+            let currentCategory = 'vegetables';
+            let itemCount = 8;
+            
+            // DOM 元素
+            const targetGridEl = document.getElementById('target-grid');
+            const playerGridEl = document.getElementById('player-grid');
+            const emojiSelectorEl = document.getElementById('emoji-selector');
+            const categorySelect = document.getElementById('category');
+            const itemCountSelect = document.getElementById('itemCount');
+            const customItemsContainer = document.getElementById('customItemsContainer');
+            const customItemsTextarea = document.getElementById('customItems');
+            const submitCustomItemsBtn = document.getElementById('submitCustomItems');
+            const newGameBtn = document.getElementById('new-game');
+            const checkAnswerBtn = document.getElementById('check-answer');
+            const resetBtn = document.getElementById('reset');
+            const messageEl = document.getElementById('message');
+            
+            // 事件監聽器
+            categorySelect.addEventListener('change', function() {
+                currentCategory = this.value;
+                if (currentCategory === 'custom') {
+                    customItemsContainer.classList.remove('hidden');
+                } else {
+                    customItemsContainer.classList.add('hidden');
+                    initGame();
+                }
+            });
+            
+            itemCountSelect.addEventListener('change', function() {
+                itemCount = parseInt(this.value);
+                initGame();
+            });
+            
+            submitCustomItemsBtn.addEventListener('click', function() {
+                const items = customItemsTextarea.value.split(',').map(item => item.trim()).filter(item => item);
+                if (items.length < 3) {
+                    messageEl.textContent = '請至少輸入3個項目';
+                    messageEl.classList.remove('hidden', 'success', 'error');
+                    messageEl.classList.add('error');
+                    return;
+                }
+                categoryItems.custom = items;
+                initGame();
+            });
+            
+            // 初始化遊戲
+            function initGame() {
+                // 清空表格
+                targetGridEl.innerHTML = '';
+                playerGridEl.innerHTML = '';
+                emojiSelectorEl.innerHTML = '';
+                messageEl.classList.add('hidden');
+                
+                // 重置陣列
+                playerGrid = Array(16).fill(null);
+                
+                // 獲取當前類別的項目
+                const items = [...categoryItems[currentCategory]];
+                
+                // 如果項目不足，重複使用現有項目以填滿所需數量
+                while (items.length < itemCount) {
+                    items.push(...categoryItems[currentCategory]);
+                }
+                
+                // 隨機選擇項目
+                const shuffledItems = [...items].sort(() => 0.5 - Math.random());
+                const gameItems = shuffledItems.slice(0, itemCount);
+                
+                // 生成目標網格，使用隨機項目
+                targetGrid = Array(16).fill(null);
+                
+                // 創建一個有 16 個位置的網格，並隨機放置項目
+                const availablePositions = Array.from({length: 16}, (_, i) => i);
+                availablePositions.sort(() => 0.5 - Math.random());
+                
+                for (let i = 0; i < itemCount && i < availablePositions.length; i++) {
+                    const position = availablePositions[i];
+                    targetGrid[position] = gameItems[i % gameItems.length];
+                }
+                
+                // 渲染目標表格
+                for (let row = 0; row < 4; row++) {
+                    const tr = document.createElement('tr');
+                    for (let col = 0; col < 4; col++) {
+                        const td = document.createElement('td');
+                        const index = row * 4 + col;
+                        td.className = 'target-cell';
+                        if (targetGrid[index]) {
+                            td.textContent = targetGrid[index];
+                            td.setAttribute('aria-label', `位置 ${row+1} 行 ${col+1} 列：${targetGrid[index]}`);
+                        } else {
+                            td.setAttribute('aria-label', `位置 ${row+1} 行 ${col+1} 列：空白`);
+                        }
+                        tr.appendChild(td);
+                    }
+                    targetGridEl.appendChild(tr);
+                }
+                
+                // 渲染玩家表格
+                for (let row = 0; row < 4; row++) {
+                    const tr = document.createElement('tr');
+                    for (let col = 0; col < 4; col++) {
+                        const td = document.createElement('td');
+                        const index = row * 4 + col;
+                        td.className = 'player-cell';
+                        td.dataset.index = index;
+                        td.dataset.row = row;
+                        td.dataset.col = col;
+                        td.setAttribute('aria-label', `位置 ${row+1} 行 ${col+1} 列：請點擊此處放置選定的圖案`);
+                        td.tabIndex = 0; // 使其可以使用鍵盤聚焦
+                        td.addEventListener('click', handleCellClick);
+                        td.addEventListener('keydown', (e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                                handleCellClick(e);
+                            }
+                        });
+                        tr.appendChild(td);
+                    }
+                    playerGridEl.appendChild(tr);
+                }
+                
+                // 獲取目標網格中的唯一項目
+                const uniqueItems = [...new Set(targetGrid.filter(item => item !== null))];
+                
+                // 隨機排列選擇器中的項目
+                const shuffledUniqueItems = [...uniqueItems].sort(() => 0.5 - Math.random());
+                
+                // 渲染項目選擇器
+                shuffledUniqueItems.forEach(item => {
+                    const itemOption = document.createElement('div');
+                    itemOption.className = 'emoji-option';
+                    itemOption.textContent = item;
+                    itemOption.setAttribute('aria-label', `選擇圖案 ${item}`);
+                    itemOption.tabIndex = 0; // 使其可以使用鍵盤聚焦
+                    itemOption.addEventListener('click', () => handleItemSelect(item));
+                    itemOption.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            handleItemSelect(item);
+                        }
+                    });
+                    emojiSelectorEl.appendChild(itemOption);
+                });
+                
+                // 添加清除選項
+                const clearOption = document.createElement('div');
+                clearOption.className = 'emoji-option clear-option';
+                clearOption.textContent = '❌';
+                clearOption.setAttribute('aria-label', '選擇清除功能');
+                clearOption.setAttribute('title', '選擇後點擊格子可清除內容');
+                clearOption.tabIndex = 0;
+                clearOption.addEventListener('click', () => handleItemSelect('CLEAR_MARKER'));
+                clearOption.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        handleItemSelect('CLEAR_MARKER');
+                    }
+                });
+                emojiSelectorEl.appendChild(clearOption);
+            }
+            
+            // 處理項目選擇
+            function handleItemSelect(item) {
+                selectedItem = item;
+                
+                // 更新 UI 顯示選定的項目
+                document.querySelectorAll('.emoji-option').forEach(el => {
+                    el.classList.remove('selected');
+                    el.setAttribute('aria-pressed', 'false');
+                    if (el.textContent === item) {
+                        el.classList.add('selected');
+                        el.setAttribute('aria-pressed', 'true');
+                        // 宣告已選定的項目，供螢幕閱讀器使用
+                        messageEl.textContent = `已選定 ${item}，請點擊表格位置放置它`;
+                        messageEl.classList.remove('hidden', 'success', 'error');
+                        setTimeout(() => {
+                            messageEl.classList.add('hidden');
+                        }, 3000);
+                    }
+                });
+            }
+            
+            // 處理玩家表格中的雙擊清除
+            function handleCellDoubleClick(e) {
+                // 確保我們處理的是td元素
+                let cell = e.target;
+                if (cell.nodeName !== 'TD') {
+                    cell = cell.closest('td');
+                    if (!cell) return;
+                }
+                
+                const index = parseInt(cell.dataset.index);
+                const row = parseInt(cell.dataset.row) + 1;
+                const col = parseInt(cell.dataset.col) + 1;
+                
+                // 如果單元格有內容，清除它
+                if (cell.textContent) {
+                    playerGrid[index] = null;
+                    cell.textContent = '';
+                    cell.setAttribute('aria-label', `位置 ${row} 行 ${col} 列：已清除，請點擊此處放置圖案`);
+                    messageEl.textContent = `已清除位置 ${row} 行 ${col} 列的圖案`;
+                    messageEl.classList.remove('hidden', 'success', 'error');
+                    setTimeout(() => {
+                        messageEl.classList.add('hidden');
+                    }, 2000);
+                }
+            }
+            
+            // 處理玩家表格中的單元格點擊
+            function handleCellClick(e) {
+                // 確保我們處理的是td元素
+                let cell = e.target;
+                if (cell.nodeName !== 'TD') {
+                    cell = cell.closest('td');
+                    if (!cell) return;
+                }
+                
+                const index = parseInt(cell.dataset.index);
+                const row = parseInt(cell.dataset.row) + 1;
+                const col = parseInt(cell.dataset.col) + 1;
+                
+                // 如果沒有選擇圖案，提示用戶
+                if (!selectedItem) {
+                    messageEl.textContent = '請先選擇一個圖案或清除功能(❌)，再點擊表格位置';
+                    messageEl.classList.remove('hidden', 'success', 'error');
+                    setTimeout(() => {
+                        messageEl.classList.add('hidden');
+                    }, 3000);
+                    return;
+                }
+                
+                // 如果選中了清除標記
+                if (selectedItem === 'CLEAR_MARKER') {
+                    if (cell.textContent) {
+                        playerGrid[index] = null;
+                        cell.textContent = '';
+                        cell.setAttribute('aria-label', `位置 ${row} 行 ${col} 列：已清除，請點擊此處放置圖案`);
+                        messageEl.textContent = `已清除位置 ${row} 行 ${col} 列的圖案`;
+                        messageEl.classList.remove('hidden', 'success', 'error');
+                        setTimeout(() => {
+                            messageEl.classList.add('hidden');
+                        }, 2000);
+                    }
+                    return;
+                }
+                
+                // 放置新圖案
+                playerGrid[index] = selectedItem;
+                cell.textContent = selectedItem;
+                cell.setAttribute('aria-label', `位置 ${row} 行 ${col} 列：${selectedItem}`);
+            }
+            
+            // 檢查玩家的答案是否與目標相符
+            function checkAnswer() {
+                let correct = true;
+                
+                for (let i = 0; i < 16; i++) {
+                    if (targetGrid[i] !== playerGrid[i]) {
+                        correct = false;
+                        break;
+                    }
+                }
+                
+                // 顯示結果消息
+                messageEl.classList.remove('hidden', 'success', 'error');
+                if (correct) {
+                    messageEl.textContent = '恭喜！您成功複製了目標圖案！';
+                    messageEl.classList.add('success');
+                } else {
+                    messageEl.textContent = '還沒完成，請繼續嘗試！';
+                    messageEl.classList.add('error');
+                }
+            }
+            
+            // 重置玩家的表格
+            function resetGrid() {
+                playerGrid = Array(16).fill(null);
+                document.querySelectorAll('.player-cell').forEach(cell => {
+                    cell.textContent = '';
+                    const row = parseInt(cell.dataset.row) + 1;
+                    const col = parseInt(cell.dataset.col) + 1;
+                    cell.setAttribute('aria-label', `位置 ${row} 行 ${col} 列：請點擊此處放置選定的圖案`);
+                });
+                messageEl.classList.add('hidden');
+                
+                // 清除項目選擇
+                selectedItem = null;
+                document.querySelectorAll('.emoji-option').forEach(el => {
+                    el.classList.remove('selected');
+                    el.setAttribute('aria-pressed', 'false');
+                });
+            }
+            
+            // 按鈕的事件監聽器
+            newGameBtn.addEventListener('click', initGame);
+            checkAnswerBtn.addEventListener('click', checkAnswer);
+            resetBtn.addEventListener('click', resetGrid);
+            
+            // 操作說明按鈕
+            const helpBtn = document.getElementById('help-btn');
+            const helpText = document.getElementById('help-text');
+            
+            helpBtn.addEventListener('click', function() {
+                if (helpText.classList.contains('hidden')) {
+                    helpText.classList.remove('hidden');
+                    helpBtn.textContent = '隱藏說明';
+                } else {
+                    helpText.classList.add('hidden');
+                    helpBtn.textContent = '操作說明';
+                }
+            });
+            
+            // 頁面載入時初始化遊戲
+            initGame();
+        });
+    </script>
+</body>
+</html>

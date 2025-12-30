@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unicode 編碼查詢器</title>
+  </head>
+  <body>
+<div>
+	<textarea id="textInput" oninput="updateUnicode()" placeholder="請輸入文字" style="width: 50%; height: 100px;"></textarea>
+	<textarea id="unicodeInput" oninput="updateText()" placeholder="請輸入Unicode編碼" style="width: 50%; height: 100px;"></textarea>
+</div>
+<script>
+    function updateUnicode() {
+      var textInput = document.getElementById('textInput').value;
+      var unicodeResult = '';
+
+      for (var i = 0; i < textInput.length; i++) {
+        unicodeResult += '\\u' + textInput.charCodeAt(i).toString(16).toUpperCase();
+      }
+
+      document.getElementById('unicodeInput').value = unicodeResult;
+    }
+
+    function updateText() {
+      var unicodeInput = document.getElementById('unicodeInput').value;
+      var textResult = '';
+
+      unicodeInput = unicodeInput.replace(/\\u[\dA-Fa-f]{4}/g, function(match) {
+        return String.fromCharCode(parseInt(match.substring(2), 16));
+      });
+
+      document.getElementById('textInput').value = unicodeInput;
+    }
+  </script>
+  </body>
+</html>

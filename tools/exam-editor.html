@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>簡易試卷整理</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        textarea {
+            width: 100%;
+            height: 300px;
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            padding: 10px 15px;
+            margin-right: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #fontSizeControl {
+            margin-bottom: 10px;
+        }
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+        #popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            z-index: 1001;
+        }
+        #popupContent {
+            margin-bottom: 10px;
+        }
+        #popupContent input, #popupContent select {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+		        .highlight {
+            background-color: yellow;
+        }
+        #ttsControls {
+            margin-top: 10px;
+        }
+        #ttsControls button, #ttsControls input {
+            margin-right: 10px;
+        }
+		        .editor-container {
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>簡易試卷整理</h1>
+        <div id="fontSizeControl">
+            <label for="fontSizeSlider">字體大小: </label>
+            <input type="range" id="fontSizeSlider" min="8" max="32" value="16">
+            <span id="fontSizeDisplay">16px</span>
+        </div>
+        <textarea id="textArea"></textarea>
+        <div>
+            <button onclick="formatOptions()">試卷格式化</button>
+            <button onclick="addSpace()">添加空格</button>
+			<button onclick="showPopup('textOperation')">取代與刪除</button>
+            <button onclick="toggleBrailleMode()">切換點字輸入模式</button>
+			<button onclick="preprocessForConversion()">轉檔前處理</button>
+            <button onclick="saveTextAsFile()">儲存為檔案</button>
+            <button onclick="copyToClipboard()">複製到剪貼簿</button>
+        </div>
+		<div id="ttsControls">
+            <button onclick="startReading()">開始報讀</button>
+            <button onclick="stopReading()">停止報讀</button>
+            <label for="speedSlider">語速: </label>
+            <input type="range" id="speedSlider" min="0.5" max="2" step="0.1" value="1">
+            <span id="speedDisplay">1x</span>
+        </div>
+        <p>當前模式: <span id="mode">一般輸入法</span> (Ctrl+B 切換)</p>
+    </div>
+
+    <div id="overlay">
+        <div id="popup">
+            <div id="popupContent"></div>
+            <button onclick="executeAction()">執行</button>
+            <button onclick="closePopup()">取消</button>
+        </div>
+    </div>
+
+    <script>
+        let originalText = '';
+        let currentOption = '';
+        let isBrailleMode = false;
+        const textarea = document.getElementById('textArea');
+        const modeSpan = document.getElementById('mode');
+        const fontSizeSlider = document.getElementById('fontSizeSlider');
+        const fontSizeDisplay = document.getElementById('fontSizeDisplay');
+        let dots = [0, 0, 0, 0, 0, 0];
+        let brailleCode = 0;
+
+        fontSizeSlider.addEventListener('input', function() {
+            const fontSize = this.value;
+            textarea.style.fontSize = `${fontSize}px`;
+            fontSizeDisplay.textContent = `${fontSize}px`;
+        });
+
+        function formatOptions() {
+            let text = textarea.value;
+            
+            // 原有的格式化邏輯
+            text = text.replace(/\t/g, " ").replace(/　/g, " ").replace(/ {2,}/g, " ").replace(/（/g, '(').replace(/）/g, ')');
+            let paragraphs = text.split(/\n\s*/);
+            paragraphs = paragraphs.map((paragraph, index) => {
+                if (/\([A-Z]\)/.test(paragraph)) {
+                    let options = paragraph.split(/(?=\([A-D]\))/);
+                    options = options.map(option => option.trim().replace(/^\(([A-D])\)\s*/, "($1) "));
+                    return options.join('\n') + '\n';
+                }
+                return paragraph;
+            });
+            text = paragraphs.join('\n');
+            text = text.replace(/(\([A-D]\)\s[^\n]*)(\n\s*\n(?=\([A-D]\)))/g, '$1\n');
+            
+            // 處理不正確的斷行
+            let lines = text.split('\n');
+            let formattedLines = [];
+            
+            for (let i = 0; i < lines.length; i++) {
+                let currentLine = lines[i].trim();
+                
+                // 如果不是選項且不是空行
+                if (!/^\([A-D]\)/.test(currentLine) && currentLine !== '') {
+                    // 檢查是否需要與下一行合併
+                    while (i < lines.length - 1 && 
+                           !/[。？！」：]\s*$/.test(currentLine) && 
+                           !/^\([A-D]\)/.test(lines[i+1]) &&
+                           lines[i+1].trim() !== '') {
+                        // 如果當前行不是以結束性標點結尾，且下一行不是選項也不是空行，則合併
+                        // 直接合併，不添加空格
+                        currentLine = currentLine + lines[i+1].trim();
+                        i++; // 跳過下一行，因為已經合併了
+                    }
+                }
+                
+                formattedLines.push(currentLine);
+            }
+            
+            // 重新組合文本
+            text = formattedLines.join('\n');
+            
+            textarea.value = text.trim();
+        }
+
+        function preprocessForConversion() {
+            let text = textarea.value;
+            let lines = text.split('\n');
+            let formattedLines = [];
+            let isInOptions = false;
+
+            for (let i = 0; i < lines.length; i++) {
+                let currentLine = lines[i].trim();
+
+                // 檢查是否是選項
+                if (/^\([A-D]\)/.test(currentLine)) {
+                    if (!isInOptions) {
+                        // 如果是新的選項組，先添加兩個空行（除非是文本的開始）
+                        if (formattedLines.length > 0) {
+                            formattedLines.push('', '');
+                        }
+                        isInOptions = true;
+                    }
+                    formattedLines.push(currentLine);
+                } else if (currentLine !== '') {
+                    // 如果不是選項且不是空行，認為是新的題目
+                    if (isInOptions) {
+                        // 如果之前是選項，現在是新題目，添加兩個空行
+                        formattedLines.push('', '');
+                        isInOptions = false;
+                    } else if (formattedLines.length > 0) {
+                        // 如果之前不是選項，但也不是文本開始，也添加兩個空行
+                        formattedLines.push('', '');
+                    }
+                    formattedLines.push(currentLine);
+                }
+            }
+
+            // 重新組合文本
+            text = formattedLines.join('\n');
+            textarea.value = text.trim();
+        }
+
+
+        function showPopup(option) {
+            currentOption = option;
+            const overlay = document.getElementById('overlay');
+            const popupContent = document.getElementById('popupContent');
+            let content = '';
+
+            if (option === 'textOperation') {
+                content = `
+                    <select id="operationType">
+                        <option value="replace">替換文字</option>
+                        <option value="replaceStartEnd">替換開始/結束文字</option>
+                        <option value="deleteEnclosed">刪除包含文字</option>
+                        <option value="deleteMiddle">刪除中間文字</option>
+                    </select>
+                    <div id="operationFields"></div>
+                `;
+                popupContent.innerHTML = content;
+                document.getElementById('operationType').addEventListener('change', updateOperationFields);
+                updateOperationFields();
+            }
+
+            overlay.style.display = 'block';
+        }
+
+        function updateOperationFields() {
+            const operationType = document.getElementById('operationType').value;
+            const operationFields = document.getElementById('operationFields');
+            let fieldsContent = '';
+
+            switch(operationType) {
+                case 'replace':
+                    fieldsContent = `
+                        <label for="findText">要尋找的文字：</label>
+                        <input type="text" id="findText">
+                        <label for="replaceText">要替換的文字：</label>
+                        <input type="text" id="replaceText">
+                    `;
+                    break;
+                case 'replaceStartEnd':
+                    fieldsContent = `
+                        <label for="startText">開始文字：</label>
+                        <input type="text" id="startText">
+                        <label for="endText">結束文字：</label>
+                        <input type="text" id="endText">
+                        <label for="newStartText">新的開始文字：</label>
+                        <input type="text" id="newStartText">
+                        <label for="newEndText">新的結束文字：</label>
+                        <input type="text" id="newEndText">
+                    `;
+                    break;
+                case 'deleteEnclosed':
+                case 'deleteMiddle':
+                    fieldsContent = `
+                        <label for="prefix">前綴：</label>
+                        <input type="text" id="prefix">
+                        <label for="suffix">後綴：</label>
+                        <input type="text" id="suffix">
+                    `;
+                    break;
+            }
+
+            operationFields.innerHTML = fieldsContent;
+        }
+
+        function executeAction() {
+            originalText = textarea.value;
+            const operationType = document.getElementById('operationType').value;
+
+            switch(operationType) {
+                case 'replace':
+                    const find = escapeRegExp(document.getElementById('findText').value);
+                    const replace = document.getElementById('replaceText').value;
+                    textarea.value = textarea.value.replace(new RegExp(find, 'g'), replace);
+                    break;
+                case 'replaceStartEnd':
+                    const start = escapeRegExp(document.getElementById('startText').value);
+                    const end = escapeRegExp(document.getElementById('endText').value);
+                    const newStart = document.getElementById('newStartText').value;
+                    const newEnd = document.getElementById('newEndText').value;
+                    const regex = new RegExp(`${start}(.*?)${end}`, 'gs');
+                    textarea.value = textarea.value.replace(regex, `${newStart}$1${newEnd}`);
+                    break;
+                case 'deleteEnclosed':
+                    const prefix = escapeRegExp(document.getElementById('prefix').value);
+                    const suffix = escapeRegExp(document.getElementById('suffix').value);
+                    const deleteRegex = new RegExp(`${prefix}.*?${suffix}`, 'gs');
+                    textarea.value = textarea.value.replace(deleteRegex, '');
+                    break;
+                case 'deleteMiddle':
+                    const prefixDM = escapeRegExp(document.getElementById('prefix').value);
+                    const suffixDM = escapeRegExp(document.getElementById('suffix').value);
+                    const deleteMiddleRegex = new RegExp(`(${prefixDM}).*?(${suffixDM})`, 'gs');
+                    textarea.value = textarea.value.replace(deleteMiddleRegex, '$1$2');
+                    break;
+            }
+
+            closePopup();
+        }
+
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        function closePopup() {
+            document.getElementById('overlay').style.display = 'none';
+        }
+
+        function addSpace() {
+            let text = textarea.value;
+            
+            // 定義中文字符範圍
+            const chineseChar = /[\u4e00-\u9fa5\u3040-\u30ff]/;
+            
+            // 定義英數和半形標點
+            const nonChineseChar = /[a-zA-Z0-9!-/:-@\[-`{-~]/;
+            
+            // 在中文和非中文字符之間添加空格
+            text = text.replace(new RegExp(`(${chineseChar.source})(?=${nonChineseChar.source})|(?<=${nonChineseChar.source})(${chineseChar.source})`, 'g'), '$1 $2');
+            
+            // 將多個空格縮減為一個空格
+            text = text.replace(/ +/g, " ");
+            
+            // 處理行首的題號格式
+            text = text.replace(/^(\d+)\s*\.\s*/gm, "$1. ");
+            
+            textarea.value = text;
+        }
+
+        function toggleBrailleMode() {
+            isBrailleMode = !isBrailleMode;
+            modeSpan.textContent = isBrailleMode ? "點字輸入法" : "一般輸入法";
+        }
+
+        function keypressFunction(event) {
+            if (!isBrailleMode) return true;
+            if ((event.keyCode == 37) || (event.keyCode == 39) || (event.keyCode == 8) || (event.keyCode == 9) || (event.keyCode == 46) || (event.keyCode == 13)) {
+                return true;
+            }
+            event.preventDefault();
+            return false;
+        }
+
+        function keydownFunction(event) {
+            // 防止 Ctrl+B 觸發瀏覽器內建功能
+            if (event.ctrlKey && event.key.toLowerCase() === 'b') {
+                event.preventDefault();
+                toggleBrailleMode();
+                return false;
+            }
+
+            if (!isBrailleMode) return true;
+            if ((event.keyCode != 37) && (event.keyCode != 39) && (event.keyCode != 8) && (event.keyCode != 9) && (event.keyCode != 46) && (event.keyCode != 13)) {
+                if (event.keyCode == 83) {
+                    dots[0] = 1;
+                    brailleCode = brailleCode | 4;
+                } else if (event.keyCode == 68) {
+                    dots[1] = 1;
+                    brailleCode = brailleCode | 2;
+                } else if (event.keyCode == 70) {
+                    dots[2] = 1;
+                    brailleCode = brailleCode | 1;
+                } else if (event.keyCode == 74) {
+                    dots[3] = 1;
+                    brailleCode = brailleCode | 8;
+                } else if (event.keyCode == 75) {
+                    dots[4] = 1;
+                    brailleCode = brailleCode | 16;
+                } else if (event.keyCode == 76) {
+                    dots[5] = 1;
+                    brailleCode = brailleCode | 32;
+                } else if (event.keyCode == 32) {
+                    brailleCode = 65;
+                    return true;
+                }
+                return false;
+            }
+        }
+
+        function keyupFunction(event) {
+            if (!isBrailleMode) return true;
+            for (let i = 0; i < 6; i++) {
+                dots[i] = 0;
+            }
+            if (brailleCode == 0) {
+                return false;
+            } else {
+                if (brailleCode == 65) {
+                    brailleCode = 0;
+                }
+                var sPos = textarea.selectionStart;
+                var ePos = textarea.selectionEnd;
+                var brl = String.fromCharCode(0x2800 + brailleCode);
+                var a = textarea.value;
+                var output = a.slice(0, sPos) + brl + a.slice(ePos);
+                textarea.value = output;
+                setCaretPosition(textarea, sPos + 1);
+            }
+            brailleCode = 0;
+            return false;
+        }
+
+        function setCaretPosition(ctrl, pos) {
+            if (ctrl.setSelectionRange) {
+                ctrl.focus();
+                ctrl.setSelectionRange(pos, pos);
+            } else if (ctrl.createTextRange) {
+                var range = ctrl.createTextRange();
+                range.collapse(true);
+                range.moveEnd('character', pos);
+                range.moveStart('character', pos);
+                range.select();
+            }
+        }
+
+        function saveTextAsFile() {
+            var textToSave = textarea.value;
+            var textToSaveAsBlob = new Blob([textToSave], {type:"text/plain"});
+            var textToSaveAsURL = window.URL.createObjectURL(textToSaveAsBlob);
+            var fileNameToSaveAs = "edited_text.txt";
+
+            var downloadLink = document.createElement("a");
+            downloadLink.download = fileNameToSaveAs;
+            downloadLink.innerHTML = "Download File";
+            downloadLink.href = textToSaveAsURL;
+            downloadLink.onclick = destroyClickedElement;
+            downloadLink.style.display = "none";
+            document.body.appendChild(downloadLink);
+
+            downloadLink.click();
+        }
+		        function destroyClickedElement(event) {
+            document.body.removeChild(event.target);
+        }
+
+        function copyToClipboard() {
+            textarea.select();
+            document.execCommand("copy");
+            alert("已經複製到剪貼簿！");
+        }
+
+        // 事件監聽器
+        textarea.addEventListener('keypress', keypressFunction);
+        textarea.addEventListener('keydown', keydownFunction);
+        textarea.addEventListener('keyup', keyupFunction);
+
+        // 防止瀏覽器默認的 Ctrl+B 行為
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key.toLowerCase() === 'b') {
+                e.preventDefault();
+            }
+        });
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 設置初始字體大小
+            const initialFontSize = fontSizeSlider.value;
+            textarea.style.fontSize = `${initialFontSize}px`;
+            fontSizeDisplay.textContent = `${initialFontSize}px`;
+        });
+		
+
+        let synth = window.speechSynthesis;
+        let utterance = new SpeechSynthesisUtterance();
+        let isReading = false;
+        let startCharIndex = 0;
+        let currentCharIndex = 0;
+        let lastWordBoundary = 0;
+        const textArea = document.getElementById('textArea');
+
+        function startReading() {
+            if (isReading) return;
+            
+            let text = textArea.value;
+            startCharIndex = textArea.selectionStart;
+            currentCharIndex = startCharIndex;
+            lastWordBoundary = startCharIndex;
+            
+            utterance.text = text.substring(startCharIndex);
+            utterance.lang = 'zh-TW';
+            utterance.rate = parseFloat(document.getElementById('speedSlider').value);
+            
+            utterance.onboundary = function(event) {
+                if (event.name === 'word') {
+                    lastWordBoundary = startCharIndex + event.charIndex;
+                    currentCharIndex = lastWordBoundary;
+                }
+            };
+            
+            utterance.onend = function() {
+                isReading = false;
+                selectLastSpokenWord();
+            };
+            
+            synth.speak(utterance);
+            isReading = true;
+        }
+
+        function stopReading() {
+            if (!isReading) return;
+            
+            synth.cancel();
+            isReading = false;
+            selectLastSpokenWord();
+        }
+
+        function selectLastSpokenWord() {
+            let text = textArea.value;
+            let endIndex = findNextWordBoundary(text, currentCharIndex);
+            textArea.focus();
+            textArea.setSelectionRange(lastWordBoundary, endIndex);
+        }
+
+        function findNextWordBoundary(text, startIndex) {
+            let index = startIndex;
+            while (index < text.length && !/\s/.test(text[index])) {
+                index++;
+            }
+            return index;
+        }
+
+        document.getElementById('speedSlider').addEventListener('input', function() {
+            let speed = this.value;
+            document.getElementById('speedDisplay').textContent = speed + 'x';
+            if (isReading) {
+                utterance.rate = parseFloat(speed);
+                synth.cancel();
+                synth.speak(utterance);
+            }
+        });
+
+        // 更新字體大小
+        document.getElementById('fontSizeSlider').addEventListener('input', function() {
+            const fontSize = this.value;
+            textArea.style.fontSize = `${fontSize}px`;
+            document.getElementById('fontSizeDisplay').textContent = `${fontSize}px`;
+        });
+
+    </script>
+</body>
+</html>

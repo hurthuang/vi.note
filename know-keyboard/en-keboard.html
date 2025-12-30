@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>認識英文鍵盤(大字+語音)</title>
+ 
+    <link href="/style.css" rel="stylesheet" type="text/css" media="all">
+  </head>
+  <body>
+ <p>
+	<span style="font-size:72px;">請按下任意按鍵：</span></p>
+<div id="output" style="font-size: 150px; text-align: center; color: blue;">
+	&nbsp;</div>
+<p>
+	選擇語音角色：</p>
+<p>
+	<select id="voices"></select> <script>
+      // 創建語音合成器對象
+      const synth = window.speechSynthesis;
+
+      // 創建 SpeechRecognition 對象
+      const recognition = new window.webkitSpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = false;
+      recognition.lang = 'zh-TW'; // 設置語言為中文
+
+      // 獲取語音合成器支援的語音角色列表
+      let voices = [];
+      function populateVoiceList() {
+        voices = synth.getVoices();
+        const voiceSelect = document.getElementById('voices');
+        voices.forEach(function(voice, i) {
+          const option = document.createElement('option');
+          option.value = voice.name;
+          option.textContent = `${voice.name} (${voice.lang})`;
+          voiceSelect.appendChild(option);
+        });
+      }
+      populateVoiceList();
+
+      // 綁定 keydown 事件
+      document.addEventListener('keydown', function(event) {
+        // 顯示按下的按鍵與其keycode
+        const output = document.getElementById('output');
+        const keycode = event.keyCode || event.which;
+        output.innerHTML = `${event.key}`;
+
+        // 使用語音合成器唸出按下的按鍵
+        const utterance = new SpeechSynthesisUtterance(event.key);
+        const selectedVoice = document.getElementById('voices').value;
+        const voice = voices.find(function(voice) {
+          return voice.name === selectedVoice;
+        });
+        utterance.voice = voice;
+        synth.speak(utterance);
+      });
+
+      // 更新語音角色列表
+      synth.onvoiceschanged = function() {
+        const voiceSelect = document.getElementById('voices');
+        voiceSelect.innerHTML = '';
+        populateVoiceList();
+      };
+    </script></p>
+  </body>
+</html>

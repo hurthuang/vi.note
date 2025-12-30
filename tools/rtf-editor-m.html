@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RTF 編輯器(可插入 LaTeX)</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <style>
+        #editor {
+            border: 1px solid #ccc;
+            padding: 10px;
+            min-height: 200px;
+        }
+        .editor-fixed-height {
+            height: 300px;
+            overflow-y: auto;
+        }
+        .toolbar {
+            margin-bottom: 10px;
+        }
+        .toolbar button, .toolbar select, .toolbar input {
+            margin: 2px;
+            padding: 5px;
+        }
+        .toolbar button i {
+            font-size: 16px;
+        }
+        #findReplacePanel {
+            display: none;
+            margin-top: 10px;
+        }
+        #presetTextModal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+		
+		#headingSelect option {
+            font-weight: bold;
+        }
+        #headingSelect option[value="h1"] {
+            font-size: 2em;
+        }
+        #headingSelect option[value="h2"] {
+            font-size: 1.5em;
+        }
+        #headingSelect option[value="h3"] {
+            font-size: 1.17em;
+        }
+        #headingSelect option[value="h4"] {
+            font-size: 1em;
+        }
+        #headingSelect option[value="h5"] {
+            font-size: 0.83em;
+        }
+        #headingSelect option[value="h6"] {
+            font-size: 0.67em;
+        }
+        .math-node {
+            display: inline-block;
+            vertical-align: middle;
+            border: 1px solid #ccc;
+            padding: 2px;
+            margin: 0 2px;
+            cursor: pointer;
+        }
+        .math-input {
+            width: 200px;
+            padding: 2px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <button onclick="openFile()"><i class="fas fa-folder-open"></i> 開啟</button>
+        <button onclick="saveFile()"><i class="fas fa-save"></i> 儲存</button>
+        <select id="headingSelect" onchange="applyHeading(this.value)">
+            <option value="">標題級別</option>
+            <option value="h1">標題 1</option>
+            <option value="h2">標題 2</option>
+            <option value="h3">標題 3</option>
+            <option value="h4">標題 4</option>
+            <option value="h5">標題 5</option>
+            <option value="h6">標題 6</option>
+            <option value="p">正文</option>
+        </select>
+        <select onchange="execCmd('fontSize', this.value)">
+            <option value="">字號</option>
+            <option value="1">小</option>
+            <option value="3">正常</option>
+            <option value="5">大</option>
+            <option value="7">特大</option>
+        </select>
+        <button onclick="execCmd('bold')"><i class="fas fa-bold"></i></button>
+        <button onclick="execCmd('italic')"><i class="fas fa-italic"></i></button>
+        <button onclick="execCmd('underline')"><i class="fas fa-underline"></i></button>
+        <button onclick="execCmd('foreColor', prompt('輸入顏色（如 #ff0000）:'))"><i class="fas fa-font"></i></button>
+        <button onclick="execCmd('hiliteColor', prompt('輸入顏色（如 #ffff00）:'))"><i class="fas fa-fill-drip"></i></button>
+        <button onclick="execCmd('justifyLeft')"><i class="fas fa-align-left"></i></button>
+        <button onclick="execCmd('justifyCenter')"><i class="fas fa-align-center"></i></button>
+        <button onclick="execCmd('justifyRight')"><i class="fas fa-align-right"></i></button>
+        <button onclick="execCmd('insertOrderedList')"><i class="fas fa-list-ol"></i></button>
+        <button onclick="execCmd('insertUnorderedList')"><i class="fas fa-list-ul"></i></button>
+        <button onclick="insertTable()"><i class="fas fa-table"></i></button>
+        <button onclick="insertLink()"><i class="fas fa-link"></i></button>
+		<button onclick="openPresetTextModal()"><i class="fas fa-list-alt"></i> 插入文字</button>
+        <button onclick="clearFormatting()"><i class="fas fa-eraser"></i> 清除格式</button>
+        <button onclick="formatOptions()"><i class="fas fa-magic"></i> 整理格式</button>
+        <button id="toggleFindReplaceBtn"><i class="fas fa-search"></i> 尋找/取代</button>
+        <button onclick="preprocessForConversion()"><i class="fas fa-file-export"></i> 轉檔前置</button>
+		<button onclick="insertMathEquation()"><i class="fas fa-square-root-alt"></i></button>
+    </div>
+    <div id="findReplacePanel">
+        <input type="text" id="findText" placeholder="尋找">
+        <input type="text" id="replaceText" placeholder="取代">
+        <button onclick="findNext()">尋找下一個</button>
+        <button onclick="replaceNext()">取代</button>
+        <button onclick="replaceAll()">全部取代</button>
+    </div>
+	<div>
+        <input type="checkbox" id="fixedHeightToggle">
+        <label for="fixedHeightToggle">固定高度模式</label>
+    </div>
+    <div id="editor" contenteditable="true">
+
+    </div>
+	<div>
+	按 Ctrl + M 可插入或修改數學式，按 ESC 完成編輯
+	</div>
+    <div id="presetTextModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closePresetTextModal()">&times;</span>
+            <h2>選擇預設文字</h2>
+            <select id="presetTextSelect" style="width: 100%; padding: 5px; margin-bottom: 10px;">
+                <option value="">請選擇</option>
+                <option value="請參閱附圖">請參閱附圖</option>
+                <option value="選項請參閱附圖">選項請參閱附圖</option>
+                <option value="此題視障生不作答">此題視障生不作答</option>
+				<option value="請參閱紙本試卷">請參閱紙本試卷</option>
+            </select>
+            <button onclick="insertPresetText()">插入</button>
+        </div>
+    </div>
+    <script>
+	
+        function execCmd(command, value = null) {
+            document.execCommand(command, false, value);
+        }
+
+        function applyHeading(tag) {
+            if (tag === 'p') {
+                document.execCommand('formatBlock', false, '<p>');
+            } else if (['h1', 'h2', 'h3', 'h4', 'h5', 'h6'].includes(tag)) {
+                document.execCommand('formatBlock', false, '<' + tag + '>');
+            }
+            // 在應用標題後更新選擇框
+            setTimeout(updateHeadingSelect, 0);
+        }
+
+        function insertTable() {
+            var rows = prompt('請輸入行數:', '2');
+            var cols = prompt('請輸入列數:', '2');
+            
+            if (rows && cols) {
+                var table = '<table border="1" style="border-collapse: collapse;">';
+                for (var i = 0; i < rows; i++) {
+                    table += '<tr>';
+                    for (var j = 0; j < cols; j++) {
+                        table += '<td style="width: 50px; height: 20px; padding: 5px;">&nbsp;</td>';
+                    }
+                    table += '</tr>';
+                }
+                table += '</table>';
+                
+                document.execCommand('insertHTML', false, table);
+            }
+        }
+
+        function insertLink() {
+            var url = prompt('請輸入 URL:', 'http://');
+            var text = prompt('請輸入連結文字:', '連結');
+            if (url && text) {
+                var link = '<a href="' + url + '">' + text + '</a>';
+                document.execCommand('insertHTML', false, link);
+            }
+        }
+
+        function clearFormatting() {
+            execCmd('removeFormat');
+            execCmd('unlink');
+            document.execCommand('formatBlock', false, '<p>');
+            updateHeadingSelect(); // 更新選擇框
+        }
+		
+		function updateHeadingSelect() {
+            var headingSelect = document.getElementById('headingSelect');
+            var currentNode = window.getSelection().anchorNode;
+            while (currentNode && currentNode.nodeType !== 1) {
+                currentNode = currentNode.parentNode;
+            }
+            if (currentNode) {
+                var tagName = currentNode.tagName.toLowerCase();
+                if (['h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p'].includes(tagName)) {
+                    headingSelect.value = tagName;
+                } else {
+                    headingSelect.value = '';
+                }
+            }
+        }
+
+        function openFile() {
+            var input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.html, .txt';
+            input.onchange = function(e) {
+                var file = e.target.files[0];
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    if (file.name.endsWith('.txt')) {
+                        document.getElementById('editor').innerText = e.target.result;
+                    } else {
+                        document.getElementById('editor').innerHTML = e.target.result;
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        function formatOptions() {
+            let editor = document.getElementById('editor');
+            let text = editor.innerText;
+            
+            // 原有的格式化邏輯
+            text = text.replace(/\t/g, " ").replace(/　/g, " ").replace(/ {2,}/g, " ").replace(/（/g, '(').replace(/）/g, ')');
+            let paragraphs = text.split(/\n\s*/);
+            paragraphs = paragraphs.map((paragraph, index) => {
+                if (/\([A-Z]\)/.test(paragraph)) {
+                    let options = paragraph.split(/(?=\([A-D]\))/);
+                    options = options.map(option => option.trim().replace(/^\(([A-D])\)\s*/, "($1) "));
+                    return options.join('\n') + '\n';
+                }
+                return paragraph;
+            });
+            text = paragraphs.join('\n');
+            text = text.replace(/(\([A-D]\)\s[^\n]*)(\n\s*\n(?=\([A-D]\)))/g, '$1\n');
+            
+            // 處理不正確的斷行
+            let lines = text.split('\n');
+            let formattedLines = [];
+            
+            for (let i = 0; i < lines.length; i++) {
+                let currentLine = lines[i].trim();
+                
+                // 如果不是選項且不是空行
+                if (!/^\([A-D]\)/.test(currentLine) && currentLine !== '') {
+                    // 檢查是否需要與下一行合併
+                    while (i < lines.length - 1 && 
+                           !/[。？！」：]\s*$/.test(currentLine) && 
+                           !/^\([A-D]\)/.test(lines[i+1]) &&
+                           lines[i+1].trim() !== '') {
+                        // 如果當前行不是以結束性標點結尾，且下一行不是選項也不是空行，則合併
+                        // 直接合併，不添加空格
+                        currentLine = currentLine + lines[i+1].trim();
+                        i++; // 跳過下一行，因為已經合併了
+                    }
+                }
+                
+                formattedLines.push(currentLine);
+            }
+            
+            // 重新組合文本
+            text = formattedLines.join('\n');
+            
+            // 將格式化後的文本重新插入編輯器
+            editor.innerHTML = text.trim().replace(/\n/g, '<br>');
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var toggleBtn = document.getElementById('toggleFindReplaceBtn');
+            var panel = document.getElementById('findReplacePanel');
+            var editor = document.getElementById('editor');
+            var headingSelect = document.getElementById('headingSelect');
+            var fixedHeightToggle = document.getElementById('fixedHeightToggle');
+			
+			editor.addEventListener('click', updateHeadingSelect);
+            editor.addEventListener('keyup', updateHeadingSelect);
+            
+            toggleBtn.addEventListener('click', function() {
+                if (panel.style.display === 'none' || panel.style.display === '') {
+                    panel.style.display = 'block';
+                } else {
+                    panel.style.display = 'none';
+                }
+            });
+
+            fixedHeightToggle.addEventListener('change', function() {
+                if (this.checked) {
+                    editor.classList.add('editor-fixed-height');
+                } else {
+                    editor.classList.remove('editor-fixed-height');
+                }
+            });
+        });
+
+        function findNext() {
+            var findText = document.getElementById('findText').value;
+            var editor = document.getElementById('editor');
+            
+            // 移除之前的高亮
+            removeHighlights();
+
+            var found = window.find(findText, false, false, true, false, true, false);
+            
+            if (found) {
+                highlightSelection();
+                scrollToHighlight();
+            } else {
+                alert('找不到匹配項');
+            }
+        }
+
+        function replaceNext() {
+            var findText = document.getElementById('findText').value;
+            var replaceText = document.getElementById('replaceText').value;
+            var selection = window.getSelection();
+
+            if (selection.toString() === findText) {
+                var range = selection.getRangeAt(0);
+                range.deleteContents();
+                range.insertNode(document.createTextNode(replaceText));
+                findNext();
+            } else {
+                findNext();
+            }
+        }
+
+        function replaceAll() {
+            var findText = document.getElementById('findText').value;
+            var replaceText = document.getElementById('replaceText').value;
+            var editor = document.getElementById('editor');
+            var content = editor.innerHTML;
+            
+            // 使用正則表達式進行全局替換
+            var regex = new RegExp(escapeRegExp(findText), 'g');
+            content = content.replace(regex, replaceText);
+            
+            editor.innerHTML = content;
+        }
+
+        function highlightSelection() {
+            var range = window.getSelection().getRangeAt(0);
+            var span = document.createElement('span');
+            span.className = 'highlight';
+            range.surroundContents(span);
+        }
+
+        function removeHighlights() {
+            var editor = document.getElementById('editor');
+            var highlights = editor.getElementsByClassName('highlight');
+            while (highlights.length) {
+                var parent = highlights[0].parentNode;
+                while (highlights[0].firstChild) {
+                    parent.insertBefore(highlights[0].firstChild, highlights[0]);
+                }
+                parent.removeChild(highlights[0]);
+            }
+        }
+
+        function scrollToHighlight() {
+            var editor = document.getElementById('editor');
+            var highlight = editor.getElementsByClassName('highlight')[0];
+            if (highlight) {
+                highlight.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"});
+            }
+        }
+
+        function escapeRegExp(string) {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        }
+
+        function preprocessForConversion() {
+            let editor = document.getElementById('editor');
+            let text = editor.innerText;
+            let lines = text.split('\n');
+            let formattedLines = [];
+            let isInOptions = false;
+            for (let i = 0; i < lines.length; i++) {
+                let currentLine = lines[i].trim();
+                // 檢查是否是選項
+                if (/^\([A-D]\)/.test(currentLine)) {
+                    if (!isInOptions) {
+                        // 如果是新的選項組，先添加兩個空行（除非是文本的開始）
+                        if (formattedLines.length > 0) {
+                            formattedLines.push('', '');
+                        }
+                        isInOptions = true;
+                    }
+                    formattedLines.push(currentLine);
+                } else if (currentLine !== '') {
+                    // 如果不是選項且不是空行，認為是新的題目
+                    if (isInOptions) {
+                        // 如果之前是選項，現在是新題目，添加兩個空行
+                        formattedLines.push('', '');
+                        isInOptions = false;
+                    } else if (formattedLines.length > 0) {
+                        // 如果之前不是選項，但也不是文本開始，也添加兩個空行
+                        formattedLines.push('', '');
+                    }
+                    formattedLines.push(currentLine);
+                }
+            }
+            // 重新組合文本
+            text = formattedLines.join('\n');
+            editor.innerHTML = text.trim().replace(/\n/g, '<br>');
+        }
+		
+        function openPresetTextModal() {
+            document.getElementById('presetTextModal').style.display = 'block';
+        }
+
+        function closePresetTextModal() {
+            document.getElementById('presetTextModal').style.display = 'none';
+        }
+
+        function insertPresetText() {
+            var select = document.getElementById('presetTextSelect');
+            var text = select.value;
+            if (text) {
+                var editor = document.getElementById('editor');
+                var selection = window.getSelection();
+                var range = selection.getRangeAt(0);
+                range.deleteContents();
+                range.insertNode(document.createTextNode(text));
+                closePresetTextModal();
+            }
+        }
+
+        // 當用戶點擊模態框外部時關閉它
+        window.onclick = function(event) {
+            var modal = document.getElementById('presetTextModal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        function insertMathEquation() {
+            var selection = window.getSelection();
+            var range = selection.getRangeAt(0);
+            
+            var mathSpan = document.createElement('span');
+            mathSpan.className = 'math-node';
+            mathSpan.setAttribute('contenteditable', 'false');
+            mathSpan.setAttribute('data-latex', '');
+            
+            var input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'math-input';
+            input.placeholder = '輸入 LaTeX';
+            
+            mathSpan.appendChild(input);
+            range.insertNode(mathSpan);
+            
+            input.focus();
+            
+            input.addEventListener('blur', function() { finishMathInput(this); });
+            input.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    finishMathInput(this);
+                }
+            });
+        }
+
+        function finishMathInput(inputElement) {
+            var mathSpan = inputElement.parentNode;
+            var latex = inputElement.value.trim();
+            if (latex) {
+                mathSpan.setAttribute('data-latex', latex);
+                renderMathInElement(mathSpan, latex);
+                // 將游標移動到數學式後方
+                var range = document.createRange();
+                var sel = window.getSelection();
+                range.setStartAfter(mathSpan);
+                range.collapse(true);
+                sel.removeAllRanges();
+                sel.addRange(range);
+                // 確保編輯器獲得焦點
+                document.getElementById('editor').focus();
+            } else {
+                mathSpan.parentNode.removeChild(mathSpan);
+            }
+        }
+
+        function renderMathInElement(element, latex) {
+            katex.render(latex, element, {
+                throwOnError: false,
+                displayMode: false
+            });
+        }
+
+        function editMathNode(mathNode) {
+            var latex = mathNode.getAttribute('data-latex');
+            mathNode.innerHTML = '';
+            var input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'math-input';
+            input.value = latex;
+            mathNode.appendChild(input);
+            input.focus();
+            
+            input.addEventListener('blur', function() { finishMathInput(this); });
+            input.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    finishMathInput(this);
+                }
+            });
+        }
+
+        document.addEventListener('click', function(event) {
+            if (event.target.classList.contains('math-node') && !event.target.querySelector('.math-input')) {
+                editMathNode(event.target);
+            }
+        });
+
+        function saveFile() {
+            var content = document.getElementById('editor').innerHTML;
+            
+            // 創建一個臨時的 div 元素來處理內容
+            var tempDiv = document.createElement('div');
+            tempDiv.innerHTML = content;
+            
+            // 處理所有的數學節點
+            var mathNodes = tempDiv.querySelectorAll('.math-node');
+            mathNodes.forEach(function(node) {
+                var latex = node.getAttribute('data-latex');
+                if (latex) {
+                    // 將 KaTeX 渲染的 HTML 替換為 LaTeX 代碼，確保正確轉義反斜線
+                    node.innerHTML = '\\(' + latex.replace(/\\/g, '\\') + '\\)';
+                }
+            });
+            
+            // 獲取處理後的 HTML
+            var processedContent = tempDiv.innerHTML;
+
+            // 創建包含多個部分的 Blob
+            var blob = new Blob([
+                '<!DOCTYPE html><html lang="zh-TW"><head><meta charset="UTF-8"><title>保存的文檔</title>',
+                '<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">',
+                '<script src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"><\/script>',
+				'<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"><\/script>',
+                '<script>',
+                'document.addEventListener("DOMContentLoaded", function() {',
+                '    renderMathInElement(document.body, {',
+                '        delimiters: [',
+                '            {left: "\(", right: "\)", display: false},',
+                '            {left: "\[", right: "\]", display: true}',
+                '        ],',
+                '        throwOnError: false',
+                '    });',
+                '});',
+                '<\/script>',
+                '</head><body>',
+                processedContent,
+                '</body></html>'
+            ], {type: 'text/html'});
+
+            var a = document.createElement('a');
+            a.download = 'document.html';
+            a.href = URL.createObjectURL(blob);
+            a.click();
+        }
+		
+        // Ctrl+M 快捷鍵
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'm') {
+                e.preventDefault();
+                var selection = window.getSelection();
+                var range = selection.getRangeAt(0);
+                var node = range.startContainer;
+
+                // 檢查游標是否在數學物件前
+                if (node.nodeType === Node.TEXT_NODE && node.nextSibling && node.nextSibling.classList.contains('math-node')) {
+                    editMathNode(node.nextSibling);
+                } else if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains('math-node')) {
+                    editMathNode(node);
+                } else {
+                    insertMathEquation();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

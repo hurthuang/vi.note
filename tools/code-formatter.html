@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Formatter</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.11/beautify-html.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.11/beautify-css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/js-beautify/1.14.11/beautify.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .column {
+            flex: 1;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        textarea {
+            width: 100%;
+            height: 400px;
+            margin-top: 10px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            resize: vertical;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+		
+		        .action-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .action-buttons button {
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        button.secondary {
+            background-color: #2196F3;
+        }
+        
+        button.secondary:hover {
+            background-color: #1976D2;
+        }
+        
+        dialog {
+            padding: 0;
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 90vw;
+            max-width: 1600px;
+            max-height: 90vh;
+        }
+        
+        dialog::backdrop {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        
+        .dialog-header {
+            padding: 15px 20px;
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .dialog-content {
+            padding: 20px;
+            max-height: calc(90vh - 130px);
+            overflow: auto;
+        }
+        
+        .dialog-textarea {
+            height: 70vh;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .close-button {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #666;
+            cursor: pointer;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .close-button:hover {
+            color: #333;
+            background: none;
+        }
+        
+        .copy-success {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 4px;
+            display: none;
+            animation: fadeInOut 2s ease-in-out;
+        }
+        
+        @keyframes fadeInOut {
+            0% { opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+		
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .option-group {
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        .option-group h4 {
+            margin: 0 0 10px 0;
+        }
+        select {
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .language-selector {
+            margin-bottom: 15px;
+        }
+        .number-input {
+            width: 60px;
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h1>Code Formatter</h1>
+    
+    <div class="controls">
+        <div class="language-selector">
+            <label>
+                <strong>選擇語言：</strong>
+                <select id="language" onchange="updateOptions()">
+                    <option value="html">HTML</option>
+                    <option value="css">CSS</option>
+                    <option value="js">JavaScript</option>
+                </select>
+            </label>
+        </div>
+
+        <div id="html-options" class="options">
+            <div class="option-group">
+                <h4>基本設置</h4>
+                <label>
+                    <input type="number" id="indent-size" value="2" min="1" max="8" class="number-input">
+                    縮排大小
+                </label><br>
+                <label>
+                    <input type="number" id="wrap-line-length" value="0" min="0" class="number-input">
+                    每行最大長度 (0=不限制)
+                </label>
+            </div>
+            <div class="option-group">
+                <h4>HTML 特定選項</h4>
+                <label>
+                    <input type="checkbox" id="indent-inner-html" checked>
+                    縮排 inner HTML
+                </label><br>
+                <label>
+                    <input type="checkbox" id="unformatted" checked>
+                    保持標籤內容不格式化
+                </label><br>
+                <label>
+                    <input type="checkbox" id="indent-scripts" checked>
+                    縮排 script 和 style
+                </label>
+            </div>
+            <div class="option-group">
+                <h4>換行設置</h4>
+                <label>
+                    <input type="checkbox" id="preserve-newlines" checked>
+                    保留換行
+                </label><br>
+                <label>
+                    <input type="number" id="max-preserve-newlines" value="2" min="0" class="number-input">
+                    最大連續換行數
+                </label>
+            </div>
+        </div>
+
+        <div id="css-options" class="options" style="display: none;">
+            <div class="option-group">
+                <h4>CSS 特定選項</h4>
+                <label>
+                    <input type="checkbox" id="newline-between-rules" checked>
+                    規則間換行
+                </label><br>
+                <label>
+                    <input type="checkbox" id="selector-separator-newline">
+                    選擇器換行
+                </label><br>
+                <label>
+                    <input type="checkbox" id="space-around-selector-separator" checked>
+                    選擇器分隔符加空格
+                </label>
+            </div>
+        </div>
+
+        <div id="js-options" class="options" style="display: none;">
+            <div class="option-group">
+                <h4>JavaScript 特定選項</h4>
+                <label>
+                    <select id="brace-style">
+                        <option value="collapse">collapse</option>
+                        <option value="expand">expand</option>
+                        <option value="end-expand">end-expand</option>
+                    </select>
+                    大括號樣式
+                </label><br>
+                <label>
+                    <input type="checkbox" id="break-chained-methods">
+                    鏈式方法換行
+                </label><br>
+                <label>
+                    <input type="checkbox" id="space-before-conditional" checked>
+                    條件前加空格
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="column">
+            <h3>輸入代碼:</h3>
+            <textarea id="input" placeholder="在此貼上您的代碼..."></textarea>
+            <button onclick="formatCode()">格式化</button>
+            <button onclick="loadExample()">載入範例</button>
+        </div>
+        <div class="column">
+            <h3>格式化結果:</h3>
+            <textarea id="output" readonly></textarea>
+            <div class="action-buttons">
+                <button onclick="copyOutput()" class="secondary">複製結果</button>
+                <button onclick="openInDialog()" class="secondary">在大視窗中檢視</button>
+                <button onclick="downloadResult()" class="secondary">下載檔案</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 新增複製成功提示 -->
+    <div id="copySuccess" class="copy-success">複製成功！</div>
+
+    <!-- 新增彈出式對話框 -->
+    <dialog id="previewDialog">
+        <div class="dialog-header">
+            <h2>格式化結果預覽</h2>
+            <button class="close-button" onclick="closeDialog()">&times;</button>
+        </div>
+        <div class="dialog-content">
+            <textarea id="dialogOutput" class="dialog-textarea" readonly></textarea>
+            <div class="action-buttons">
+                <button onclick="copyDialogOutput()" class="secondary">複製結果</button>
+                <button onclick="downloadResultFromDialog()" class="secondary">下載檔案</button>
+            </div>
+        </div>
+    </dialog>
+    </div>
+
+    <script>
+        const examples = {
+            html: `<div class="container"><div class="row"><div class="col"><h1>Hello World</h1><p>This is a test</p></div></div></div>`,
+            css: `.header{color:red;background:#fff}.nav{padding:20px;margin:0}.nav a{color:blue;text-decoration:none}`,
+            js: `function example(){if(true){console.log("Hello");for(let i=0;i<5;i++){doSomething()}}}`
+        };
+
+        function updateOptions() {
+            const language = document.getElementById('language').value;
+            document.getElementById('html-options').style.display = language === 'html' ? 'grid' : 'none';
+            document.getElementById('css-options').style.display = language === 'css' ? 'grid' : 'none';
+            document.getElementById('js-options').style.display = language === 'js' ? 'grid' : 'none';
+            loadExample();
+        }
+
+        function loadExample() {
+            const language = document.getElementById('language').value;
+            document.getElementById('input').value = examples[language];
+        }
+
+        function getOptions() {
+            const language = document.getElementById('language').value;
+            const baseOptions = {
+                indent_size: parseInt(document.getElementById('indent-size').value),
+                indent_char: ' ',
+                wrap_line_length: parseInt(document.getElementById('wrap-line-length').value),
+                end_with_newline: true
+            };
+
+            if (language === 'html') {
+                return {
+                    ...baseOptions,
+                    preserve_newlines: document.getElementById('preserve-newlines').checked,
+                    max_preserve_newlines: parseInt(document.getElementById('max-preserve-newlines').value),
+                    indent_inner_html: document.getElementById('indent-inner-html').checked,
+                    unformatted: document.getElementById('unformatted').checked ? ['code', 'pre', 'em', 'strong', 'span'] : [],
+                    indent_scripts: document.getElementById('indent-scripts').checked ? 'normal' : 'keep'
+                };
+            } else if (language === 'css') {
+                return {
+                    ...baseOptions,
+                    newline_between_rules: document.getElementById('newline-between-rules').checked,
+                    selector_separator_newline: document.getElementById('selector-separator-newline').checked,
+                    space_around_selector_separator: document.getElementById('space-around-selector-separator').checked
+                };
+            } else {
+                return {
+                    ...baseOptions,
+                    brace_style: document.getElementById('brace-style').value,
+                    break_chained_methods: document.getElementById('break-chained-methods').checked,
+                    space_before_conditional: document.getElementById('space-before-conditional').checked
+                };
+            }
+        }
+
+        function formatCode() {
+            const input = document.getElementById('input').value;
+            const language = document.getElementById('language').value;
+            
+            if (!input.trim()) {
+                alert('請輸入代碼！');
+                return;
+            }
+
+            try {
+                let formatted;
+                const options = getOptions();
+
+                switch (language) {
+                    case 'html':
+                        formatted = html_beautify(input, options);
+                        break;
+                    case 'css':
+                        formatted = css_beautify(input, options);
+                        break;
+                    case 'js':
+                        formatted = js_beautify(input, options);
+                        break;
+                }
+
+                document.getElementById('output').value = formatted;
+            } catch (error) {
+                alert('格式化過程中發生錯誤：' + error.message);
+            }
+        }
+
+        // 初始載入範例
+        loadExample();
+		
+		        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const copySuccess = document.getElementById('copySuccess');
+                copySuccess.style.display = 'block';
+                setTimeout(() => {
+                    copySuccess.style.display = 'none';
+                }, 2000);
+            }).catch(err => {
+                alert('複製失敗：' + err);
+            });
+        }
+
+        function copyOutput() {
+            const output = document.getElementById('output').value;
+            copyToClipboard(output);
+        }
+
+        function copyDialogOutput() {
+            const output = document.getElementById('dialogOutput').value;
+            copyToClipboard(output);
+        }
+
+        // 新增下載功能
+        function getFileExtension() {
+            const language = document.getElementById('language').value;
+            switch (language) {
+                case 'html':
+                    return '.html';
+                case 'css':
+                    return '.css';
+                case 'js':
+                    return '.js';
+                default:
+                    return '.txt';
+            }
+        }
+
+        function downloadResult(fromDialog = false) {
+            const output = fromDialog ? 
+                document.getElementById('dialogOutput').value : 
+                document.getElementById('output').value;
+            
+            const blob = new Blob([output], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            const extension = getFileExtension();
+            
+            a.href = url;
+            a.download = `formatted-code-${timestamp}${extension}`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function downloadResultFromDialog() {
+            downloadResult(true);
+        }
+
+        // 新增對話框功能
+        const dialog = document.getElementById('previewDialog');
+        
+        function openInDialog() {
+            const output = document.getElementById('output').value;
+            document.getElementById('dialogOutput').value = output;
+            dialog.showModal();
+        }
+
+        function closeDialog() {
+            dialog.close();
+        }
+
+        // ESC 鍵關閉對話框
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && dialog.open) {
+                closeDialog();
+            }
+        });
+
+        // 點擊背景關閉對話框
+        dialog.addEventListener('click', (e) => {
+            if (e.target === dialog) {
+                closeDialog();
+            }
+        });
+    </script>
+</body>
+</html>

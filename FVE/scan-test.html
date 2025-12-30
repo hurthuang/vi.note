@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>掃瞄能力練習</title>
+<style type="text/css">
+body {
+      font-family: Arial, sans-serif;
+    }
+    #question {
+      font-size: 36px;
+      margin: 20px;
+    }
+    #input {
+      font-size: 36px;
+      padding: 10px;
+      margin: 20px;
+    }
+    #submit {
+      font-size: 24px;
+      padding: 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #feedback {
+      margin: 20px;
+    }</style>
+  </head>
+  <body>
+
+<h1>
+	掃瞄能力練習</h1>
+<div id="question">
+	&nbsp;</div>
+<p>
+	<input id="input" maxlength="19" placeholder="請輸入看到的字元" size="12" type="text" /><button id="submit">確認</button></p>
+<div>
+	<button id="new-question">重新出題</button><label for="font-size-slider">字體大小：</label> <input id="font-size-slider" max="75" min="12" type="range" value="14" /></div>
+<div id="feedback">
+	&nbsp;</div>
+<script>
+    var chars = [];
+    var fontSize = 36;
+    var speechSynthesis = window.speechSynthesis;
+    var questionEl = document.getElementById("question");
+    var inputEl = document.getElementById("input");
+    var feedbackEl = document.getElementById("feedback");
+
+    function generateChars() {
+      chars = [];
+      for (var i = 0; i < 10; i++) {
+        var char = Math.random().toString(36).substring(2, 3);
+        chars.push(char);
+      }
+      questionEl.textContent = chars.join(" ");
+      questionEl.style.fontSize = fontSize + "px";
+    }
+
+document.getElementById("input").addEventListener("keyup", function(event) {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    document.getElementById("submit").click();
+  }
+});
+
+
+    function speak(text) {
+      var utterance = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(utterance);
+    }
+
+    generateChars();
+
+document.getElementById("submit").addEventListener("click", function() {
+  var input = inputEl.value.trim();
+  var answer = chars.join(" ");
+
+  if (input === answer) {
+    feedbackEl.textContent = "答案正確！";
+    feedbackEl.style.color = "green";
+    speak("答案正確");
+    inputEl.value = "";
+    generateChars();
+    inputEl.focus();
+  } else {
+    feedbackEl.textContent = "答案錯誤！";
+    feedbackEl.style.color = "red";
+    speak("答案錯誤");
+    inputEl.focus();
+  }
+});
+
+
+    document.getElementById("new-question").addEventListener("click", function() {
+      generateChars();
+      feedbackEl.textContent = "";
+      inputEl.value = "";
+    });
+
+    document.getElementById("font-size-slider").addEventListener("input", function() {
+      fontSize = parseInt(this.value);
+      questionEl.style.fontSize = fontSize + "px";
+      inputEl.style.fontSize = fontSize + "px";
+    });
+  </script>
+  </body>
+</html>

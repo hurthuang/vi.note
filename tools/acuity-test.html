@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>視覺敏銳度測試</title>
+    <style>
+      #target {
+        font-size: 48pt;
+        font-weight: bold;
+        margin: 50px;
+	font-family:sans-serif;
+      }
+      #font-size {
+        font-size: 24pt;
+        margin-top: 30px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>請輸入看到的字</h1>
+    <p>回答正確，字體縮小 2pt ，回答錯誤，字體放大 4pt</p>
+    <div id="target"></div>
+    <input type="text" id="input" onkeydown="checkAnswer(event)">
+    <div id="font-size"></div>
+    <script>
+      var target = document.getElementById("target");
+      var input = document.getElementById("input");
+      var fontSize = 48;
+      var answer = generateAnswer();
+      target.innerText = answer;
+      document.getElementById("font-size").innerText = "字體大小：" + fontSize + "pt";
+
+      function generateAnswer() {
+        var chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+        var index = Math.floor(Math.random() * chars.length);
+        return chars[index];
+      }
+
+      function checkAnswer(event) {
+        if (event.keyCode === 13) {
+          var userAnswer = input.value.toLowerCase();
+          if (userAnswer === answer) {
+            answer = generateAnswer();
+            target.innerText = answer;
+            input.value = "";
+            fontSize -= 2;
+            target.style.fontSize = fontSize + "pt";
+          } else {
+            input.value = "";
+            fontSize += 4;
+            target.style.fontSize = fontSize + "pt";
+          }
+          document.getElementById("font-size").innerText = "字體大小：" + fontSize + "pt";
+        }
+      }
+    </script>
+  </body>
+</html>

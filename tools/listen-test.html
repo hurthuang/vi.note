@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聽能測驗</title>
+    <!-- The style.css file allows you to change the look of your web pages.
+         If you include the next line in all your web pages, they will all share the same look.
+         This makes it easier to make new pages for your site. -->
+    <link href="/style.css" rel="stylesheet" type="text/css" media="all">
+  </head>
+  <body>
+<h1>
+	聽能測驗</h1>
+<p>
+	請輸入測驗字詞</p>
+<p>
+	<textarea cols="90" id="wordList" rows="10"></textarea><br />
+	<br />
+	<label for="voiceSelect">選擇語音：</label> <select id="voiceSelect"></select><br />
+	<br />
+	<button onclick="startTest()">播放題目</button><br />
+	<br />
+	<input id="answer" type="text" /><button onclick="checkAnswer()">確認答案</button><script>
+	// 隨機選擇一個單詞
+	function getRandomWord(words) {
+		return words[Math.floor(Math.random() * words.length)];
+	}
+
+	// 取得可用的語音清單
+	function getVoices() {
+		return new Promise(resolve => {
+			let synth = window.speechSynthesis;
+			synth.onvoiceschanged = () => {
+				let voices = synth.getVoices();
+				resolve(voices);
+			};
+		});
+	}
+
+	// 初始化語音選單
+	async function initVoiceSelect() {
+		let voices = await getVoices();
+		let voiceSelect = document.getElementById('voiceSelect');
+		voiceSelect.innerHTML = voices.map(voice => `<option value="${voice.name}">${voice.name} (${voice.lang})</option>`).join('');
+	}
+
+	// 隨機選擇一個問題
+	var wordList = [];
+	var word = "";
+	async function startTest() {
+		// 如果還沒有選擇過問題，就從輸入的單詞列表中選一個
+		if (wordList.length === 0) {
+			wordList = document.getElementById("wordList").value.trim().split("\n");
+			if (wordList.length === 0) {
+				alert("請輸入單詞！");
+				return;
+			}
+			word = getRandomWord(wordList);
+		}
+
+		// 取得選擇的語音
+		var voiceSelect = document.getElementById('voiceSelect');
+		var selectedVoiceName = voiceSelect.value;
+		var synth = window.speechSynthesis;
+		var voice = synth.getVoices().find(v => v.name === selectedVoiceName);
+
+		// 使用Web Speech API唸出問題
+		var utterThis = new SpeechSynthesisUtterance(word);
+		utterThis.voice = voice;
+		synth.speak(utterThis);
+
+		// 顯示問題
+		document.getElementById("answer").value = "";
+		document.getElementById("answer").focus();
+	}
+
+	// 檢查答案
+	function checkAnswer() {
+		var answer = document.getElementById("answer").value.trim();
+
+		if (answer.toLowerCase() === word.toLowerCase()) {
+			alert("答案正確！");
+			wordList = []; // 重設問題列表和當前問題
+			word = "";
+		} else {
+			alert("答案錯誤，請再試一次！");
+			document.getElementById("answer").focus();
+		}
+	}
+
+	initVoiceSelect();
+</script></p>
+
+  </body>
+</html>

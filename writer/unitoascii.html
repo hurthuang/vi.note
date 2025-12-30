@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Braille Unicode 轉 ASCII code</title>
+	<style>
+	 textarea {
+      width: 90%;
+      padding: 10px;
+      font-size: 16px;
+      height: 150px;
+      overflow-y: scroll; /* 啟用垂直捲軸 */
+    }
+	</style>
+	<style type="text/css">
+		@font-face {
+		font-family: 'SimBraille';
+		src: url('SIMBRL.TTF') format('truetype');
+		}
+		.hurtblog{font-family: 'SimBraille';}
+	</style>
+</head>
+<body>
+    <h1>Braille Unicode 轉 ASCII code</h1>
+
+    <label for="inputChinese">輸入 Braille Unicode：</label><br/>
+    <textarea id="inputChinese" rows="5" cols="30" oninput="convertToBraille()"></textarea><br/>
+
+    <label for="brailleResult">ASCII code</label><br/>
+    <textarea id="brailleResult" rows="5" cols="30" readonly></textarea><br/>
+
+    <label for="brailleFont">點字字型</label><br/>
+    <textarea id="brailleFont" rows="5" cols="30" readonly class="hurtblog"></textarea>
+
+    <script>
+        function convertToBraille() {
+            const inputChinese = document.getElementById('inputChinese').value;
+            const brailleResult = document.getElementById('brailleResult');
+			const brailleFont = document.getElementById('brailleFont');
+
+            const brailleMapping = {
+    '⠁': 'a',
+    '⠂': '1',
+    '⠃': 'b',
+    '⠄': '\'',
+    '⠅': 'k',
+    '⠆': '2',
+    '⠇': 'l',
+    '⠈': '`',
+    '⠉': 'c',
+    '⠊': 'i',
+    '⠋': 'f',
+    '⠌': '/',
+    '⠍': 'm',
+    '⠎': 's',
+    '⠏': 'p',
+    '⠐': '"',
+    '⠑': 'e',
+    '⠒': '3',
+    '⠓': 'h',
+    '⠔': '9',
+    '⠕': 'o',
+    '⠖': '6',
+    '⠗': 'r',
+    '⠘': '~',
+    '⠙': 'd',
+    '⠚': 'j',
+    '⠛': 'g',
+    '⠜': '>',
+    '⠝': 'n',
+    '⠞': 't',
+    '⠟': 'q',
+    '⠠': ',',
+    '⠡': '*',
+    '⠢': '5',
+    '⠣': '<',
+    '⠤': '-',
+    '⠥': 'u',
+    '⠦': '8',
+    '⠧': 'v',
+    '⠨': '.',
+    '⠩': '%',
+    '⠪': '{',
+    '⠫': '$',
+    '⠬': '+',
+    '⠭': 'x',
+    '⠮': '!',
+    '⠯': '&',
+    '⠰': ';',
+    '⠱': ':',
+    '⠲': '4',
+    '⠳': '|',
+    '⠴': '0',
+    '⠵': 'z',
+    '⠶': '7',
+    '⠷': '(',
+    '⠸': '_',
+    '⠹': '?',
+    '⠺': 'w',
+    '⠻': '}',
+    '⠼': '#',
+    '⠽': 'y',
+    '⠾': ')',
+    '⠿': '='
+            };
+
+            let brailleText = '';
+            for (let i = 0; i < inputChinese.length; i++) {
+                const char = inputChinese[i];
+                brailleText += brailleMapping[char] || char; // 如果有規則就轉換，否則保留原字符
+            }
+
+            brailleResult.value = brailleText;
+			brailleFont.value = brailleText;
+        }
+    </script>
+</body>
+</html>

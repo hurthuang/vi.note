@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>流動版型與固定版型</title>
+    <!-- The style.css file allows you to change the look of your web pages.
+         If you include the next line in all your web pages, they will all share the same look.
+         This makes it easier to make new pages for your site. -->
+    <link href="/style.css" rel="stylesheet" type="text/css" media="all">
+    <style>
+        /* 全域樣式，用於調整字體大小 */
+        body {
+            font-size: 5px;
+        }
+
+        /* 調整字體大小時的回應 */
+        @media (max-width: 600px) {
+            body {
+                font-size: 5px;
+            }
+        }
+
+        /* 通用樣式 */
+        .text-block {
+            padding: 10px;
+            background-color: #f0f0f0; /* 設置背景顏色 */
+        }
+
+        /* 使用 Flexbox 佈局，讓兩個 div 左右並排 */
+        .container {
+            display: flex;
+        }
+
+        /* 流動版型 */
+        .flow-layout {
+            flex: 1; /* 佔據可用空間的一半 */
+        }
+
+        /* 固定版型 */
+        .fixed-layout {
+            flex: 1; /* 佔據可用空間的一半 */
+            background-color: #ccc; /* 固定版型的背景顏色 */
+            overflow-x: scroll; /* 創建水準滾動區域 */
+            white-space: nowrap; /* 防止文本換行 */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="flow-layout text-block">
+            <h1>流動版型</h1>
+            <p>流式/流動版型(reflowable layout)：<br>可自行調整字體大小，版面會依調整後的字體大字重新配置，適合低視力的視障者放大字體閱讀。</p>
+        </div>
+
+        <div class="fixed-layout text-block">
+            <h1>固定版型</h1>
+            <p>版式/固定版型(fixed layout)：<br>縮放時為整個版面一起放大縮小，放大時易造成文字溢出版面，需移動畫面才能看到完整內容。</p>
+        </div>
+    </div>
+
+    <div>
+        <label for="fontSizeControl">調整字體大小：</label>
+        <input type="range" id="fontSizeControl" min="5" max="20" step="0.5" value="5">
+    </div>
+
+    <script>
+        // 獲取字體大小控制元素
+        var fontSizeControl = document.getElementById("fontSizeControl");
+
+        // 監聽字體大小控制的變化
+        fontSizeControl.addEventListener("input", function () {
+            var fontSize = fontSizeControl.value + "px";
+            document.body.style.fontSize = fontSize;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>數學計算工具 (使用math.js)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
+    <style>
+
+        input, button {
+            font-size: 16px;
+            padding: 5px;
+            margin: 10px 0;
+        }
+        #result {
+            font-weight: bold;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>數學計算工具</h1>
+    <p>輸入數學表達式，然後點擊計算按鈕。</p>
+    <input type="text" id="expression" placeholder="例如: 2 + 2 * 3" style="width: 300px;">
+    <button onclick="calculate()">計算</button>
+    <div id="result"></div>
+	<h3>語法</h3>
+	<ul>
+		<li index="0">
+			基本運算：
+			<ul depth="1">
+				<li index="0">
+					加法：2 + 3</li>
+				<li index="1">
+					減法：5 - 2</li>
+				<li index="2">
+					乘法：4 * 3</li>
+				<li index="3">
+					除法：10 / 2</li>
+				<li index="4">
+					冪運算：2^3（表示2的3次方）</li>
+			</ul>
+		</li>
+		<li index="1">
+			數學函數：
+			<ul depth="1">
+				<li index="0">
+					平方根：sqrt(16)</li>
+				<li index="1">
+					三角函數：sin(pi/2), cos(pi), tan(pi/4)</li>
+				<li index="2">
+					對數：log(10), log10(100)</li>
+				<li index="3">
+					指數：exp(2)（e的2次方）</li>
+			</ul>
+		</li>
+		<li index="2">
+			常數：
+			<ul depth="1">
+				<li index="0">
+					圓周率：pi</li>
+				<li index="1">
+					自然對數的底：e</li>
+			</ul>
+		</li>
+		<li index="3">
+			複雜表達式：
+			<ul depth="1">
+				<li index="0">
+					(2 + 3) * 4</li>
+				<li index="1">
+					sqrt(16) + 2^3</li>
+				<li index="2">
+					sin(pi/2) + cos(pi/3)</li>
+			</ul>
+		</li>
+		<li index="4">
+			變數和單位（math.js特性）：
+			<ul depth="1">
+				<li index="0">
+					a = 2; b = 3; a * b（定義和使用變數）</li>
+				<li index="1">
+					5 cm to inch（單位轉換）</li>
+			</ul>
+		</li>
+	</ul>
+
+
+    <script>
+        function calculate() {
+            const expression = document.getElementById('expression').value;
+            try {
+                const result = math.evaluate(expression);
+                document.getElementById('result').innerHTML = `結果: ${result}`;
+            } catch (error) {
+                document.getElementById('result').innerHTML = `錯誤: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

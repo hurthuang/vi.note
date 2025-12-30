@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>功能性視覺評估表</title>
+<style type="text/css">
+	table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;  /* 固定表格布局 */
+    }
+    th, td {
+        border: 1px solid black;
+        padding: 4px;
+        font-size: 14px;
+        vertical-align: top;
+    }
+	textarea {
+		box-sizing: border-box;
+		width: 100%;
+		min-height: 100px;
+		resize: none;
+		overflow: hidden;
+		padding: 8px;
+		line-height: 1.5;
+	}
+    .center {
+        text-align: center;
+    }
+    input[type="text"] {
+        width: calc(100% - 8px);
+        padding: 2px 4px;
+        margin: 0;
+        border: none;
+        border-bottom: 1px solid #999;
+        font-size: 14px;
+    }
+    input[type="text"].short {
+        width: 40px;
+        display: inline-block;
+    }
+    input[type="text"].medium {
+        width: 70px;
+        display: inline-block;
+    }
+    input[type="checkbox"] {
+        margin: 0 4px;
+        vertical-align: middle;
+    }
+    label {
+        margin-right: 8px;
+        vertical-align: middle;
+    }
+    p {
+        margin: 4px 0;
+    }
+
+    @media print {
+    /* 強制頁面只顯示我們的表格內容 */
+    body * {
+        visibility: hidden;
+    }
+    
+    /* 只顯示我們的表格及其內容 */
+    #visionForm, #visionForm * {
+        visibility: visible;
+    }
+    
+    /* 調整表格位置至頁面頂端 */
+    #visionForm {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+}
+</style>
+</head>
+<body>
+<form id="visionForm">
+	<h1 style="text-align: center">
+		功能性視覺評估表</h1>
+	<table>
+		<colgroup>
+			<col span="2" style="width: 10%" />
+			<!-- 左側標題兩欄 -->
+			<col span="4" style="width: 15%" />
+			<!-- 左側內容 -->
+			<col style="width: 60px" />
+			<!-- 性別/類別/年級等標籤欄 -->
+			<col span="5" style="width: 6%" />
+			<!-- 中間內容 -->
+			<col span="2" style="width: 15%" />
+			<!-- 右側標題 -->
+			<col span="2" style="width: 15%" />
+			<!-- 右側內容 -->
+		</colgroup>
+		<!-- 表頭資訊 -->
+		<tbody>
+			<tr>
+				<td colspan="7">
+					<p>
+						日期：<input class="short" type="text" />年<input class="short" type="text" />月<input class="short" type="text" />日</p>
+					<p>
+						地點：<input class="medium" type="text" /></p>
+					<p>
+						時間：<input class="medium" type="text" /></p>
+				</td>
+				<td colspan="9">
+					<p>
+						評量人員：<input class="medium" type="text" /></p>
+					<p>
+						紀錄：<input class="medium" type="text" /></p>
+				</td>
+			</tr>
+			<!-- 基本資料 -->
+			<tr>
+				<td class="center" colspan="2">
+					學生姓名</td>
+				<td colspan="4">
+					<input type="text" /></td>
+				<td class="center">
+					性別</td>
+				<td colspan="5">
+					<label><input type="checkbox" />男</label> <label><input type="checkbox" />女</label></td>
+				<td class="center" colspan="2">
+					身份證字號</td>
+				<td colspan="2">
+					<input type="text" /></td>
+			</tr>
+			<tr>
+				<td class="center" colspan="2">
+					身障手冊</td>
+				<td>
+					等級</td>
+				<td colspan="3">
+					<input type="text" /></td>
+				<td class="center">
+					類別</td>
+				<td colspan="5">
+					<input type="text" /></td>
+				<td class="center" colspan="2">
+					ICD診斷</td>
+				<td colspan="2">
+					<input type="text" /></td>
+			</tr>
+			<tr>
+				<td class="center" colspan="2">
+					就讀學校</td>
+				<td colspan="4">
+					<input type="text" /></td>
+				<td class="center">
+					年級</td>
+				<td colspan="5">
+					<input type="text" /></td>
+				<td class="center" colspan="2">
+					生日</td>
+				<td colspan="2">
+					<input type="text" /></td>
+			</tr>
+			<tr>
+				<td class="center" colspan="2">
+					學校電話</td>
+				<td colspan="4">
+					<input type="text" /></td>
+				<td class="center">
+					聯絡人</td>
+				<td colspan="5">
+					<input type="text" /></td>
+				<td class="center" colspan="2">
+					職稱</td>
+				<td colspan="2">
+					<input type="text" /></td>
+			</tr>
+			<tr>
+				<td class="center" colspan="2">
+					家長姓名</td>
+				<td colspan="4">
+					<input type="text" /></td>
+				<td class="center">
+					電話</td>
+				<td colspan="9">
+					<input type="text" /></td>
+			</tr>
+			<tr>
+				<td class="center" colspan="2">
+					聯絡住址</td>
+				<td colspan="14">
+					<input type="text" /></td>
+			</tr>
+			<!-- 視力狀況 -->
+			<tr>
+				<td class="center" colspan="2" rowspan="6">
+					<div class="vertical-text">
+						視力狀況</div>
+				</td>
+				<td colspan="5">
+					<label><input type="checkbox" />全盲</label> <label><input type="checkbox" />低視力</label></td>
+				<td colspan="4">
+					病型</td>
+				<td colspan="5">
+					<input type="text" /></td>
+			</tr>
+			<tr>
+				<td colspan="14">
+					視力值：左眼：<input class="medium" type="text" /> 右眼：<input class="medium" type="text" /></td>
+			</tr>
+			<tr>
+				<td colspan="14">
+					視野：<label><input type="checkbox" />正常</label> <label><input type="checkbox" />缺損</label>（<input class="medium" type="text" />）</td>
+			</tr>
+			<tr>
+				<td colspan="14">
+					色覺：<label><input type="checkbox" />正常</label> <label><input type="checkbox" />色盲</label>（<input class="medium" type="text" />）</td>
+			</tr>
+			<tr>
+				<td colspan="14">
+					眼位：<label><input type="checkbox" />正常</label> <label><input type="checkbox" />斜視</label>（<input class="medium" type="text" />）</td>
+			</tr>
+			<tr>
+				<td colspan="14">
+					對比度：<label><input type="checkbox" />50%</label> <label><input type="checkbox" />25%</label> <label><input type="checkbox" />10%</label> <label><input type="checkbox" />5%</label> <label><input type="checkbox" />2.5%</label></td>
+			</tr>
+			<!-- 板書視覺狀況 -->
+			<tr>
+				<td class="center" colspan="2">
+					<div class="vertical-text">
+						板書視覺狀況</div>
+				</td>
+				<td colspan="14">
+					<p>
+						座位：前面第<input class="short" type="text" />排、距離黑板<input class="short" type="text" />公尺、<input class="short" type="text" />行位置</p>
+					<p>
+						版書：<input class="short" type="text" />&times;<input class="short" type="text" />公分見方大小</p>
+					<p>
+						粉筆顏色：<label><input type="checkbox" />白</label> <label><input type="checkbox" />黃</label> <label><input type="checkbox" />紅</label></p>
+					<p>
+						用眼情形：<label><input type="checkbox" />普通</label> <label><input type="checkbox" />吃力</label> <label><input type="checkbox" />輕鬆</label></p>
+				</td>
+			</tr>
+			<!-- 閱讀狀況 -->
+			<tr>
+				<td class="center" colspan="2">
+					<div class="vertical-text">
+						閱讀狀況</div>
+				</td>
+				<td colspan="14">
+					<p>
+						學習媒介： <label><input type="checkbox" />普通字體</label> <label><input type="checkbox" />放大字體</label> <label><input type="checkbox" />點字</label> <label><input type="checkbox" />有聲教材</label></p>
+					<p>
+						<label><input type="checkbox" />點字為主、文字為輔</label> <label><input type="checkbox" />文字為主、點字為輔</label></p>
+					<p>
+						適當閱讀字體：<input class="short" type="text" />號<input class="short" type="text" />體文字</p>
+					<p>
+						閱讀距離：距離書本<input class="short" type="text" />公分左右</p>
+					<p>
+						習慣用眼： <label><input type="checkbox" />左眼</label> <label><input type="checkbox" />右眼</label> <label><input type="checkbox" />雙眼</label></p>
+					<p>
+						閱讀速度： <label><input type="checkbox" />正常</label> <label><input type="checkbox" />快速</label> <label><input type="checkbox" />緩慢</label> <label><input type="checkbox" />跳行</label> <label><input type="checkbox" />漏字</label> <label><input type="checkbox" />其他</label>（<input class="medium" type="text" />）</p>
+					<p>
+						閱讀姿勢： <label><input type="checkbox" />正常</label> <label><input type="checkbox" />歪左</label> <label><input type="checkbox" />歪右</label> <label><input type="checkbox" />瞇眼</label> <label><input type="checkbox" />前傾</label> <label><input type="checkbox" />其他</label>（<input class="medium" type="text" />）</p>
+					<p>
+						用眼情形： <label><input type="checkbox" />普通</label> <label><input type="checkbox" />吃力</label> <label><input type="checkbox" />輕鬆</label></p>
+				</td>
+			</tr>
+			<!-- 書寫狀況 -->
+			<tr>
+				<td class="center" colspan="2">
+					<div class="vertical-text">
+						書寫狀況</div>
+				</td>
+				<td colspan="14">
+					<p>
+						執筆姿勢： <label><input type="checkbox" />正常</label> <label><input type="checkbox" />尚可</label> <label><input type="checkbox" />錯誤</label> <label><input type="checkbox" />其他</label>（<input class="medium" type="text" />）</p>
+					<p>
+						書寫距離：距離桌面約<input class="short" type="text" />公分</p>
+					<p>
+						筆記本格子：<input class="short" type="text" />cm &times; <input class="short" type="text" />cm</p>
+					<p>
+						筆心粗細：<input class="short" type="text" />mm</p>
+					<p>
+						寫字速度： <label><input type="checkbox" />正常</label> <label><input type="checkbox" />快速</label> <label><input type="checkbox" />緩慢</label> <label><input type="checkbox" />筆畫添加</label> <label><input type="checkbox" />筆畫闕漏</label> <label><input type="checkbox" />錯別字</label><br />
+						<label><input type="checkbox" />其他</label>（<input class="medium" type="text" />）</p>
+					<p>
+						用眼情形： <label><input type="checkbox" />普通</label> <label><input type="checkbox" />吃力</label> <label><input type="checkbox" />輕鬆</label></p>
+				</td>
+			</tr>
+			<!-- 定向行動狀況 -->
+			<tr>
+				<td class="center" colspan="2">
+					<div class="vertical-text">
+						定向行動</div>
+				</td>
+				<td colspan="14">
+					<p>
+						能自行到指定地點： <label><input type="checkbox" />是</label> <label><input type="checkbox" />否</label>（<input class="medium" type="text" />）</p>
+					<p>
+						走路姿勢： <label><input type="checkbox" />正常</label> <label><input type="checkbox" />異常</label></p>
+				</td>
+			</tr>
+			<!-- 需求評估 -->
+			<tr>
+				<td class="center" colspan="2" rowspan="2">
+					需求評估</td>
+				<td colspan="14">
+					<p>
+						（一）教材、輔具與設施需求：</p>
+					<p>
+						1. 教材、輔具：</p>
+					<p>
+						<label><input type="checkbox" />放大鏡 <input class="short" type="text" />&times;</label> <label><input type="checkbox" />望遠鏡 <input class="short" type="text" />&times;</label> <label><input type="checkbox" />擴視機</label></p>
+					<p>
+						<label><input type="checkbox" />放大軟體</label> <label><input type="checkbox" />螢幕報讀軟體</label> <label><input type="checkbox" />點字顯示器</label></p>
+					<p>
+						 <label><input type="checkbox" />點字板</label> <label><input type="checkbox" />點字機</label> <label><input type="checkbox" />盲用算盤</label></p>
+					<p>
+						<label><input type="checkbox" />白杖</label> <label><input type="checkbox" />聽書機</label> <label><input type="checkbox" />有聲計算機</label></p>
+					<p>
+						2. 使用教材：</p>
+					<p>
+						<label><input type="checkbox" />一般課本</label> <label><input type="checkbox" />大字課本</label> <label><input type="checkbox" />有聲圖書</label> <label><input type="checkbox" />點字課本</label></p>
+					<p>
+						（二）特殊評量方式：</p>
+					<p>
+						<label><input type="checkbox" />一般試卷</label> <label><input type="checkbox" />放大試卷</label> <label><input type="checkbox" />點字試卷</label> <label><input type="checkbox" />NVDA 卷</label> <label><input type="checkbox" />語音報讀卷</label></p>
+					<p>
+						<label><input type="checkbox" />試題本畫記</label> <label><input type="checkbox" />放大答案卷</label> <label><input type="checkbox" />電腦作答</label> <label><input type="checkbox" />特殊考場</label> <label><input type="checkbox" />延長時間</label></p>
+					<p>
+						（三）巡迴輔導需求：依學生需求高低填寫。</p>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="7">
+					<p style="display: flex; align-items: center;">
+						<span style="width: 20px;">1.</span> <input style="flex: 1;" type="text" /></p>
+					<p style="display: flex; align-items: center;">
+						<span style="width: 20px;">2.</span> <input style="flex: 1;" type="text" /></p>
+					<p style="display: flex; align-items: center;">
+						<span style="width: 20px;">3.</span> <input style="flex: 1;" type="text" /></p>
+					<p style="display: flex; align-items: center;">
+						<span style="width: 20px;">4.</span> <input style="flex: 1;" type="text" /></p>
+					<p style="display: flex; align-items: center;">
+						<span style="width: 20px;">5.</span> <input style="flex: 1;" type="text" /></p>
+				</td>
+				<td colspan="7">
+					<p style="display: flex; align-items: center;">
+						<span style="width: 20px;">6.</span> <input style="flex: 1;" type="text" /></p>
+					<p style="display: flex; align-items: center;">
+						<span style="width: 20px;">7.</span> <input style="flex: 1;" type="text" /></p>
+					<p style="display: flex; align-items: center;">
+						<span style="width: 20px;">8.</span> <input style="flex: 1;" type="text" /></p>
+					<p style="display: flex; align-items: center;">
+						<span style="width: 20px;">9.</span> <input style="flex: 1;" type="text" /></p>
+					<p style="display: flex; align-items: center;">
+						<span style="width: 20px;">10.</span> <input style="flex: 1;" type="text" /></p>
+				</td>
+			</tr>
+			<!-- 綜合建議 -->
+			<tr>
+				<td class="center" colspan="2">
+					質性描述</td>
+				<td colspan="14">
+					<textarea cols="75" rows="5"></textarea></td>
+			</tr>
+			<tr>
+				<td class="center" colspan="2">
+					綜合建議</td>
+				<td colspan="14">
+					<textarea cols="75" rows="5"></textarea></td>
+			</tr>
+			<!-- 輔導方式 -->
+			<tr>
+				<td class="center" colspan="2">
+					<div class="vertical-text">
+						輔導方式</div>
+				</td>
+				<td colspan="14">
+					<p>
+						<label><input type="checkbox" />直接服務</label> 輔導老師：<input class="medium" type="text" />老師</p>
+					<p>
+						<label><input type="checkbox" />諮詢服務</label> 輔導老師：<input class="medium" type="text" />老師</p>
+					<p>
+						<label><input type="checkbox" />暫不需要提供視障巡迴服務</label></p>
+				</td>
+			</tr>
+			<!-- 簽章區 -->
+			<tr>
+				<td class="center" colspan="2">
+					<div class="vertical-text">
+						評量人員</div>
+				</td>
+				<td colspan="2">
+					&nbsp;
+					<p>
+						&nbsp;</p>
+					<p>
+						&nbsp;</p>
+				</td>
+				<td class="center">
+					<div class="vertical-text">
+						組長</div>
+				</td>
+				<td colspan="3">
+					&nbsp;</td>
+				<td class="center" colspan="2">
+					<div class="vertical-text">
+						主任</div>
+				</td>
+				<td colspan="3">
+					&nbsp;</td>
+				<td class="center" colspan="1">
+					<div class="vertical-text">
+						校長</div>
+				</td>
+				<td colspan="2">
+					&nbsp;</td>
+			</tr>
+		</tbody>
+	</table>
+</form>
+<div class="button-container">
+	<button class="action-button" onclick="window.print()">列印表單</button><button class="action-button" onclick="downloadAsDoc()">輸出成Word檔</button><button class="action-button" onclick="exportToHTML()">輸出成HTML</button></div>
+<script>
+function collectFormData() {
+    const form = document.getElementById('visionForm');
+    
+    // 收集所有文字輸入
+    const textInputs = form.querySelectorAll('input[type="text"]');
+    textInputs.forEach(input => {
+        if (input.value) {
+            input.setAttribute('value', input.value);
+        }
+    });
+    
+    // 收集所有核取方塊狀態
+    const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        if (checkbox.checked) {
+            checkbox.setAttribute('checked', 'checked');
+        }
+    });
+    
+    // 收集 textarea 內容
+    const textareas = form.querySelectorAll('textarea');
+    textareas.forEach(textarea => {
+        if (textarea.value) {
+            textarea.textContent = textarea.value;
+        }
+    });
+}
+
+function exportToHTML() {
+    // 先收集表單資料
+    collectFormData();
+    
+    const html = `
+        <!DOCTYPE html>
+        <html lang="zh-TW">
+        <head>
+            <meta charset="UTF-8">
+            <title>功能性視覺評估表</title>
+            <style>
+                	table {
+                      width: 100%;
+                      border-collapse: collapse;
+                      table-layout: fixed;  /* 固定表格布局 */
+                  }
+                  th, td {
+                      border: 1px solid black;
+                      padding: 4px;
+                      font-size: 14px;
+                      vertical-align: top;
+                  }
+              	textarea {
+              		box-sizing: border-box;
+              		width: 100%;
+              		min-height: 100px;
+              		resize: none;
+              		overflow: hidden;
+              		padding: 8px;
+              		line-height: 1.5;
+              	}
+                  .center {
+                      text-align: center;
+                  }
+                  input[type="text"] {
+                      width: calc(100% - 8px);
+                      padding: 2px 4px;
+                      margin: 0;
+                      border: none;
+                      border-bottom: 1px solid #999;
+                      font-size: 14px;
+                  }
+                  input[type="text"].short {
+                      width: 40px;
+                      display: inline-block;
+                  }
+                  input[type="text"].medium {
+                      width: 70px;
+                      display: inline-block;
+                  }
+                  input[type="checkbox"] {
+                      margin: 0 4px;
+                      vertical-align: middle;
+                  }
+                  label {
+                      margin-right: 8px;
+                      vertical-align: middle;
+                  }
+                  p {
+                      margin: 4px 0;
+                  }
+            </style>
+        </head>
+        <body>
+            ${document.querySelector('#visionForm').innerHTML}
+        </body>
+        </html>
+    `;
+
+    const blob = new Blob([html], { type: 'text/html' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = '功能性視覺評估表.html';
+    link.click();
+}
+
+function downloadAsDoc() {
+    // 先收集表單資料
+    collectFormData();
+    
+    // 創建一個臨時的容器來處理 HTML
+    const tempContainer = document.createElement('div');
+    tempContainer.innerHTML = document.querySelector('#visionForm').innerHTML;
+    
+    // 處理所有文字輸入框
+    tempContainer.querySelectorAll('input[type="text"]').forEach(input => {
+        const value = input.value || input.getAttribute('value') || '';
+        const span = document.createElement('span');
+        span.textContent = value + '_____';
+        input.parentNode.replaceChild(span, input);
+    });
+    
+    // 處理所有核取方塊
+    tempContainer.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        const span = document.createElement('span');
+        span.textContent = checkbox.checked ? '■' : '□';
+        checkbox.parentNode.replaceChild(span, checkbox);
+    });
+    
+    // 處理所有 textarea
+    tempContainer.querySelectorAll('textarea').forEach(textarea => {
+        const value = textarea.value || textarea.textContent || '';
+        const span = document.createElement('span');
+        span.textContent = value;
+        textarea.parentNode.replaceChild(span, textarea);
+    });
+    
+    const processedHtml = tempContainer.innerHTML;
+    
+    const blob = new Blob([`
+        <html xmlns:o='urn:schemas-microsoft-com:office:office' 
+              xmlns:w='urn:schemas-microsoft-com:office:word' 
+              xmlns='http://www.w3.org/TR/REC-html40'>
+            <head>
+                <meta charset="utf-8">
+                <title>功能性視覺評估表</title>
+                <style>
+                    table { border-collapse: collapse; width: 100%; }
+                    td { border: 1px solid black; padding: 4px; }
+                    .center { text-align: center; }
+                    .vertical-text { writing-mode: tb-rl; text-orientation: upright; }
+                </style>
+            </head>
+            <body>
+                ${processedHtml}
+            </body>
+        </html>
+    `], { type: 'application/msword' });
+            
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = '功能性視覺評估表.doc';
+    link.click();
+}
+</script>
+</body>
+</html>

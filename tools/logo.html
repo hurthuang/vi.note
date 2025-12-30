@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>進階圖龜繪圖</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 600px; 
+            margin: 0 auto;
+        }
+        .container { 
+            display: flex; 
+            justify-content: space-between;
+        }
+        #canvasContainer { 
+            width: 400px;
+        }
+        canvas { 
+            border: 1px solid black; 
+        }
+        #commandsContainer { 
+            width: 190px;
+            display: flex; 
+            flex-direction: column;
+        }
+        #commands {
+            width: 100%;
+            height: 200px;
+            resize: vertical;
+        }
+        #status { 
+            margin-top: 10px; 
+        }
+        #instructions { 
+            margin-top: 10px;
+            font-size: 0.9em;
+        }
+        #instructions ul {
+            padding-left: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>進階圖龜繪圖</h1>
+    <div class="container">
+        <div id="canvasContainer">
+            <canvas id="turtleCanvas" width="400" height="400"></canvas>
+            <div id="status"></div>
+        </div>
+        <div id="commandsContainer">
+            <textarea id="commands">c red
+repeat 3 [fd 80 rt 120]
+lt 90
+pu
+fd 20
+pd
+rt 90
+c blue
+repeat 3 [fd 80 lt 120]</textarea>
+            <div>
+                <button onclick="runCommands()">執行</button>
+                <button onclick="saveImage()">保存圖片</button>
+                <button onclick="saveAll()">保存圖片和指令</button>
+            </div>
+            <div id="instructions">
+                <h3>指令說明：</h3>
+                <ul>
+                    <li>forward/fd X: 前進X單位</li>
+                    <li>backward/bk X: 後退X單位</li>
+                    <li>right/rt X: 右轉X度</li>
+                    <li>left/lt X: 左轉X度</li>
+                    <li>penup/pu: 提筆</li>
+                    <li>pendown/pd: 落筆</li>
+                    <li>color/c X: 設置顏色</li>
+                    <li>repeat X [commands]: 重複X次</li>
+                </ul>
+                <p><strong>快速鍵：</strong> Ctrl+Enter 或 Cmd+Enter 執行</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('turtleCanvas');
+        const ctx = canvas.getContext('2d');
+        const statusDiv = document.getElementById('status');
+        const commandsTextarea = document.getElementById('commands');
+        let x = 0, y = 0, angle = -90; // 初始位置改為 (0, 0)
+        let penDown = true;
+
+        function updateStatus() {
+            statusDiv.textContent = `烏龜位置: (${x.toFixed(2)}, ${y.toFixed(2)}), 方向: ${((angle + 90) % 360).toFixed(2)}°`;
+        }
+
+        function drawOrigin() {
+            ctx.save();
+            ctx.fillStyle = 'red';
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2, canvas.height / 2, 2, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function drawTurtle() {
+            ctx.save();
+            ctx.translate(canvas.width / 2 + x, canvas.height / 2 - y);
+            ctx.rotate(angle * Math.PI / 180);
+            ctx.beginPath();
+            ctx.moveTo(-5, -5);
+            ctx.lineTo(10, 0);
+            ctx.lineTo(-5, 5);
+            ctx.closePath();
+            ctx.fillStyle = 'green';
+            ctx.fill();
+            ctx.restore();
+        }
+
+function forward(distance) {
+    const newX = x + distance * Math.cos(angle * Math.PI / 180);
+    const newY = y - distance * Math.sin(angle * Math.PI / 180);  // 注意這裡的減號
+    if (penDown) {
+        ctx.beginPath();
+        ctx.moveTo(canvas.width / 2 + x, canvas.height / 2 - y);
+        ctx.lineTo(canvas.width / 2 + newX, canvas.height / 2 - newY);
+        ctx.stroke();
+    }
+    x = newX;
+    y = newY;
+    updateStatus();
+}
+
+function backward(distance) {
+    forward(-distance);
+}
+
+        function right(degrees) {
+            angle = (angle + degrees) % 360;
+            updateStatus();
+        }
+
+        function left(degrees) {
+            right(-degrees);
+        }
+
+        function penup() {
+            penDown = false;
+        }
+
+        function pendown() {
+            penDown = true;
+        }
+
+        function color(newColor) {
+            ctx.strokeStyle = newColor;
+        }
+
+        function executeCommand(command) {
+            const [action, ...params] = command.trim().split(' ');
+            const value = params.join(' ');
+            switch(action) {
+                case 'forward': case 'fd': forward(Number(value)); break;
+                case 'backward': case 'bk': backward(Number(value)); break;
+                case 'right': case 'rt': right(Number(value)); break;
+                case 'left': case 'lt': left(Number(value)); break;
+                case 'penup': case 'pu': penup(); break;
+                case 'pendown': case 'pd': pendown(); break;
+                case 'color': case 'c': color(value); break;
+            }
+        }
+
+        function parseAndExecuteCommands(input) {
+            const lines = input.split('\n');
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (line.startsWith('repeat')) {
+                    const match = line.match(/repeat\s+(\d+)\s*\[([\s\S]*?)\]/);
+                    if (match) {
+                        const count = Number(match[1]);
+                        const innerCommands = match[2].trim().split(/\s+/);
+                        for (let j = 0; j < count; j++) {
+                            for (let k = 0; k < innerCommands.length; k += 2) {
+                                const cmd = innerCommands[k] + ' ' + innerCommands[k+1];
+                                executeCommand(cmd);
+                            }
+                        }
+                    }
+                } else if (line) {
+                    executeCommand(line);
+                }
+            }
+        }
+
+        function runCommands() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            x = 0;
+            y = 0;
+            angle = -90; // 初始方向朝上
+            penDown = true;
+            ctx.strokeStyle = 'black';
+            updateStatus();
+            drawOrigin();
+            
+            const commandsText = commandsTextarea.value;
+            parseAndExecuteCommands(commandsText);
+            
+            drawTurtle();
+        }
+
+        function saveImage() {
+            const link = document.createElement('a');
+            link.download = 'turtle_drawing.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        function saveAll() {
+            const imageData = canvas.toDataURL();
+            const commands = commandsTextarea.value;
+            const htmlContent = `
+            <!DOCTYPE html>
+            <html lang="zh-TW">
+            <head>
+                <meta charset="UTF-8">
+                <title>圖龜繪圖結果</title>
+            </head>
+            <body>
+                <h1>圖龜繪圖結果</h1>
+                <img src="${imageData}" alt="圖龜繪圖">
+                <h2>使用的指令：</h2>
+                <pre>${commands}</pre>
+            </body>
+            </html>
+            `;
+            const blob = new Blob([htmlContent], {type: 'text/html'});
+            const link = document.createElement('a');
+            link.download = 'turtle_drawing_with_commands.html';
+            link.href = URL.createObjectURL(blob);
+            link.click();
+        }
+
+        // 添加快速鍵功能
+        commandsTextarea.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                e.preventDefault(); // 防止換行
+                runCommands();
+            }
+        });
+
+        // 初始化顯示
+        updateStatus();
+        drawOrigin();
+        drawTurtle();
+    </script>
+</body>
+</html>

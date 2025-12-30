@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABC 樂譜編輯器</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/abcjs/6.2.2/abcjs-basic-min.js"></script>
+    <link rel="stylesheet" href="abcjs-audio.css">
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        #abc-input { width: 100%; height: 150px; font-family: monospace; }
+        button { margin: 10px 5px 10px 0; }
+        #error-msg { color: red; }
+        #paper { margin-top: 20px; }
+        .highlight { fill: #0a9ecc; }
+        .abcjs-cursor { stroke: red; }
+        #size-control {
+            width: 100%;
+            margin: 10px 0;
+        }
+        #size-label {
+            display: inline-block;
+            width: 30px;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <h1>ABC 互動編輯器</h1>
+    <textarea id="abc-input">
+X:1
+T:示例曲目
+M:4/4
+L:1/4
+K:C
+C D E F | G A B c | c B A G | F E D C |</textarea>
+    <div>
+        <button id="open-btn">開啟檔案</button>
+        <button id="save-btn">另存 ABC</button>
+        <button id="export-svg-btn">匯出 SVG</button>
+    </div>
+    <div>
+        <input type="range" id="size-control" min="0.5" max="2" step="0.1" value="1">
+        <span id="size-label">100%</span>
+    </div>
+    <input type="file" id="file-input" style="display: none;">
+    <div id="error-msg"></div>
+    <div id="paper"></div>
+    <div id="audio"></div>
+
+    <script>
+        const abcInput = document.getElementById('abc-input');
+        const openBtn = document.getElementById('open-btn');
+        const saveBtn = document.getElementById('save-btn');
+        const exportSvgBtn = document.getElementById('export-svg-btn');
+        const fileInput = document.getElementById('file-input');
+        const errorMsg = document.getElementById('error-msg');
+        const paper = document.getElementById('paper');
+        const sizeControl = document.getElementById('size-control');
+        const sizeLabel = document.getElementById('size-label');
+
+        let cursorControl;
+        let synthControl;
+        let visualObj;
+        let scale = 1;
+        let lastCursorPosition = 0;
+
+        function CursorControl() {
+            var self = this;
+
+            self.onStart = function() {
+                var svg = document.querySelector("#paper svg");
+                var cursor = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                cursor.setAttribute("class", "abcjs-cursor");
+                cursor.setAttributeNS(null, 'x1', 0);
+                cursor.setAttributeNS(null, 'y1', 0);
+                cursor.setAttributeNS(null, 'x2', 0);
+                cursor.setAttributeNS(null, 'y2', 0);
+                svg.appendChild(cursor);
+            };
+
+            self.beatSubdivisions = 2;
+            self.onEvent = function(ev) {
+                if (ev.measureStart && ev.left === null) return;
+
+                var lastSelection = document.querySelectorAll("#paper svg .highlight");
+                for (var k = 0; k < lastSelection.length; k++)
+                    lastSelection[k].classList.remove("highlight");
+
+                for (var i = 0; i < ev.elements.length; i++ ) {
+                    var note = ev.elements[i];
+                    for (var j = 0; j < note.length; j++) {
+                        note[j].classList.add("highlight");
+                    }
+                }
+
+                var cursor = document.querySelector("#paper svg .abcjs-cursor");
+                if (cursor) {
+                    cursor.setAttribute("x1", ev.left - 2);
+                    cursor.setAttribute("x2", ev.left - 2);
+                    cursor.setAttribute("y1", ev.top);
+                    cursor.setAttribute("y2", ev.top + ev.height);
+                }
+            };
+
+            self.onFinished = function() {
+                var els = document.querySelectorAll("svg .highlight");
+                for (var i = 0; i < els.length; i++ ) {
+                    els[i].classList.remove("highlight");
+                }
+                var cursor = document.querySelector("#paper svg .abcjs-cursor");
+                if (cursor) {
+                    cursor.setAttribute("x1", 0);
+                    cursor.setAttribute("x2", 0);
+                    cursor.setAttribute("y1", 0);
+                    cursor.setAttribute("y2", 0);
+                }
+            };
+        }
+
+        function initializeEditor() {
+            cursorControl = new CursorControl();
+            synthControl = new ABCJS.synth.SynthController();
+
+            setTune(false);
+
+            synthControl.load("#audio", cursorControl, {
+                displayLoop: true,
+                displayRestart: true,
+                displayPlay: true,
+                displayProgress: true,
+                displayWarp: true
+            });
+        }
+
+        function onClickNote(abcelem, tuneNumber, classes, analysis, drag, mouseEvent) {
+            const startChar = abcelem.startChar;
+            const endChar = abcelem.endChar;
+            abcInput.focus();
+            abcInput.setSelectionRange(startChar, endChar);
+            lastCursorPosition = endChar;
+        }
+
+        function setTune(userAction) {
+            const currentPosition = abcInput.selectionStart;
+            synthControl.disable(true);
+            visualObj = ABCJS.renderAbc("paper", abcInput.value, {
+                add_classes: true,
+                responsive: "resize",
+                clickListener: onClickNote,
+                scale: scale,
+                staffwidth: paper.clientWidth / scale,
+            })[0];
+
+            var midiBuffer = new ABCJS.synth.CreateSynth();
+            midiBuffer.init({
+                visualObj: visualObj,
+            }).then(function (response) {
+                console.log(response);
+                if (synthControl) {
+                    synthControl.setTune(visualObj, userAction).then(function (response) {
+                        console.log("Audio successfully loaded.")
+                    }).catch(function (error) {
+                        console.warn("Audio problem:", error);
+                    });
+                }
+            }).catch(function (error) {
+                console.warn("Audio problem:", error);
+            });
+
+            // 恢復游標位置
+            abcInput.setSelectionRange(currentPosition, currentPosition);
+        }
+
+        function openFile() {
+            fileInput.click();
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    abcInput.value = e.target.result;
+                    setTune(true);
+                };
+                reader.readAsText(file);
+            }
+        }
+
+        function saveAbc() {
+            const blob = new Blob([abcInput.value], {type: "text/plain;charset=utf-8"});
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blob);
+            a.download = "abc_tune.abc";
+            a.click();
+        }
+
+        function exportSvg() {
+            if (visualObj) {
+                // 獲取 SVG 元素
+                const svgElement = paper.querySelector('svg');
+                if (!svgElement) {
+                    console.error('No SVG element found');
+                    return;
+                }
+
+                // 創建一個深度克隆的 SVG 元素
+                const clonedSvg = svgElement.cloneNode(true);
+
+                // 設置 SVG 的寬度和高度
+                clonedSvg.setAttribute('width', svgElement.getBoundingClientRect().width);
+                clonedSvg.setAttribute('height', svgElement.getBoundingClientRect().height);
+
+                // 添加必要的樣式
+                const style = document.createElement('style');
+                style.textContent = `
+                    .abcjs-staff { fill: none; stroke: #000000; }
+                    .abcjs-stem { stroke: #000000; }
+                    .abcjs-ledger { stroke: #000000; }
+                    .abcjs-bar { stroke: #000000; }
+                    .abcjs-note, .abcjs-rest { fill: #000000; }
+                    .abcjs-note_selected { fill: #0a9ecc; }
+                    .abcjs-tie, .abcjs-slur { stroke: #000000; fill: none; }
+                    .abcjs-staff-extra { stroke: #000000; }
+                    .abcjs-text, .abcjs-title { fill: #000000; }
+                    .abcjs-lyric { fill: #000000; }
+                `;
+                clonedSvg.insertBefore(style, clonedSvg.firstChild);
+
+                // 將 SVG 轉換為字符串
+                const serializer = new XMLSerializer();
+                const svgString = serializer.serializeToString(clonedSvg);
+
+                // 創建 Blob 和下載鏈接
+                const blob = new Blob([svgString], {type: "image/svg+xml;charset=utf-8"});
+                const a = document.createElement("a");
+                a.href = URL.createObjectURL(blob);
+                a.download = "abc_tune.svg";
+                a.click();
+            }
+        }
+
+        function updateSize() {
+            scale = parseFloat(sizeControl.value);
+            sizeLabel.textContent = Math.round(scale * 100) + "%";
+            setTune(false);
+        }
+
+        abcInput.addEventListener('input', function() {
+            lastCursorPosition = this.selectionStart;
+            setTune(true);
+        });
+        openBtn.addEventListener('click', openFile);
+        saveBtn.addEventListener('click', saveAbc);
+        exportSvgBtn.addEventListener('click', exportSvg);
+        fileInput.addEventListener('change', handleFileSelect);
+        sizeControl.addEventListener('input', updateSize);
+
+        window.addEventListener('load', initializeEditor);
+        window.addEventListener('resize', () => setTune(false));
+    </script>
+</body>
+</html>

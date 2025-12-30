@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UEB 點字轉換器</title>
+    <style>
+		#textareaContainer {
+		  display: flex;
+		  width: 100%;
+		  gap: 10px;
+		}
+
+		.textarea-wrapper {
+		  flex: 1;
+		  position: relative;
+		}
+
+		textarea {
+		  width: 100%;
+		  height: 100px;
+		  resize: vertical;
+		}
+
+		.vertical-layout {
+		  flex-direction: column;
+		}
+
+		.horizontal-layout {
+		  flex-direction: row;
+		}
+
+		#toggleLayout {
+		  margin-top: 10px;
+		}
+    		#english, #braille {
+      line-height: 1.5em;  /* 或者使用固定像素值，如 24px */
+      font-size: 16px;     /* 確保兩個 textarea 使用相同的字體大小 */
+    }
+    
+    #braille {
+      font-family: "Braille Unicode", sans-serif;  /* 使用支持 Braille Unicode 的字體 */
+    }
+    </style>
+</head>
+<body>
+    <h1>UEB 點字轉換器</h1>
+
+	<div id="textareaContainer" class="horizontal-layout">
+	  <div class="textarea-wrapper">
+		<div>
+			<h2>輸入英文</h2>
+			<textarea id="english" ></textarea>
+			<button id="openFile">開啟文字檔</button>
+		</div>
+    <div>
+	設定：
+		<label><input type="checkbox" id="syncScrollCheckbox" checked> 同步滾動 </label>
+		<button id="toggleLayout">切換對照方式</button><br>
+        顯示：
+        <label><input type="radio" id="brailleUnicode" name="brailleType" checked> Braille Unicode </label>
+        <label><input type="radio" id="brailleASCII" name="brailleType"> ASCII </label>
+    </div>
+    <div>
+        規則：
+        <label><input type="radio" id="grade1" name="brailleGrade"> Grade 1(一級) </label>
+        <label><input type="radio" id="grade2" name="brailleGrade" checked> Grade 2(二級) </label><br>
+    </div>
+	</div>
+	<div id="brailleContainer" class="textarea-wrapper">
+		<div>
+			<h2>轉換 UEB 點字</h2>
+			<textarea id="braille" readonly></textarea>
+			<button id="saveFile">儲存轉換結果</button>
+		</div>
+	</div>
+</div>
+	
+	<p style="text-align: right;">修改自 <a href="https://www.branah.com/braille-translator" target="_blank">Braille Translator</a></p>
+
+    <script>
+	//修改自 https://www.branah.com/braille-translator
+        (function() {
+            var l = {};
+            l.util = {
+                mobile: /Android|webOS|iPhone|iPad|iPod|IEMobile|Opera Mini/i.test(navigator.userAgent),
+                opera: ((!!window.opr && !!opr.addons) || !!window.opera || navigator.userAgent.indexOf(" OPR/") >= 0),
+                mozilla: (typeof InstallTrigger !== "undefined"),
+                code: function(i) {
+                    if (!i) {
+                        var i = window.event
+                    }
+                    if (i.code != undefined && i.key != undefined) {
+                        return i.code
+                    }
+                    return "Unidentified"
+                },
+                keyCode: function(ab) {
+                    if (!ab) {
+                        var ab = window.event
+                    }
+                    if (this.mozilla) {
+                        var i = ab.keyCode;
+                        switch (i) {
+                            case 59:
+                                i = 186;
+                                break;
+                            case 107:
+                                i = 187;
+                                break;
+                            case 109:
+                                i = 189;
+                                break;
+                            case 61:
+                                i = 187;
+                                break;
+                            case 173:
+                                i = 189;
+                                break
+                        }
+                        return i
+                    }
+                    if (this.opera) {
+                        var i = ab.keyCode;
+                        switch (i) {
+                            case 59:
+                                i = 186;
+                                break;
+                            case 61:
+                                i = 187;
+                                break;
+                            case 109:
+                                i = 189;
+                                break
+                        }
+                        return i
+                    }
+                    return ab.keyCode
+                },
+                isCtrl: function(i) {
+                    if (!i) {
+                        var i = window.event
+                    }
+                    return i.ctrlKey
+                },
+                isAlt: function(i) {
+                    if (!i) {
+                        var i = window.event
+                    }
+                    return i.altKey
+                },
+                isShift: function(i) {
+                    if (!i) {
+                        var i = window.event
+                    }
+                    return i.shiftKey
+                },
+                isCaps: function(i) {
+                    var ab = this.keyCode(i);
+                    var ac = this.isShift(i);
+                    if ((ab >= 65 && ab <= 90 && !ac) || (ab >= 97 && ab <= 122 && ac)) {
+                        return true
+                    }
+                    if ((ab >= 65 && ab <= 90 && ac) || (ab >= 97 && ab <= 122 && !ac)) {
+                        return false
+                    }
+                    return false
+                },
+                padLeft: function(i, e) {
+                    if (!e || i.length >= e) {
+                        return i
+                    }
+                    return Math.pow(10, e - i.length).toString().slice(1) + i
+                },
+                indexOf: function(e, ad) {
+                    var ac = e.length;
+                    for (var ab = 0; ab < ac; ab++) {
+                        if (e[ab] == ad) {
+                            return ab
+                        }
+                    }
+                    return -1
+                },
+                keyOf: function(e, ab) {
+                    for (var i in e) {
+                        if (i === "length" || !e.hasOwnProperty(i)) {
+                            continue
+                        }
+                        if (e[i] == ab) {
+                            return i
+                        }
+                    }
+                    return null
+                },
+                insertAtCaret: function(i, ae) {
+                    var ad = this.getSelectionStart(i);
+                    var ab = this.getSelectionEnd(i);
+                    var ac = i.value.length;
+                    i.value = i.value.substring(0, ad) + ae + i.value.substring(ab, ac);
+                    this.setCaretPosition(i, ad + ae.length, 0)
+                },
+                deleteAtCaret: function(ac, ab, i) {
+                    var af = this.getSelectionStart(ac);
+                    var ad = this.getSelectionEnd(ac);
+                    var ae = ac.value.length;
+                    if (ab > af) {
+                        ab = af
+                    }
+                    if (ad + i > ae) {
+                        i = ae - ad
+                    }
+                    var ag = ac.value.substring(af - ab, ad + i);
+                    ac.value = ac.value.substring(0, af - ab) + ac.value.substring(ad + i);
+                    this.setCaretPosition(ac, af - ab, 0);
+                    return ag
+                },
+                getSelectionStart: function(i) {
+                    i.focus();
+                    if (i.selectionStart !== undefined) {
+                        return i.selectionStart
+                    } else {
+                        if (document.selection) {
+                            var ab = document.selection.createRange();
+                            if (ab == null) {
+                                return 0
+                            }
+                            var ad = i.createTextRange();
+                            var ac = ad.duplicate();
+                            ad.moveToBookmark(ab.getBookmark());
+                            ac.setEndPoint("EndToStart", ad);
+                            return ac.text.length
+                        }
+                    }
+                    return 0
+                },
+                getSelectionEnd: function(i) {
+                    i.focus();
+                    if (i.selectionEnd !== undefined) {
+                        return i.selectionEnd
+                    } else {
+                        if (document.selection) {
+                            var ab = document.selection.createRange();
+                            if (ab == null) {
+                                return 0
+                            }
+                            var ad = i.createTextRange();
+                            var ac = ad.duplicate();
+                            ad.moveToBookmark(ab.getBookmark());
+                            ac.setEndPoint("EndToStart", ad);
+                            return ac.text.length + ab.text.length
+                        }
+                    }
+                    return i.value.length
+                },
+                setCaretPosition: function(ab, ad, i) {
+                    var ac = ab.value.length;
+                    if (ad > ac) {
+                        ad = ac
+                    }
+                    if (ad + i > ac) {
+                        i = ac - i
+                    }
+                    ab.focus();
+                    if (ab.setSelectionRange) {
+                        ab.setSelectionRange(ad, ad + i)
+                    } else {
+                        if (ab.createTextRange) {
+                            var ae = ab.createTextRange();
+                            ae.collapse(true);
+                            ae.moveEnd("character", ad + i);
+                            ae.moveStart("character", ad);
+                            ae.select()
+                        }
+                    }
+                    ab.focus()
+                },
+                selectAll: function(i) {
+                    this.setCaretPosition(i, 0, i.value.length)
+                }
+            };
+            String.fromCharCodeS = function() {
+                var ad = arguments.length;
+                var ae = "";
+                var e, ac, af;
+                for (var ab = 0; ab < ad; ab++) {
+                    af = arguments[ab];
+                    if (af < 1114112 && 65535 < af) {
+                        e = Math.floor((af - 65536) / 1024) + 55296;
+                        ac = ((af - 65536) % 1024) + 56320;
+                        ae = ae + String.fromCharCode(e, ac)
+                    } else {
+                        if (af < 65536) {
+                            ae = ae + String.fromCharCode(af)
+                        }
+                    }
+                }
+                return ae
+            };
+            srcId = function(i, ab, ad) {
+                if (!i) {
+                    var i = window.event
+                }
+                var ac;
+                if (i.target) {
+                    ac = i.target
+                } else {
+                    if (i.srcElement) {
+                        ac = i.srcElement
+                    }
+                }
+                if (ac.nodeType == 3) {
+                    ac = target.parentNode
+                }
+                while (ac.tagName.toLowerCase() != ad) {
+                    ac = ac.parentNode;
+                    if (ac == ab || ac.tagName.toLowerCase() == "body") {
+                        return null
+                    }
+                }
+                return ac.id
+            };
+            document.getElementById("english").onkeyup = function(i) {
+                aa(1)
+            };
+
+            document.getElementById("braille").onkeyup = function(i) {
+                if (x == false) {
+                    aa(2)
+                } else {}
+            };
+
+            document.getElementById("brailleUnicode").onclick = function(i) {
+                s = false;
+                aa(1)
+            };
+            document.getElementById("brailleASCII").onclick = function(i) {
+                s = true;
+                aa(1)
+            };
+            document.getElementById("grade1").onclick = function(i) {
+                x = false;
+                aa(1)
+            };
+            document.getElementById("grade2").onclick = function(i) {
+                x = true;
+                aa(1)
+            };
+            var R = ["\u2801", "\u2803", "\u2809", "\u2819", "\u2811", "\u280b", "\u281b", "\u2813", "\u280a", "\u281a", "\u2805", "\u2807", "\u280d", "\u281d", "\u2815", "\u280f", "\u281f", "\u2817", "\u280e", "\u281e", "\u2825", "\u2827", "\u282d", "\u283d", "\u2835", "\u282f", "\u283f", "\u2837", "\u282e", "\u283e", "\u2821", "\u2823", "\u2829", "\u2839", "\u2831", "\u282b", "\u283b", "\u2833", "\u282a", "\u283a", "\u2802", "\u2806", "\u2812", "\u2832", "\u2822", "\u2816", "\u2836", "\u2826", "\u2814", "\u2834", "\u280c", "\u282c", "\u283c", "\u281c", "\u2804", "\u2824", "\u2808", "\u2818", "\u2838", "\u2810", "\u2828", "\u2830", "\u2820", "\u2800"];
+
+            function aa(i) {
+                switch (i) {
+                    case 1:
+                        var e = document.getElementById("english").value;
+                        document.getElementById("braille").value = t(e);
+                        break;
+                    case 2:
+                        var e = document.getElementById("braille").value;
+                        document.getElementById("english").value = g(e);
+                        break;
+                    default:
+                        break
+                }
+            }
+            var c = ["\u0020", "\u002c", "\u0022", "\u003b", "\u0040", "\u002e", "\u005e", "\u005f", "\u0027", "\u002d", "\u0039", "\u0030", "\u002f", "\u002b", "\u003e", "\u0023", "\u0031", "\u0035", "\u0033", "\u0034", "\u0049", "\u005b", "\u004a", "\u0057", "\u0032", "\u0038", "\u0036", "\u0037", "\u0053", "\u0021", "\u0054", "\u0029", "\u0041", "\u002a", "\u0045", "\u003a", "\u0043", "\u0025", "\u0044", "\u003f", "\u004b", "\u0055", "\u004f", "\u005a", "\u004d", "\u0058", "\u004e", "\u0059", "\u0042", "\u003c", "\u0048", "\u005c", "\u0046", "\u0024", "\u0047", "\u005d", "\u004c", "\u0056", "\u0052", "\u0028", "\u0050", "\u0026", "\u0051", "\u003d"];
+            var h = ["\u2800", "\u2820", "\u2810", "\u2830", "\u2808", "\u2828", "\u2818", "\u2838", "\u2804", "\u2824", "\u2814", "\u2834", "\u280c", "\u282c", "\u281c", "\u283c", "\u2802", "\u2822", "\u2812", "\u2832", "\u280a", "\u282a", "\u281a", "\u283a", "\u2806", "\u2826", "\u2816", "\u2836", "\u280e", "\u282e", "\u281e", "\u283e", "\u2801", "\u2821", "\u2811", "\u2831", "\u2809", "\u2829", "\u2819", "\u2839", "\u2805", "\u2825", "\u2815", "\u2835", "\u280d", "\u282d", "\u281d", "\u283d", "\u2803", "\u2823", "\u2813", "\u2833", "\u280b", "\u282b", "\u281b", "\u283b", "\u2807", "\u2827", "\u2817", "\u2837", "\u280f", "\u282f", "\u281f", "\u283f"];
+            var s = false;
+            var x = true;
+            var b = {
+                a: 32,
+                b: 48,
+                c: 36,
+                d: 38,
+                e: 34,
+                f: 52,
+                g: 54,
+                h: 50,
+                i: 20,
+                j: 22,
+                k: 40,
+                l: 56,
+                m: 44,
+                n: 46,
+                o: 42,
+                p: 60,
+                q: 62,
+                r: 58,
+                s: 28,
+                t: 30,
+                u: 41,
+                v: 57,
+                w: 23,
+                x: 45,
+                y: 47,
+                z: 43
+            };
+            var O = {
+                "1": 32,
+                "2": 48,
+                "3": 36,
+                "4": 38,
+                "5": 34,
+                "6": 52,
+                "7": 54,
+                "8": 50,
+                "9": 20,
+                "0": 22
+            };
+            var N = {
+                "\u2c65": [4, 33, 32],
+                "\u023c": [4, 33, 36],
+                "\u00f0": [4, 33, 38],
+                "\u0247": [4, 33, 34],
+                "\u0142": [4, 33, 56],
+                "\u00f8": [4, 33, 42],
+                "\u0180": [4, 18, 32],
+                "\u0111": [4, 18, 38],
+                "\u01e5": [4, 18, 54],
+                "\u0127": [4, 18, 50],
+                "\u0268": [4, 18, 20],
+                "\u0249": [4, 18, 22],
+                "\u019a": [4, 18, 56],
+                "\u0275": [4, 18, 42],
+                "\u1d7d": [4, 18, 60],
+                "\u024d": [4, 18, 58],
+                "\u0167": [4, 18, 30],
+                "\u0289": [4, 18, 41],
+                "\u024f": [4, 18, 47],
+                "\u01b6": [4, 18, 43],
+                "\u0103": [4, 13, 32],
+                "\u0115": [4, 13, 34],
+                "\u011f": [4, 13, 54],
+                "\u012d": [4, 13, 20],
+                "\u014f": [4, 13, 42],
+                "\u016d": [4, 13, 41],
+                "\u0101": [4, 9, 32],
+                "\u0113": [4, 9, 34],
+                "\u1e21": [4, 9, 54],
+                "\u012b": [4, 9, 20],
+                "\u014d": [4, 9, 42],
+                "\u016b": [4, 9, 41],
+                "\u0233": [4, 9, 47],
+                "\u00e7": [6, 61, 36],
+                "\u1e11": [6, 61, 38],
+                "\u0229": [6, 61, 34],
+                "\u0123": [6, 61, 54],
+                "\u1e29": [6, 61, 50],
+                "\u0137": [6, 61, 40],
+                "\u013c": [6, 61, 56],
+                "\u0146": [6, 61, 46],
+                "\u0157": [6, 61, 58],
+                "\u015f": [6, 61, 28],
+                "\u0163": [6, 61, 30],
+                "\u00e0": [6, 33, 32],
+                "\u00e8": [6, 33, 34],
+                "\u00ec": [6, 33, 20],
+                "\u01f9": [6, 33, 46],
+                "\u00f2": [6, 33, 42],
+                "\u00f9": [6, 33, 41],
+                "\u1e81": [6, 33, 23],
+                "\u1ef3": [6, 33, 47],
+                "\u00e2": [6, 37, 32],
+                "\u0109": [6, 37, 36],
+                "\u00ea": [6, 37, 34],
+                "\u011d": [6, 37, 54],
+                "\u0125": [6, 37, 50],
+                "\u00ee": [6, 37, 20],
+                "\u0135": [6, 37, 22],
+                "\u00f4": [6, 37, 42],
+                "\u015d": [6, 37, 28],
+                "\u00fb": [6, 37, 41],
+                "\u0175": [6, 37, 23],
+                "\u0177": [6, 37, 47],
+                "\u1e91": [6, 37, 43],
+                "\u00e5": [6, 53, 32],
+                "\u016f": [6, 53, 41],
+                "\u1e98": [6, 53, 23],
+                "\u1e99": [6, 53, 47],
+                "\u00e3": [6, 55, 32],
+                "\u1ebd": [6, 55, 34],
+                "\u0129": [6, 55, 20],
+                "\u00f1": [6, 55, 46],
+                "\u00f5": [6, 55, 42],
+                "\u0169": [6, 55, 41],
+                "\u1e7d": [6, 55, 57],
+                "\u1ef9": [6, 55, 47],
+                "\u00e4": [6, 18, 32],
+                "\u00eb": [6, 18, 34],
+                "\u1e27": [6, 18, 50],
+                "\u00ef": [6, 18, 20],
+                "\u00f6": [6, 18, 42],
+                "\u1e97": [6, 18, 30],
+                "\u00fc": [6, 18, 41],
+                "\u1e85": [6, 18, 23],
+                "\u1e8d": [6, 18, 45],
+                "\u00ff": [6, 18, 47],
+                "\u00e1": [6, 12, 32],
+                "\u0107": [6, 12, 36],
+                "\u00e9": [6, 12, 34],
+                "\u01f5": [6, 12, 54],
+                "\u00ed": [6, 12, 20],
+                "\u1e31": [6, 12, 40],
+                "\u013a": [6, 12, 56],
+                "\u1e3f": [6, 12, 44],
+                "\u0144": [6, 12, 46],
+                "\u00f3": [6, 12, 42],
+                "\u1e55": [6, 12, 60],
+                "\u0155": [6, 12, 58],
+                "\u015b": [6, 12, 28],
+                "\u00fa": [6, 12, 41],
+                "\u1e83": [6, 12, 23],
+                "\u00fd": [6, 12, 47],
+                "\u017a": [6, 12, 43],
+                "\u01ce": [6, 13, 32],
+                "\u010d": [6, 13, 36],
+                "\u010f": [6, 13, 38],
+                "\u011b": [6, 13, 34],
+                "\u01e7": [6, 13, 54],
+                "\u021f": [6, 13, 50],
+                "\u01d0": [6, 13, 20],
+                "\u01f0": [6, 13, 22],
+                "\u01e9": [6, 13, 40],
+                "\u013e": [6, 13, 56],
+                "\u0148": [6, 13, 46],
+                "\u01d2": [6, 13, 42],
+                "\u0159": [6, 13, 58],
+                "\u0161": [6, 13, 28],
+                "\u0165": [6, 13, 30],
+                "\u01d4": [6, 13, 41],
+                "\u017e": [6, 13, 43]
+            };
+            var S = {
+                ",": [16],
+                ";": [24],
+                ":": [18],
+                ".": [19],
+                "!": [26],
+                "?": [25],
+                "\u2013": [1, 9],
+                "\u201c": [5, 25],
+                "\u201d": [5, 11],
+                "\u2018": [1, 25],
+                "\u2019": [1, 11],
+                "\u00ab": [7, 25],
+                "\u00bb": [7, 11],
+                "\u0022": [1, 27],
+                "\u0027": [8],
+                "(": [2, 49],
+                ")": [2, 14],
+                "[": [5, 49],
+                "]": [5, 14],
+                "<": [4, 49],
+                ">": [4, 14],
+                "{": [7, 49],
+                "}": [7, 14],
+                "\u002f": [7, 12],
+                "\u005c": [7, 33],
+                "-": [9],
+                "\u2014": [1, 9],
+                "\u2014\u2014": [2, 1, 9],
+                _: [5, 9],
+                "\u00a1": [6, 3, 26],
+                "\u00bf": [6, 3, 25]
+            };
+            var n = {
+                "\u00a2": [4, 36],
+                "\u20ac": [4, 34],
+                "\u20a3": [4, 52],
+                "\u00a3": [4, 56],
+                "\u20a6": [4, 46],
+                "\u0024": [4, 28],
+                "\u00a5": [4, 47]
+            };
+            var Q = {
+                "+": [2, 26],
+                "−": [2, 9],
+                "\u00d7": [2, 25],
+                "\u00f7": [2, 12]
+            };
+            var m = {
+                "=": [2, 27],
+                "<": [4, 49],
+                ">": [4, 14]
+            };
+            var Z = {
+                "\u00b4": [6, 12],
+                "\u0060": [6, 33],
+                "~": [4, 10],
+                "@": [4, 32],
+                "#": [7, 39],
+                "%": [5, 11],
+                "\u005e": [4, 17],
+                "\u0026": [4, 61],
+                "*": [2, 10],
+                "\u2020": [4, 1, 39],
+                "\u2021": [4, 1, 55],
+                "\u2022": [7, 19],
+                "\u00a9": [6, 36],
+                "\u00ae": [6, 58],
+                "\u2122": [6, 30],
+                "\u00a7": [6, 28],
+                "\u00b6": [6, 60],
+                "\u00b0": [6, 22],
+                "\u00e6": [32, 6, 26, 34],
+                "\u2192": [51, 42],
+                "\u2190": [51, 21],
+                "\u2191": [51, 13],
+                "\u21b5": [51, 11, 37],
+                "\u3003": [2, 16],
+                "\u2032": [27],
+                "\u2033": [27, 27],
+                "\u2640": [6, 45],
+                "\u2642": [6, 47],
+                "\u266d": [15, 49],
+                "\u266e": [15, 33],
+                "\u266f": [15, 37],
+            };
+            var a = {
+                but: 48,
+                can: 36,
+                "do": 38,
+                every: 34,
+                from: 52,
+                go: 54,
+                have: 50,
+                just: 22,
+                knowledge: 40,
+                like: 56,
+                more: 44,
+                not: 46,
+                people: 60,
+                quite: 62,
+                rather: 58,
+                so: 28,
+                that: 30,
+                us: 41,
+                very: 57,
+                it: 45,
+                you: 47,
+                as: 43,
+                will: 23
+            };
+            var X = {
+                child: 33,
+                shall: 37,
+                "this": 39,
+                which: 35,
+                out: 51,
+                still: 12
+            };
+            var V = {
+                and: 61,
+                "for": 63,
+                of: 59,
+                the: 29,
+                "with": 31
+            };
+            var W = {
+                ch: 33,
+                gh: 49,
+                sh: 37,
+                th: 39,
+                wh: 35,
+                ed: 53,
+                er: 55,
+                ou: 51,
+                ow: 21,
+                st: 12,
+                ing: 13,
+                ar: 14
+            };
+            var L = {
+                be: 24,
+                enough: 17,
+                were: 27,
+                his: 25,
+                "in": 10,
+                was: 11
+            };
+            var K = {
+                ea: 16,
+                be: 24,
+                bb: 24,
+                con: 18,
+                cc: 18,
+                dis: 19,
+                en: 17,
+                ff: 26,
+                gg: 27,
+                "in": 10
+            };
+            var B = {
+                upon: [6, 41],
+                these: [6, 29],
+                those: [6, 39],
+                whose: [6, 35],
+                word: [6, 23],
+                cannot: [7, 36],
+                had: [7, 50],
+                many: [7, 44],
+                spirit: [7, 28],
+                their: [7, 29],
+                world: [7, 23],
+                day: [2, 38],
+                ever: [2, 34],
+                father: [2, 52],
+                there: [2, 29],
+                here: [2, 50],
+                know: [2, 40],
+                lord: [2, 56],
+                mother: [2, 44],
+                name: [2, 46],
+                one: [2, 42],
+                part: [2, 60],
+                question: [2, 62],
+                right: [2, 58],
+                some: [2, 28],
+                time: [2, 30],
+                under: [2, 41],
+                young: [2, 47],
+                character: [2, 33],
+                through: [2, 39],
+                where: [2, 35],
+                ought: [2, 51],
+                work: [2, 23]
+            };
+            var u = {
+                ound: [5, 38],
+                ance: [5, 34],
+                sion: [5, 46],
+                less: [5, 28],
+                ount: [5, 30],
+                ence: [3, 34],
+                ong: [3, 54],
+                ful: [3, 56],
+                tion: [3, 46],
+                ness: [3, 28],
+                ment: [3, 30],
+                ity: [3, 47]
+            };
+            var T = {
+                about: [32, 48],
+                above: [32, 48, 57],
+                according: [32, 36],
+                across: [32, 36, 58],
+                after: [32, 52],
+                afternoon: [32, 52, 46],
+                afterward: [32, 52, 23],
+                again: [32, 54],
+                against: [32, 54, 12],
+                also: [32, 56],
+                almost: [32, 56, 44],
+                already: [32, 56, 58],
+                altogether: [32, 56, 30],
+                although: [32, 56, 39],
+                always: [32, 56, 23],
+                blind: [48, 56],
+                braille: [48, 58, 56],
+                could: [36, 38],
+                declare: [38, 36, 56],
+                declaring: [38, 36, 56, 54],
+                deceive: [38, 36, 57],
+                deceiving: [38, 36, 57, 54],
+                either: [34, 20],
+                friend: [52, 58],
+                first: [52, 12],
+                good: [54, 38],
+                great: [54, 58, 30],
+                him: [50, 44],
+                himself: [50, 44, 52],
+                herself: [50, 55, 52],
+                immediate: [20, 44, 44],
+                little: [56, 56],
+                letter: [56, 58],
+                myself: [44, 47, 52],
+                much: [44, 33],
+                must: [44, 12],
+                necessary: [46, 34, 36],
+                neither: [46, 34, 20],
+                paid: [60, 38],
+                perceive: [60, 55, 36, 57],
+                perceiving: [60, 55, 36, 57, 54],
+                perhaps: [60, 55, 50],
+                quick: [62, 40],
+                receive: [58, 36, 57],
+                receiving: [58, 36, 57, 54],
+                rejoice: [58, 22, 36],
+                rejoicing: [58, 22, 36, 54],
+                said: [28, 38],
+                such: [28, 33],
+                today: [30, 38],
+                together: [30, 54, 58],
+                tomorrow: [30, 44],
+                tonight: [30, 46],
+                itself: [45, 52],
+                its: [45, 28],
+                your: [47, 58],
+                yourself: [47, 58, 52],
+                yourselves: [47, 58, 57, 28],
+                themselves: [29, 44, 57, 28],
+                children: [33, 46],
+                should: [37, 38],
+                thyself: [39, 47, 52],
+                ourselves: [51, 58, 57, 28],
+                would: [23, 38],
+                because: [24, 36],
+                before: [24, 52],
+                behind: [24, 50],
+                below: [24, 56],
+                beneath: [24, 46],
+                beside: [24, 28],
+                between: [24, 30],
+                beyond: [24, 47],
+                conceive: [18, 36, 57],
+                conceiving: [18, 36, 57, 54],
+                oneself: [2, 42, 52]
+            };
+            var C = {
+                upon: ["upon", "hereupon", "thereupon", "whereupon"],
+                these: ["these"],
+                those: ["those"],
+                whose: ["whose", "whosesoever", "whosever"],
+                there: ["there", "thereabout", "thereabouts", "thereafter", "thereat", "thereby", "therefor", "therefore", "therefrom", "therein", "thereinto", "thereof", "thereon", "thereunder", "thereunto", "thereupon", "thereto", "theretofore", "therewith", "therewithal"]
+            };
+            var U = {
+                about: ["aboutface", "aboutfaced", "aboutfacer", "aboutfacing", "aboutturn", "aboutturned", "eastabout", "gadabout", "hereabout", "knockabout", "layabout", "northabout", "rightabout", "roundabout", "roustabout", "runabout", "southabout", "stirabout", "thereabout", "turnabout", "walkabout", "westabout", "whereabout"],
+                above: ["aboveboard", "aboveground", "abovementioned", "hereinabove"],
+                according: ["accordingly", "unaccording", "unaccordingly"],
+                across: ["readacross"],
+                after: ["afterbattle", "afterbirth", "afterbreakfast", "afterburn", "afterburned", "afterburner", "afterburning", "aftercare", "afterclap", "aftercoffee", "afterdamp", "afterdark", "afterdeck", "afterdinner", "afterflow", "aftergame", "afterglow", "afterguard", "afterhatch", "afterhatches", "afterhour", "afterlife", "afterlight", "afterlives", "afterlunch", "afterlunches", "aftermarket", "aftermatch", "aftermatches", "aftermath", "aftermeeting", "aftermidday", "aftermidnight", "aftermost", "afterpain", "afterparties", "afterparty", "afterpiece", "afterplay", "aftersale", "afterschool", "aftersensation", "aftershave", "aftershock", "aftershow", "aftershower", "aftersupper", "aftertaste", "aftertax", "aftertaxes", "aftertea", "aftertheatre", "afterthought", "aftertime", "aftertreatment", "afterword", "afterwork", "afterworld", "hereafter", "hereinafter", "morningafter", "thereafter", "thereinafter", "whereafter", "whereinafter"],
+                afternoon: ["afternoontea", "goodafternoon", "midafternoon"],
+                again: ["hereagain", "hereinagain", "thereagain", "thereinagain", "whereagain", "whereinagain"],
+                against: ["hereagainst", "thereagainst", "whereagainst"],
+                below: ["belowdeck", "belowground", "belowmentioned"],
+                beneath: ["beneathdeck", "beneathground"],
+                between: ["betweendeck", "betweentime", "betweenwhile"],
+                blind: ["blindfish", "blindfishes", "blindfold", "blindfolded", "blindfolder", "blindfolding", "blindly", "blindman", "blindmen", "blindness", "blindnesses", "blindside", "blindsided", "blindsider", "blindsiding", "blindsight", "blindstories", "blindstory", "blindworm", "colorblind", "colorblindness", "colorblindnesses", "colourblind", "colourblindness", "colourblindnesses", "deafblind", "deafblindness", "deafblindnesses", "purblind", "purblindly", "purblindness", "purblindnesses", "snowblind", "snowblindness", "snowblindnesses", "unblindfold", "unblindfolded", "unblindfolding"],
+                braille: ["brailled", "brailler", "braillewriter", "braillewriting", "brailley", "misbraille", "misbrailled", "rebraille", "rebrailled", "rebrailler", "unbraille", "unbrailled"],
+                could: ["could've", "coulda", "couldest", "couldn't", "couldn't've", "couldst"],
+                deceive: ["deceived", "deceiver", "archdeceiver", "undeceive", "undeceived", "undeceiver"],
+                deceiving: ["undeceiving"],
+                declare: ["declared", "declarer", "undeclare", "undeclared"],
+                first: ["firstaid", "firstaider", "firstborn", "firstclass", "firstclasses", "firstday", "firstdayer", "firstfruit", "firstfruiting", "firstgeneration", "firsthand", "firsthanded", "firstling", "firstly", "firstness", "firstnight", "firstnighter", "firstrate", "firstrated", "firstrating", "firststring", "feetfirst", "headfirst", "tailfirst"],
+                friend: ["friendless", "friendlessness", "friendlessnesses", "friendlier", "friendlies", "friendliest", "friendliness", "friendlinesses", "friendly", "friendship", "befriend", "boyfriend", "defriend", "galfriend", "gentlemanfriend", "gentlemenfriends", "girlfriend", "guyfriend", "ladyfriend", "manfriend", "menfriends", "penfriend", "schoolfriend", "unfriend", "unfriendlier", "unfriendliest", "unfriendliness", "unfriendlinesses", "unfriendly", "womanfriend", "womenfriends"],
+                good: ["goodafternoon", "goodby", "goodbye", "goodbyeing", "goodbying", "goodday", "gooder", "goodest", "goodevening", "goodfellow", "goodfellowship", "goodhearted", "goodheartedly", "goodheartedness", "goodhumor", "goodhumored", "goodhumoredly", "goodhumoredness", "goodhumorednesses", "goodhumour", "goodhumoured", "goodhumouredly", "goodhumouredness", "goodhumourednesses", "goodie", "goodish", "goodlier", "goodliest", "goodliness", "goodlook", "goodlooker", "goodlooking", "goodly", "goodman", "goodmen", "goodmorning", "goodnature", "goodnatured", "goodnaturedly", "goodnaturedness", "goodness", "goodnesses", "goodnight", "goodsize", "goodsized", "goodtempered", "goodtemperedly", "goodtime", "goodun", "goodwife", "goodwill", "goodwilled", "goodwives", "goody", "goodyear", "feelgood", "scattergood", "supergood"],
+                great: ["greatcoat", "greaten", "greatened", "greatener", "greatening", "greater", "greatest", "greatgrandaunt", "greatgrandchild", "greatgrandchildren", "greatgranddad", "greatgranddaughter", "greatgrandfather", "greatgrandfatherhood", "greatgrandma", "greatgrandmother", "greatgrandmotherhood", "greatgrandnephew", "greatgrandniece", "greatgrandpa", "greatgrandparent", "greatgrandparenthood", "greatgrandson", "greatgranduncle", "greathearted", "greatheartedly", "greatheartedness", "greatheartednesses", "greatly", "greatnephew", "greatness", "greatnesses", "greatniece", "greatsword", "greatuncle"],
+                him: ["himbo", "himboes"],
+                immediate: ["immediately", "immediateness"],
+                letter: ["letterbomb", "letterbombed", "letterbomber", "letterbombing", "letterbox", "letterboxed", "letterboxer", "letterboxes", "letterboxing", "letterbodies", "letterbody", "lettered", "letterer", "letterform", "letterhead", "letterheading", "lettering", "letterman", "lettermen", "letteropener", "letterperfect", "letterpress", "letterpressed", "letterpresses", "letterpressing", "letterquality", "letterspace", "letterspaced", "letterspacing", "lettertext", "bloodletter", "chainletter", "hateletter", "loveletter", "newsletter", "reletter", "relettered", "relettering", "unlettered"],
+                little: ["littled", "littleneck", "littleness", "littlenesses", "littler", "littlest", "belittle", "belittled", "belittlement", "belittler"],
+                much: ["muchly", "muchness", "forasmuch", "inasmuch", "insomuch", "overmuch"],
+                must: ["must've", "musta", "mustard", "mustier", "mustiest", "mustily", "mustiness", "mustn't", "mustn't've", "musty"],
+                necessary: ["unnecessary"],
+                paid: ["highlypaid", "illpaid", "lowlypaid", "overpaid", "poorlypaid", "postpaid", "prepaid", "repaid", "underpaid", "unpaid", "wellpaid"],
+                perceive: ["perceived", "perceiver", "apperceive", "apperceived", "apperceiver", "misperceive", "misperceived", "misperceiver", "unperceive", "unperceived"],
+                perceiving: ["apperceiving", "misperceiving", "unperceiving"],
+                perhaps: ["perhapses"],
+                quick: ["quickdraw", "quicken", "quickened", "quickener", "quickening", "quicker", "quickest", "quickfire", "quickfiring", "quickfreeze", "quickfreezing", "quickfroze", "quickfrozen", "quickie", "quickish", "quickishly", "quicklime", "quickly", "quickness", "quicknesses", "quicksand", "quickset", "quicksilver", "quicksilvered", "quicksilvering", "quicksnap", "quickstep", "quickstepped", "quickstepper", "quickstepping", "quicktempered", "quicktime", "quickwitted", "quickwittedly", "quickwittedness", "quicky", "doublequick", "superquick", "unquick"],
+                receive: ["received", "receiver", "receivership", "preceive", "preceiver", "unreceived"],
+                receiving: ["preceiving"],
+                rejoice: ["rejoiced", "rejoiceful", "rejoicefully", "rejoicefulness", "rejoicer", "unrejoice", "unrejoiced", "unrejoicer", "unrejoiceful", "unrejoicefully", "unrejoicefulness"],
+                rejoicing: ["rejoicingly", "unrejoicing", "unrejoicingly"],
+                said: ["saidest", "saidst", "aforesaid", "foresaid", "gainsaid", "missaid"],
+                should: ["should've", "shoulda", "shouldest", "shouldn't", "shouldn't've", "shouldst"],
+                such: ["suchlike", "nonesuch", "nonsuch", "somesuch"],
+                yourself: ["do-it-yourselfer"],
+                would: ["would've", "woulda", "wouldest", "wouldn't", "wouldn't've", "wouldst", "'twould", "'twould've", "'twoulda", "'twouldn't", "'twouldn't've"]
+            };
+            var y = {
+                "\u03b1": [5, 32],
+                "\u03b2": [5, 48],
+                "\u03b3": [5, 54],
+                "\u03b4": [5, 38],
+                "\u03b5": [5, 34],
+                "\u03b6": [5, 43],
+                "\u03b7": [5, 35],
+                "\u03b8": [5, 39],
+                "\u03b9": [5, 20],
+                "\u03ba": [5, 40],
+                "\u03bb": [5, 56],
+                "\u03bc": [5, 44],
+                "\u03bd": [5, 46],
+                "\u03be": [5, 45],
+                "\u03bf": [5, 42],
+                "\u03c0": [5, 60],
+                "\u03c1": [5, 58],
+                "\u03c2": [5, 28],
+                "\u03c3": [5, 28],
+                "\u03c4": [5, 30],
+                "\u03c5": [5, 41],
+                "\u03c6": [5, 52],
+                "\u03c7": [5, 61],
+                "\u03c8": [5, 47],
+                "\u03c9": [5, 23]
+            };
+      // ASCII小寫顯示
+			function k(ab){
+			  var ac=h.length;
+			  var ad=ab;
+			  for(var e=0;e<ac;e++){
+				ad=ad.replace(new RegExp(h[e],"g"),c[e].toLowerCase())
+			  }
+			  return ad
+			}
+
+            function d(ab) {
+                var ad = c.length;
+                var ae = ab;
+                for (var e = 0; e < ad; e++) {
+                    var ac = c[e];
+                    var af = ac;
+                    if (ac == "." || ac == "+" || ac == "*" || ac == "?" || ac == "^" || ac == "$" || ac == "(" || ac == ")" || ac == "[" || ac == "]" || ac == "{" || ac == "}" || ac == "|" || ac == "\\") {
+                        af = "\\" + af
+                    }
+                    ae = ae.replace(new RegExp(af, "g"), h[e])
+                }
+                return ae
+            }
+
+            function A(ab) {
+                var ad = "";
+                var ac = ab.length;
+                for (var e = 0; e < ac; e++) {
+                    if (h[ab[e]]) {
+                        ad += h[ab[e]]
+                    } else {
+                        ad += key
+                    }
+                }
+                return ad
+            }
+
+            function w(ac) {
+                var ab = ac.length;
+                for (var e = 0; e < ab; e++) {
+                    if (E(ac[e])) {
+                        return e
+                    }
+                }
+                return -1
+            }
+
+            function v(ac) {
+                var ab = ac.length;
+                for (var e = 0; e < ab; e++) {
+                    if (D(ac[e])) {
+                        return e
+                    }
+                }
+                return -1
+            }
+
+            function E(e) {
+                var i = e.toLowerCase();
+                if (b[i] || N[i]) {
+                    if (e == e.toUpperCase()) {
+                        return true
+                    }
+                }
+                return false
+            }
+
+            function D(e) {
+                if (O[e]) {
+                    return true
+                }
+                return false
+            }
+
+            function H(e, ab) {
+                for (var i in e) {
+                    if (e[i] == ab) {
+                        return i
+                    }
+                }
+                return null
+            }
+            String.prototype.splice = function(e, ab) {
+                return (this.slice(0, e) + ab + this.slice(e))
+            };
+
+            function t(ag) {
+                ag = ag.replace(/([0-9]\.?)([a-j])/g, "$1\u2830$2");
+                ag = ag.replace(/([0-9][,0-9]*\.?[0-9]*|\.[0-9]+)/g, "\u283c$1");
+                ag = ag.replace(/"([^"]+)"/g, "\u2826$1\u2834");
+                var aq = [];
+                var ai = ag.length;
+                var ae, ah;
+                for (var af = 0; af < ai; af++) {
+                    ae = ag.charAt(af);
+                    if (E(ae) == true) {
+                        ah = 0;
+                        while (af + ah + 1 < ai && E(ag.charAt(af + ah + 1)) == true) {
+                            ah++
+                        }
+                        if (ah == 0) {
+                            aq.push(h[1], ae.toLowerCase())
+                        } else {
+                            aq.push(h[1], h[1], ag.substring(af, af + ah + 1).toLowerCase());
+                            af += ah
+                        }
+                    } else {
+                        aq.push(ae)
+                    }
+                }
+                ag = aq.join("");
+                if (x == true) {
+                    var ap = "\\s-\u2013\u2014";
+                    var ab = "'\"(\\[{\u201c\u2018\u00ab\u2820\u2826";
+                    var e = ",;:.!?'\")\\]}\u201d\u2019\u00bb\u2834";
+                    var ad = "\u2820\u2804";
+                    var ao = "(^|[" + ap + "])([" + ab + "]*)";
+                    var al = "(?=(" + ad + ")*[" + e + "]*($|[" + ap + "]))";
+                    var am = "(?='(d|ll|re|s|t|ve)[" + e + "]*($|[" + ap + "]))";
+                    var an = "(?=s($|[" + ap + "]))";
+                    var ak = "([^^" + ap + ab + "\u2834])";
+                    var aj = "(?!($|[" + e + ap + "]))";
+                    for (key in a) {
+                        ag = ag.replace(new RegExp(ao + key + al, "g"), "$1$2" + h[a[key]]);
+                        ag = ag.replace(new RegExp(ao + key + am, "g"), "$1$2" + h[a[key]])
+                    }
+                    for (key in X) {
+                        ag = ag.replace(new RegExp(ao + key + al, "g"), "$1$2" + h[X[key]]);
+                        ag = ag.replace(new RegExp(ao + key + am, "g"), "$1$2" + h[X[key]])
+                    }
+                    for (key in T) {
+                        ag = ag.replace(new RegExp(ao + key + al, "g"), "$1$2" + A(T[key]));
+                        if (l.util.indexOf(["about", "almost", "him"], key) == -1) {
+                            ag = ag.replace(new RegExp(ao + key + am, "g"), "$1$2" + A(T[key]));
+                            ag = ag.replace(new RegExp(ao + key + an, "g"), "$1$2" + A(T[key]))
+                        }
+                        if (U[key]) {
+                            ai = U[key].length;
+                            for (var af = 0; af < ai; af++) {
+                                ag = ag.replace(new RegExp(ao + U[key][af] + al, "g"), "$1$2" + U[key][af].replace(key, A(T[key])));
+                                ag = ag.replace(new RegExp(ao + U[key][af] + "(?=')", "g"), "$1$2" + U[key][af].replace(key, A(T[key])))
+                            }
+                        }
+                        if (l.util.indexOf(["braille", "great"], key) != -1) {
+                            ag = ag.replace(new RegExp(key, "g"), A(T[key]))
+                        } else {
+                            if (l.util.indexOf(["children"], key) != -1) {
+                                ag = ag.replace(new RegExp(key + "(?![aeiouy])", "g"), A(T[key]))
+                            } else {
+                                if (l.util.indexOf(["blind", "first", "friend", "good", "letter", "little", "quick"], key) != -1) {
+                                    ag = ag.replace(new RegExp(ao + key + "(?![aeiouy])", "g"), "$1$2" + A(T[key]))
+                                }
+                            }
+                        }
+                    }
+                    for (key in B) {
+                        if (C[key]) {
+                            ai = C[key].length;
+                            for (var af = 0; af < ai; af++) {
+                                ag = ag.replace(new RegExp(ao + C[key][af] + al, "g"), "$1$2" + C[key][af].replace(key, A(B[key])))
+                            }
+                        } else {
+                            if (key == "had") {
+                                ag = ag.replace(new RegExp(key, "g"), A(B[key]))
+                            } else {
+                                if (key == "ever") {
+                                    ag = ag.replace(new RegExp("(^|[^ei])" + key, "g"), "$1" + A(B[key]))
+                                } else {
+                                    if (l.util.indexOf(["here", "name"], key) != -1) {
+                                        ag = ag.replace(new RegExp(key, "g"), A(B[key]))
+                                    } else {
+                                        if (key == "one") {
+                                            ag = ag.replace(new RegExp("(^|[^o])" + key, "g"), "$1" + A(B[key]))
+                                        } else {
+                                            if (key == "some") {
+                                                ag = ag.replace(new RegExp(key, "g"), A(B[key]))
+                                            } else {
+                                                if (key == "time") {
+                                                    ag = ag.replace(new RegExp(key, "g"), A(B[key]))
+                                                } else {
+                                                    if (key == "under") {
+                                                        ag = ag.replace(new RegExp("(^|[^ao])" + key, "g"), "$1" + A(B[key]))
+                                                    } else {
+                                                        ag = ag.replace(new RegExp(key, "g"), A(B[key]))
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    for (key in u) {
+                        ag = ag.replace(new RegExp(ak + key + al, "g"), "$1" + A(u[key]));
+                        if (key == "ity") {
+                            ag = ag.replace(new RegExp("(biscu|daco|fru|rabb)\u2830\u283d" + al, "g"), "$1ity");
+                            ag = ag.replace(new RegExp("ho\u2830\u283d-to\u2830\u283d" + al, "g"), "hoity-toity")
+                        }
+                        if (key == "ness") {}
+                    }
+                    for (key in L) {
+                        if (l.util.indexOf(["be", "was", "were", "his"], key) != -1) {
+                            ag = ag.replace(new RegExp("(\\s|^)([(\\[{\u2820]*)" + key + "(?=[)\\]}]*(\\s|$))", "g"), "$1$2" + h[L[key]])
+                        } else {
+                            if (key == "enough") {
+                                ag = ag.replace(new RegExp(ao + key + al, "g"), "$1$2" + h[L[key]]);
+                                ag = ag.replace(new RegExp(ao + key + "(?='s($|" + ap + "))", "g"), "$1$2" + h[L[key]])
+                            }
+                        }
+                    }
+                    for (key in V) {
+                        ag = ag.replace(new RegExp(key, "g"), h[V[key]])
+                    }
+                    for (key in W) {
+                        if (l.util.indexOf(["ch", "sh", "th", "wh", "ou", "st"], key) != -1) {
+                            ag = ag.replace(new RegExp(ak + key, "g"), "$1" + h[W[key]]);
+                            ag = ag.replace(new RegExp(key + aj, "g"), h[W[key]])
+                        } else {
+                            if (key == "ing") {
+                                ag = ag.replace(new RegExp(ak + key, "g"), "$1" + h[W[key]]);
+                                ag = ag.replace(new RegExp(ak + key, "g"), "$1" + h[W[key]])
+                            } else {
+                                ag = ag.replace(new RegExp(key, "g"), h[W[key]])
+                            }
+                        }
+                    }
+                    ag = ag.replace(new RegExp("in", "g"), h[L["in"]]);
+                    for (key in K) {
+                        if (l.util.indexOf(["ea", "bb", "cc", "ff", "gg"], key) != -1) {
+                            if (key == "ea") {
+                                ag = ag.replace(new RegExp(ak + key + aj), "$1" + h[K[key]])
+                            } else {
+                                ag = ag.replace(new RegExp(ak + key + aj), "$1" + h[K[key]])
+                            }
+                        } else {
+                            if (key == "en") {
+                                ag = ag.replace(new RegExp(ak + key, "g"), "$1" + h[K[key]]);
+                                ag = ag.replace(new RegExp(key + aj, "g"), h[K[key]])
+                            } else {
+                                if (l.util.indexOf(["be", "con", "dis"], key) != -1) {
+                                    ag = ag.replace(new RegExp(ao + key + aj), "$1$2" + h[K[key]])
+                                }
+                            }
+                        }
+                    }
+                }
+                var ai = ag.length;
+                var ac;
+                result = "";
+                for (var af = 0; af < ai; af++) {
+                    ac = ag.charAt(af);
+                    if (O[ac]) {
+                        result += h[O[ac]]
+                    } else {
+                        if (b[ac]) {
+                            result += h[b[ac]]
+                        } else {
+                            if (N[ac]) {
+                                for (var ah = 0; ah < N[ac].length; ah++) {
+                                    result += h[N[ac][ah]]
+                                }
+                            } else {
+                                if (S[ac]) {
+                                    for (var ah = 0; ah < S[ac].length; ah++) {
+                                        result += h[S[ac][ah]]
+                                    }
+                                } else {
+                                    if (n[ac]) {
+                                        for (var ah = 0; ah < n[ac].length; ah++) {
+                                            result += h[n[ac][ah]]
+                                        }
+                                    } else {
+                                        if (Q[ac]) {
+                                            for (var ah = 0; ah < Q[ac].length; ah++) {
+                                                result += h[Q[ac][ah]]
+                                            }
+                                        } else {
+                                            if (m[ac]) {
+                                                for (var ah = 0; ah < m[ac].length; ah++) {
+                                                    result += h[m[ac][ah]]
+                                                }
+                                            } else {
+                                                if (Z[ac]) {
+                                                    for (var ah = 0; ah < Z[ac].length; ah++) {
+                                                        result += h[Z[ac][ah]]
+                                                    }
+                                                } else {
+                                                    if (l.util.indexOf(y, ac) != -1) {
+                                                        for (var ah = 0; ah < y[ac].length; ah++) {
+                                                            result += h[y[ac][ah]]
+                                                        }
+                                                    } else {
+                                                        result += ac
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                result = result.replace(/\u0020/g, h[0]);
+                if (s) {
+                    return k(result)
+                }
+                return result
+            }
+
+            function g(ac) {
+                var ad, ae, ad, af;
+                if (s) {
+                    ac = d(ac)
+                }
+                if (x == true) {}
+                for (ad in N) {
+                    ae = new RegExp(A(N[ad]), "g");
+                    ac = ac.replace(ae, ad)
+                }
+                for (ad in Z) {
+                    ae = new RegExp(A(Z[ad]), "g");
+                    ac = ac.replace(ae, ad)
+                }
+                for (ad in n) {
+                    ae = new RegExp(A(n[ad]), "g");
+                    ac = ac.replace(ae, ad)
+                }
+                for (ad in Q) {
+                    ae = new RegExp(A(Q[ad]), "g");
+                    ac = ac.replace(ae, ad)
+                }
+                for (ad in Z) {
+                    ae = new RegExp(A(Z[ad]), "g");
+                    ac = ac.replace(ae, ad)
+                }
+                for (ad in y) {
+                    ae = new RegExp(A(y[ad]), "g");
+                    ac = ac.replace(ae, ad)
+                }
+                for (ad in S) {
+                    ae = new RegExp(A(S[ad]), "g");
+                    ac = ac.replace(ae, ad)
+                }
+                for (ad in b) {
+                    ae = new RegExp(h[b[ad]], "g");
+                    ac = ac.replace(ae, ad)
+                }
+                var ah, ag, e, ab, af;
+                ah = ac.split(h[0]);
+                if (ah != null) {
+                    for (ab = 0; ab < ah.length; ab++) {
+                        ag = ah[ab];
+                        e = "";
+                        if (ag[0] == h[15]) {
+                            for (j = 1; j < ag.length; j++) {
+                                af = b[ag[j]];
+                                if (ag[j] == h[3] || af == undefined) {
+                                    if (ag[j] == h[3]) {
+                                        j++
+                                    }
+                                    e = e.concat(ag.substring(j));
+                                    break
+                                }
+                                e = e.concat(H(O, af))
+                            }
+                            ac = ac.replace(ag, e)
+                        }
+                        if (ag[0] == h[1]) {
+                            if (ag[1] == h[1]) {
+                                e = ag.susbstring(2).toUpperCase()
+                            } else {
+                                e = ag[1].toUpperCase() + ag.substring(2)
+                            }
+                            ac = ac.replace(ag, e)
+                        }
+                    }
+                }
+                ae = new RegExp(h[0], "g");
+                ac = ac.replace(ae, " ");
+                return ac
+            }
+            var f = [];
+            var I = R.length;
+            for (var z = 0; z < I; z++) {
+                if ((z % 10 == 0 || z == 56) && z != 60 && z != 0) {
+                    f.push("<br />")
+                }
+                f.push('<button id="braille', l.util.indexOf(h, R[z]), '"><span>', R[z], "</span></button>")
+            }
+
+      // 開啟檔案
+			function openFile() {
+			  return new Promise((resolve) => {
+				const input = document.createElement('input');
+				input.type = 'file';
+				input.accept = '.txt';
+				input.onchange = (event) => {
+				  const file = event.target.files[0];
+				  const reader = new FileReader();
+				  reader.onload = (e) => resolve(e.target.result);
+				  reader.readAsText(file);
+				};
+				input.click();
+			  });
+			}
+
+			// 儲存文件
+			function saveFile(content, filename) {
+			  const blob = new Blob([content], { type: 'text/plain' });
+			  const url = URL.createObjectURL(blob);
+			  const a = document.createElement('a');
+			  a.href = url;
+			  a.download = filename || 'download.txt';
+			  document.body.appendChild(a);
+			  a.click();
+			  document.body.removeChild(a);
+			  URL.revokeObjectURL(url);
+			}
+
+			// 使用方法
+			document.getElementById('openFile').addEventListener('click', async () => {
+			  try {
+				const content = await openFile();
+				document.getElementById('english').value = content;
+			  } catch (error) {
+				console.error('Error opening file:', error);
+			  }
+			});
+
+			document.getElementById('saveFile').addEventListener('click', () => {
+			  const brailleContent = document.getElementById('braille').value;
+			  saveFile(brailleContent, 'braille_output.txt');
+			});
+			
+			// 獲取元素
+			const englishTextarea = document.getElementById('english');
+			const brailleTextarea = document.getElementById('braille');
+			const syncScrollCheckbox = document.getElementById('syncScrollCheckbox');
+
+			// 同步滾動功能
+			function syncScroll(source, target) {
+			  if (syncScrollCheckbox.checked) {
+				target.scrollTop = source.scrollTop;
+				target.scrollLeft = source.scrollLeft;
+			  }
+			}
+
+			// 為兩個 textarea 添加滾動事件監聽器
+			englishTextarea.addEventListener('scroll', () => syncScroll(englishTextarea, brailleTextarea));
+			brailleTextarea.addEventListener('scroll', () => syncScroll(brailleTextarea, englishTextarea));
+
+			// 在窗口大小改變時重新同步滾動
+			window.addEventListener('resize', () => {
+			  if (syncScrollCheckbox.checked) {
+				syncScroll(englishTextarea, brailleTextarea);
+			  }
+			});
+
+			// 在內容變化時重新同步滾動
+			englishTextarea.addEventListener('input', () => {
+			  if (syncScrollCheckbox.checked) {
+				setTimeout(() => syncScroll(englishTextarea, brailleTextarea), 0);
+			  }
+			});
+
+			brailleTextarea.addEventListener('input', () => {
+			  if (syncScrollCheckbox.checked) {
+				setTimeout(() => syncScroll(brailleTextarea, englishTextarea), 0);
+			  }
+			});
+
+			// 可選：在 checkbox 狀態改變時，立即同步滾動
+			syncScrollCheckbox.addEventListener('change', () => {
+			  if (syncScrollCheckbox.checked) {
+				syncScroll(englishTextarea, brailleTextarea);
+			  }
+			});
+
+			// 保存同步滾動設置到 localStorage
+			syncScrollCheckbox.addEventListener('change', () => {
+			  localStorage.setItem('syncScrollEnabled', syncScrollCheckbox.checked);
+			});
+
+			// 頁面加載時，從 localStorage 讀取同步滾動設置
+			document.addEventListener('DOMContentLoaded', () => {
+			  const syncScrollEnabled = localStorage.getItem('syncScrollEnabled');
+			  if (syncScrollEnabled !== null) {
+				syncScrollCheckbox.checked = JSON.parse(syncScrollEnabled);
+			  }
+			});
+			const textareaContainer = document.getElementById('textareaContainer');
+			const toggleLayoutButton = document.getElementById('toggleLayout');
+
+			let isHorizontal = true;
+
+			function toggleLayout() {
+			  isHorizontal = !isHorizontal;
+			  if (isHorizontal) {
+				textareaContainer.classList.remove('vertical-layout');
+				textareaContainer.classList.add('horizontal-layout');
+			  } else {
+				textareaContainer.classList.remove('horizontal-layout');
+				textareaContainer.classList.add('vertical-layout');
+			  }
+			  updateHighlight();  // 重新計算高亮位置
+			}
+
+			toggleLayoutButton.addEventListener('click', toggleLayout);
+
+			// 保存布局設置到 localStorage
+			toggleLayoutButton.addEventListener('click', () => {
+			  localStorage.setItem('isHorizontalLayout', isHorizontal);
+			});
+
+			// 頁面加載時，從 localStorage 讀取布局設置
+			document.addEventListener('DOMContentLoaded', () => {
+			  const savedLayout = localStorage.getItem('isHorizontalLayout');
+			  if (savedLayout !== null) {
+				isHorizontal = JSON.parse(savedLayout);
+				if (!isHorizontal) {
+				  toggleLayout();
+				}
+			  }
+			});
+        })(); 
+</script>
+</body>
+</html>
