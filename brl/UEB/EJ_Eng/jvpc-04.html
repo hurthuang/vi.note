@@ -1,0 +1,907 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>單字練習</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .word-display {
+            margin: 20px 0;
+            text-align: center;
+            transition: font-size 0.3s;
+        }
+        .input-area {
+            text-align: center;
+            margin: 20px 0;
+        }
+        #answer {
+            font-size: 20px;
+            padding: 5px 10px;
+            width: 200px;
+        }
+        .controls {
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #f8f8f8;
+            border-radius: 5px;
+        }
+        .feedback {
+            text-align: center;
+            font-size: 20px;
+            margin: 10px 0;
+            min-height: 30px;
+        }
+        .correct { color: green; }
+        .incorrect { color: red; }
+        button {
+            padding: 5px 10px;
+            margin: 0 5px;
+        }
+        .settings {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        .control-group {
+            margin: 10px 0;
+        }
+        .test-stats {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #e8e8e8;
+            border-radius: 5px;
+            display: none;
+        }
+        .slider-container {
+            margin: 10px 0;
+        }
+        .slider-container label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .checkbox-wrapper {
+            margin: 10px 0;
+        }
+        .file-input {
+            margin: 10px 0;
+            padding: 5px;
+        }
+        .shortcut-hint {
+            font-size: 12px;
+            color: #666;
+            margin-left: 5px;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #666;
+        }
+		.current-mode {
+			margin-bottom: 10px; 
+			padding: 5px; 
+			background-color: #e8e8e8; 
+			border-radius: 5px; 
+			text-align: center;
+		}
+		.input-area input {
+			font-size: 20px;
+			padding: 5px 10px;
+			width: 200px;
+			overflow-x: scroll;
+			white-space: pre;
+			scrollbar-width: thin; /* Firefox */
+			-ms-overflow-style: none;  /* IE and Edge */
+		}
+
+		/* 隱藏 Chrome 的滾動條但保持功能 */
+		.input-area input::-webkit-scrollbar {
+			height: 4px;
+		}
+
+		.input-area input::-webkit-scrollbar-thumb {
+			background: #888;
+			border-radius: 2px;
+		}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>單字練習</h1>
+        
+        <div class="controls">
+			<div class="checkbox-wrapper">
+				<label for="version-select">版本：</label>
+				<select id="version-select" class="selector">
+					<option value="H">翰林</option>
+					<option value="K">康軒</option>
+					<option value="N">南一</option>
+				</select>
+			
+				<label for="grade-select">年級：</label>
+				<select id="grade-select" class="selector">
+					<option value="7" selected>7</option>
+					<option value="8">8</option>
+					<option value="9">9</option>
+				</select>
+			
+				<label for="semester-select">學期：</label>
+				<select id="semester-select" class="selector">
+					<option value="A">上學期</option>
+					<option value="B">下學期</option>
+				</select>
+			
+				<label for="lesson-select">課次：</label>
+				<select id="lesson-select" class="selector">
+					<option value="1">1</option>
+					<option value="2">2</option>
+					<option value="3">3</option>
+					<option value="4">4</option>
+					<option value="5">5</option>
+					<option value="6">6</option>
+				</select>
+			
+				<button id="load-vocab">選擇</button>
+				
+				<div id="custom-file" style="display: none; margin-top: 10px;">
+					<input type="file" id="vocabulary-file" accept=".txt">
+				</div>
+			</div>
+
+            <div class="control-group">
+
+                <label>
+                    <input type="checkbox" id="speakChinese" checked> 唸中文
+                </label>
+                <label>
+                    <input type="checkbox" id="speakSpelling" checked> 唸拼字
+                </label>
+                <label>
+                    <input type="checkbox" id="testMode"> 測驗模式
+                </label>
+                <label>
+                    <input type="checkbox" id="showEnglish" checked> 顯示英文
+                </label>
+            </div>
+
+            <div class="slider-container">
+                <label>語音速度：
+                    <input type="range" id="speechRate" min="0.5" max="2" step="0.1" value="1">
+                    <span id="speechRateValue">1.0</span>
+                </label>
+            </div>
+
+            <div class="slider-container">
+                <label>題目字體大小：
+                    <input type="range" id="fontSize" min="16" max="48" step="2" value="24">
+                    <span id="fontSizeValue">24px</span>
+                </label>
+            </div>
+			<div class="current-mode" style="margin-bottom: 10px; padding: 5px; background-color: #e8e8e8; border-radius: 5px; text-align: center;">
+				目前模式：<span id="modeDisplay">一般輸入模式</span> (按 Ctrl + B 切換)
+			</div>
+            <button id="repeat">重複發音<span class="shortcut-hint">[Ctrl+Q]</span></button>
+        </div>
+
+        <div class="test-stats" id="testStats">
+            <div>已答題數：<span id="questionCount">0</span></div>
+            <div>計時：<span id="timer">00:00</span></div>
+        </div>
+
+        <div id="loading" class="loading" style="display: none;">載入題庫中...</div>
+        
+        <div class="word-display">
+            <div id="chinese"></div>
+            <div id="english"></div>
+        </div>
+
+        <div class="input-area">
+            <input type="text" id="answer" placeholder="請輸入英文單字">
+            <button id="check">送出</button>
+            <button id="showAnswer">看答案</button>
+        </div>
+
+        <div class="feedback" id="feedback"></div>
+    </div>
+
+    <script>
+		let isBrailleMode = false;
+		let dots = [0, 0, 0, 0, 0, 0];
+		let brailleCode = 0;
+		let vocabulary = [];
+		let currentIndex = 0;
+		let synth = window.speechSynthesis;
+		let voices = [];
+		let testStartTime = null;
+		let timerInterval = null;
+		let questionCount = 0;
+		let isSpeaking = false;
+		let testVocabulary = []; // 測驗模式專用的題目陣列
+		let isTestCompleted = false; // 測驗是否已完成
+		const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+		// 游標可視範圍控制函數
+		function ensureCaretVisible(inputEl) {
+			requestAnimationFrame(() => {
+				const cursorPosition = inputEl.selectionStart;
+				
+				// 計算游標位置的寬度
+				const testSpan = document.createElement('span');
+				testSpan.style.cssText = 'position: absolute; visibility: hidden; white-space: pre;';
+				testSpan.style.font = window.getComputedStyle(inputEl).font;
+				testSpan.textContent = inputEl.value.substring(0, cursorPosition);
+				document.body.appendChild(testSpan);
+				
+				const cursorOffset = testSpan.offsetWidth;
+				document.body.removeChild(testSpan);
+				
+				// 計算輸入框可視區域
+				const inputWidth = inputEl.offsetWidth;
+				const padding = parseInt(window.getComputedStyle(inputEl).paddingLeft);
+				const visibleWidth = inputWidth - (padding * 2);
+				
+				// 計算最佳滾動位置
+				if (cursorOffset > inputEl.scrollLeft + visibleWidth - 20) { // 右邊界預留20px空間
+					inputEl.scrollLeft = cursorOffset - visibleWidth + 30; // 多滾動一些，確保游標完全可見
+				} else if (cursorOffset < inputEl.scrollLeft + padding + 20) { // 左邊界預留20px空間
+					inputEl.scrollLeft = Math.max(0, cursorOffset - padding - 20);
+				}
+			});
+		}
+
+		// 設置游標位置
+		function setCaretPosition(ctrl, pos) {
+			if (ctrl.setSelectionRange) {
+				ctrl.focus();
+				ctrl.setSelectionRange(pos, pos);
+			} else if (ctrl.createTextRange) {
+				const range = ctrl.createTextRange();
+				range.collapse(true);
+				range.moveEnd('character', pos);
+				range.moveStart('character', pos);
+				range.select();
+			}
+		}
+
+		// 播放單一音效
+		function playSound(frequency, duration, type = 'sine', delay = 0) {
+			const oscillator = audioCtx.createOscillator();
+			const gainNode = audioCtx.createGain();
+			gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+			oscillator.type = type;
+			oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime + delay);
+			oscillator.connect(gainNode);
+			gainNode.connect(audioCtx.destination);
+			oscillator.start(audioCtx.currentTime + delay);
+			oscillator.stop(audioCtx.currentTime + delay + duration);
+		}
+
+		// 答對音效：三個頻率逐漸上升的音
+		function playCorrectSound() {
+			playSound(440, 0.1, 'sine', 0);
+			playSound(550, 0.1, 'sine', 0.1);
+			playSound(660, 0.1, 'sine', 0.2);
+		}
+
+		// 答錯音效：兩個相同的低頻音
+		function playWrongSound() {
+			playSound(200, 0.3, 'triangle', 0);
+			playSound(200, 0.3, 'triangle', 0.4);
+		}
+
+		// Fisher-Yates 洗牌算法
+		function shuffleArray(array) {
+			for (let i = array.length - 1; i > 0; i--) {
+				const j = Math.floor(Math.random() * (i + 1));
+				[array[i], array[j]] = [array[j], array[i]];
+			}
+			return array;
+		}
+
+		// 修改檔案名稱生成函數
+		function generateFilename() {
+			const version = document.getElementById('version-select').value;
+			const grade = document.getElementById('grade-select').value;
+			const semester = document.getElementById('semester-select').value;
+			const lesson = document.getElementById('lesson-select').value;
+			
+			return `${version}${grade}${semester}${lesson}.txt`;
+		}
+
+		// 載入詞彙
+		async function loadVocabulary() {
+			try {
+				document.getElementById('loading').style.display = 'block';
+				document.getElementById('feedback').textContent = '';
+				
+				const filename = generateFilename();
+				
+				// 嘗試載入檔案
+				const response = await fetch(filename);
+				if (!response.ok) {
+					throw new Error(`尚未建立題庫：${filename}`);
+				}
+				
+				const text = await response.text();
+				
+				// 檢查文件是否為空
+				if (!text.trim()) {
+					throw new Error(`題庫檔案為空：${filename}`);
+				}
+				
+				const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+				
+				// 提取並處理單字
+				const processedVocab = lines
+					.map(line => {
+						const parts = line.split('\t').map(item => 
+							item.trim()
+								.replace(/（.*?）/g, '')
+								.replace(/\(.*?\)/g, '')
+								.trim()
+						);
+						
+						const english = parts[0];
+						const chinese = parts[1];
+						const braille = parts.length > 2 ? parts[2] : ''; // 增加點字支援
+						
+						if (!english || !chinese) return null;
+						return { english, chinese, braille };
+					})
+					.filter(item => item !== null);
+				
+				if (processedVocab.length === 0) {
+					throw new Error('此課次沒有有效的單字');
+				}
+
+				// 清空舊的資料
+				vocabulary = [];
+				currentIndex = 0;
+				
+				// 設定新的題目
+				vocabulary = shuffleArray(processedVocab);
+				showQuestion();
+				
+			} catch (error) {
+				console.error('Error loading vocabulary:', error);
+				document.getElementById('feedback').textContent = error.message;
+				document.getElementById('feedback').className = 'feedback incorrect';
+				
+				// 清空所有資料和顯示
+				vocabulary = [];
+				currentIndex = 0;
+				document.getElementById('chinese').textContent = '';
+				document.getElementById('english').textContent = '';
+				
+			} finally {
+				document.getElementById('loading').style.display = 'none';
+			}
+		}
+		
+		function initVoices() {
+			voices = synth.getVoices();
+		}
+
+		if (speechSynthesis.onvoiceschanged !== undefined) {
+			speechSynthesis.onvoiceschanged = initVoices;
+		}
+
+		function spellWord(word) {
+			return word.split('').join('-');
+		}
+
+		// 語音播放函數
+		function speak(text, lang) {
+			return new Promise((resolve) => {
+				synth.cancel();
+				const utterance = new SpeechSynthesisUtterance(text);
+				utterance.rate = parseFloat(document.getElementById('speechRate').value);
+				
+				const voice = voices.find(v => v.lang.startsWith(lang));
+				if (voice) {
+					utterance.voice = voice;
+				}
+				
+				utterance.onend = () => {
+					resolve();
+				};
+				
+				synth.speak(utterance);
+			});
+		}
+
+		// 重複發音函數
+		async function repeatPronunciation() {
+			if (!vocabulary.length || isSpeaking || isTestCompleted) return;
+			
+			isSpeaking = true;
+			const isTestMode = document.getElementById('testMode').checked;
+			const current = isTestMode ? testVocabulary[currentIndex] : vocabulary[currentIndex];
+			
+			try {
+				if (document.getElementById('speakChinese').checked) {
+					await speak(current.chinese, 'zh');
+				}
+				await speak(current.english, 'en');
+				if (document.getElementById('speakSpelling').checked) {
+					await speak(spellWord(current.english), 'en');
+				}
+			} finally {
+				isSpeaking = false;
+			}
+		}
+
+		function updateFontSize() {
+			const size = document.getElementById('fontSize').value;
+			document.querySelector('.word-display').style.fontSize = size + 'px';
+			document.getElementById('fontSizeValue').textContent = size + 'px';
+		}
+
+		function updateTestMode() {
+			const testMode = document.getElementById('testMode').checked;
+			const testStats = document.getElementById('testStats');
+			
+			if (testMode) {
+				testStats.style.display = 'block';
+				if (!testStartTime) {
+					testStartTime = new Date();
+					startTimer();
+					questionCount = 0;
+					isTestCompleted = false;
+					
+					// 創建測驗專用的題目陣列（不洗牌的完整副本）
+					testVocabulary = [...vocabulary];
+					currentIndex = 0;
+					
+					document.getElementById('questionCount').textContent = '0';
+					document.getElementById('feedback').textContent = '';
+					showQuestion();
+				}
+			} else {
+				testStats.style.display = 'none';
+				if (timerInterval) {
+					clearInterval(timerInterval);
+					timerInterval = null;
+				}
+				testStartTime = null;
+				isTestCompleted = false;
+				
+				// 回到一般模式，恢復洗牌的題目順序
+				vocabulary = shuffleArray([...vocabulary]);
+				currentIndex = 0;
+				showQuestion();
+			}
+		}
+
+		function startTimer() {
+			if (timerInterval) clearInterval(timerInterval);
+			
+			timerInterval = setInterval(() => {
+				if (!testStartTime) return;
+				
+				const now = new Date();
+				const diff = now - testStartTime;
+				const minutes = Math.floor(diff / 60000);
+				const seconds = Math.floor((diff % 60000) / 1000);
+				
+				document.getElementById('timer').textContent = 
+					`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+			}, 1000);
+		}
+
+		function showQuestion() {
+			if (!vocabulary.length || isTestCompleted) return;
+			
+			const isTestMode = document.getElementById('testMode').checked;
+			const current = isTestMode ? testVocabulary[currentIndex] : vocabulary[currentIndex];
+			
+			document.getElementById('chinese').textContent = current.chinese;
+			document.getElementById('english').textContent = 
+				document.getElementById('showEnglish').checked ? current.english : '';
+			
+			// 重新啟用輸入框（以防被禁用）
+			document.getElementById('answer').disabled = false;
+			
+			repeatPronunciation();
+		}
+
+		async function checkAnswer() {
+			if (!vocabulary.length || isTestCompleted) return;
+			
+			// 強制中斷當前語音
+			synth.cancel();
+			isSpeaking = false;
+			
+			const answerInput = document.getElementById('answer');
+			const feedback = document.getElementById('feedback');
+			const isTestMode = document.getElementById('testMode').checked;
+			
+			// 根據模式確定答案是否正確
+			let isCorrect;
+			const current = isTestMode ? testVocabulary[currentIndex] : vocabulary[currentIndex];
+			if (isBrailleMode && current.braille) {
+				isCorrect = answerInput.value.trim() === current.braille;
+			} else {
+				isCorrect = answerInput.value.trim().toLowerCase() === current.english.toLowerCase();
+			}
+			
+			if (isCorrect) {
+				feedback.textContent = '答對了！';
+				feedback.className = 'feedback correct';
+				playCorrectSound();
+				
+				if (isTestMode) {
+					questionCount++;
+					document.getElementById('questionCount').textContent = questionCount;
+					
+					// 測驗模式：移到下一題，不重複
+					setTimeout(() => {
+						currentIndex++;
+						
+						// 檢查是否所有題目都完成了
+						if (currentIndex >= testVocabulary.length) {
+							// 測驗完成
+							isTestCompleted = true;
+							feedback.textContent = `測驗完成！總共答對 ${questionCount} 題`;
+							feedback.className = 'feedback test-complete';
+							
+							// 停止計時器
+							if (timerInterval) {
+								clearInterval(timerInterval);
+								timerInterval = null;
+							}
+							
+							// 清空題目顯示
+							document.getElementById('chinese').textContent = '';
+							document.getElementById('english').textContent = '';
+							answerInput.value = '';
+							answerInput.disabled = true; // 禁用輸入框
+							
+							// 語音播報完成
+							setTimeout(() => {
+								speak('測驗完成', 'zh');
+							}, 500);
+							
+						} else {
+							// 還有題目，繼續下一題
+							answerInput.value = '';
+							answerInput.scrollLeft = 0;
+							feedback.textContent = '';
+							showQuestion();
+						}
+					}, 1500);
+					
+				} else {
+					// 一般模式：循環題目
+					setTimeout(() => {
+						currentIndex = (currentIndex + 1) % vocabulary.length;
+						if (currentIndex === 0) {
+							vocabulary = shuffleArray(vocabulary);
+						}
+						answerInput.value = '';
+						answerInput.scrollLeft = 0;
+						feedback.textContent = '';
+						showQuestion();
+					}, 1500);
+				}
+			} else {
+				feedback.textContent = '答錯了，請重試';
+				feedback.className = 'feedback incorrect';
+				playWrongSound();
+			}
+		}
+
+		// 主要的 keydown 事件處理
+		document.addEventListener('keydown', (e) => {
+			// 快速鍵處理
+			if (e.ctrlKey) {
+				// Ctrl+Q: 重複發音
+				if (e.code === 'KeyQ') {
+					e.preventDefault();
+					repeatPronunciation();
+					return;
+				}
+				// Ctrl+B: 切換點字模式
+				if (e.code === 'KeyB') {
+					e.preventDefault();
+					toggleBrailleMode();
+					return;
+				}
+				// 其他 Ctrl 鍵：停止發音
+				synth.cancel();
+				isSpeaking = false;
+				return;
+			}
+
+			// 以下是一般輸入和點字模式的處理
+			const answerInput = document.getElementById('answer');
+			if (document.activeElement !== answerInput) {
+				return;
+			}
+
+			// 點字模式下的按鍵處理
+			if (isBrailleMode) {
+				// 退格鍵(a鍵)處理
+				if (e.keyCode === 65) { // 'a' key
+					const pos = answerInput.selectionStart;
+					if (pos > 0) {
+						const text = answerInput.value;
+						answerInput.value = text.slice(0, pos-1) + text.slice(pos);
+						setCaretPosition(answerInput, pos-1);
+						ensureCaretVisible(answerInput);
+					}
+					e.preventDefault();
+					return;
+				}
+
+				// 分號鍵處理（提交答案）
+				if (e.keyCode === 186) { // semicolon key
+					const pos = answerInput.selectionStart;
+					const text = answerInput.value;
+					answerInput.value = text.slice(0, pos) + '\n' + text.slice(pos);
+					setCaretPosition(answerInput, pos+1);
+					ensureCaretVisible(answerInput);
+					checkAnswer();
+					e.preventDefault();
+					return;
+				}
+
+				// 點字按鍵處理
+				if (![37, 39, 8, 9, 46, 13].includes(e.keyCode)) {
+					if (e.keyCode === 83) { // S
+						dots[0] = 1;
+						brailleCode |= 4;
+					} else if (e.keyCode === 68) { // D
+						dots[1] = 1;
+						brailleCode |= 2;
+					} else if (e.keyCode === 70) { // F
+						dots[2] = 1;
+						brailleCode |= 1;
+					} else if (e.keyCode === 74) { // J
+						dots[3] = 1;
+						brailleCode |= 8;
+					} else if (e.keyCode === 75) { // K
+						dots[4] = 1;
+						brailleCode |= 16;
+					} else if (e.keyCode === 76) { // L
+						dots[5] = 1;
+						brailleCode |= 32;
+					} else if (e.keyCode === 32) { // Space
+						e.preventDefault();
+						const pos = answerInput.selectionStart;
+						const text = answerInput.value;
+						answerInput.value = text.slice(0, pos) + '\u2800' + text.slice(pos);
+						setCaretPosition(answerInput, pos + 1);
+						ensureCaretVisible(answerInput);
+						return;
+					}
+					e.preventDefault();
+					return;
+				}
+			}
+
+			// 一般模式下的按鍵處理
+			if (e.key === 'Enter') {
+				e.preventDefault();
+				checkAnswer();
+				return;
+			}
+
+			if (e.key === 'Escape') {
+				e.preventDefault();
+				answerInput.value = '';
+				ensureCaretVisible(answerInput);
+				return;
+			}
+
+			// 方向鍵處理
+			if (['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) {
+				setTimeout(() => ensureCaretVisible(answerInput), 0);
+			}
+		});
+
+		// keypress 事件處理（主要用於點字模式）
+		document.addEventListener('keypress', (e) => {
+			if (isBrailleMode) {
+				if ([37, 39, 8, 9, 46].includes(e.keyCode)) {
+					return true;
+				}
+				if (e.keyCode === 13 || e.keyCode === 59) {
+					e.preventDefault();
+					checkAnswer();
+					return false;
+				}
+				e.preventDefault();
+				return false;
+			}
+			return true;
+		});
+
+		// keyup 事件處理（用於點字輸入）
+		document.addEventListener('keyup', (e) => {
+			if (!isBrailleMode) return true;
+
+			dots.fill(0);
+			if (brailleCode === 0) return false;
+
+			const answerInput = document.getElementById('answer');
+			if (brailleCode === 65) {
+				brailleCode = 0;
+			} else {
+				const pos = answerInput.selectionStart;
+				const brl = String.fromCharCode(0x2800 + brailleCode);
+				const text = answerInput.value;
+				answerInput.value = text.slice(0, pos) + brl + text.slice(pos);
+				setCaretPosition(answerInput, pos + 1);
+				ensureCaretVisible(answerInput);
+			}
+			brailleCode = 0;
+			return false;
+		});
+
+		// 一般輸入模式的輸入處理
+		document.getElementById('answer').addEventListener('input', function(e) {
+			ensureCaretVisible(this);
+		});
+
+		document.getElementById('showAnswer').addEventListener('click', () => {
+			if (!vocabulary.length || isTestCompleted) return;
+			
+			const isTestMode = document.getElementById('testMode').checked;
+			const current = isTestMode ? testVocabulary[currentIndex] : vocabulary[currentIndex];
+			
+			if (isBrailleMode && current.braille) {
+				document.getElementById('feedback').textContent = 
+					`英文：${current.english}，點字：${current.braille}`;
+			} else {
+				document.getElementById('feedback').textContent = `答案：${current.english}`;
+			}
+		});
+		document.getElementById('repeat').addEventListener('click', repeatPronunciation);
+
+		document.getElementById('load-vocab').addEventListener('click', loadVocabulary);
+
+		document.getElementById('vocabulary-file').addEventListener('change', (e) => {
+			if (e.target.files.length > 0) {
+				const file = e.target.files[0];
+				const reader = new FileReader();
+				
+				reader.onload = (event) => {
+					const text = event.target.result;
+					const lines = text.split('\n').filter(line => line.trim());
+					
+					// 處理自定義檔案
+					vocabulary = lines.map(line => {
+						const [english, chinese, braille] = line.split('\t').map(item => item.trim());
+						return { english, chinese, braille: braille || '' };
+					}).filter(item => item.english && item.chinese);
+					
+					vocabulary = shuffleArray(vocabulary);
+					currentIndex = 0;
+					
+					if (vocabulary.length > 0) {
+						showQuestion();
+					} else {
+						document.getElementById('feedback').textContent = '檔案格式錯誤或沒有有效單字';
+						document.getElementById('feedback').className = 'feedback incorrect';
+					}
+				};
+				
+				reader.readAsText(file);
+			}
+		});
+
+		document.getElementById('speakChinese').addEventListener('change', () => {
+			if (!document.getElementById('speakChinese').checked) {
+				synth.cancel();
+			}
+		});
+
+		document.getElementById('speakSpelling').addEventListener('change', () => {
+			if (!document.getElementById('speakSpelling').checked) {
+				synth.cancel();
+			}
+		});
+
+		document.getElementById('showEnglish').addEventListener('change', () => {
+			if (!vocabulary.length) return;
+			const current = vocabulary[currentIndex];
+			document.getElementById('english').textContent = 
+				document.getElementById('showEnglish').checked ? current.english : '';
+		});
+
+		document.getElementById('testMode').addEventListener('change', updateTestMode);
+
+		document.getElementById('speechRate').addEventListener('input', (e) => {
+			document.getElementById('speechRateValue').textContent = e.target.value;
+		});
+
+		document.getElementById('fontSize').addEventListener('input', updateFontSize);
+
+		// 切換點字模式
+		function toggleBrailleMode() {
+			isBrailleMode = !isBrailleMode;
+			const modeText = isBrailleMode ? '點字輸入模式' : '一般輸入模式';
+			
+			// 更新模式顯示
+			document.getElementById('modeDisplay').textContent = modeText;
+			
+			// 顯示臨時反饋
+			const feedback = document.getElementById('feedback');
+			feedback.textContent = `${modeText}已開啟`;
+			feedback.className = 'feedback';
+			
+			// 語音提示
+			synth.cancel(); // 停止當前播放的語音
+			isSpeaking = false;
+			
+			// 確保有可用的語音
+			if (voices.length === 0) {
+				voices = synth.getVoices();
+			}
+			
+			const utterance = new SpeechSynthesisUtterance(modeText);
+			utterance.lang = 'zh-TW';
+			utterance.rate = parseFloat(document.getElementById('speechRate').value);
+			
+			// 找到中文語音
+			const chineseVoice = voices.find(voice => 
+				voice.lang.includes('zh') || 
+				voice.lang.includes('cmn') || 
+				voice.lang.includes('yue')
+			);
+			if (chineseVoice) {
+				utterance.voice = chineseVoice;
+			}
+			
+			utterance.onend = () => {
+				isSpeaking = false;
+				// 語音結束後，如果有詞庫則重新播放當前單字
+				if (vocabulary.length > 0) {
+					const current = vocabulary[currentIndex];
+					
+					const answerInput = document.getElementById('answer');
+					answerInput.value = '';
+					answerInput.scrollLeft = 0;
+					
+					// 稍微延遲後再播放單字
+					setTimeout(() => showQuestion(), 500);
+				}
+			};
+			
+			isSpeaking = true;
+			synth.speak(utterance);
+			
+			setTimeout(() => feedback.textContent = '', 2000);
+		}
+
+		// 初始化頁面
+		window.onload = () => {
+			updateFontSize();
+			document.getElementById('answer').focus();
+			
+			// 自動載入預設題庫
+			try {
+				// 預設載入 H7A1.txt (翰林國一上第一課)
+				loadVocabulary();
+			} catch (error) {
+				console.error('Error loading default vocabulary:', error);
+			}
+		};
+    </script>
+</body>
+</html>
