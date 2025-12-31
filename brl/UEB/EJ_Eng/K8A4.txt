@@ -1,0 +1,38 @@
+housewife	家庭主婦	⠓⠳⠎⠑⠺⠊⠋⠑
+police officer	警察	⠏⠕⠇⠊⠉⠑⠀⠷⠋⠊⠉⠻
+secretary	祕書	⠎⠑⠉⠗⠑⠞⠜⠽
+reporter	記者	⠗⠑⠏⠕⠗⠞⠻
+mailman	郵差	⠍⠁⠊⠇⠍⠁⠝
+actress	女演員	⠁⠉⠞⠗⠑⠎⠎
+actor	男演員	⠁⠉⠞⠕⠗
+waitress	女服務生	⠺⠁⠊⠞⠗⠑⠎⠎
+waiter	男服務生	⠺⠁⠊⠞⠻
+singer	歌手	⠎⠬⠻
+act	扮演；表現	⠁⠉⠞
+report	報告；報導	⠗⠑⠏⠕⠗⠞
+writer	作家；作者	⠺⠗⠊⠞⠻
+future	未來	⠋⠥⠞⠥⠗⠑
+camera	攝影機；相機	⠉⠁⠍⠻⠁
+important	重要的	⠊⠍⠏⠕⠗⠞⠁⠝⠞
+popular	受歡迎的	⠏⠕⠏⠥⠇⠜
+funny	好笑的；滑稽的	⠋⠥⠝⠝⠽
+plan	計畫	⠏⠇⠁⠝
+without	沒有	⠾⠳⠞
+dream	夢（想）；夢見	⠙⠗⠂⠍
+right	恰當的	⠐⠗
+gift	天分	⠛⠊⠋⠞
+kid	小孩	⠅⠊⠙
+teenager	青少年	⠞⠑⠢⠁⠛⠻
+exciting	刺激的；令人興奮的	⠑⠭⠉⠊⠞⠬
+fight	對抗；打架	⠋⠊⠣⠞
+one another	彼此	⠐⠕⠀⠁⠝⠕⠮⠗
+money	錢	⠍⠐⠕⠽
+famous	有名的	⠋⠁⠍⠳⠎
+on the other hand	另一方面	⠕⠝⠀⠮⠀⠕⠮⠗⠀⠓⠯
+lead to	導致	⠇⠂⠙⠀⠞⠕
+train	訓練；火車	⠞⠗⠁⠔
+sadly	令人遺憾地	⠎⠁⠙⠇⠽
+stop	停止；停下；站牌	⠌⠕⠏
+team up with	跟……組隊	⠞⠂⠍⠀⠥⠏⠀⠾
+have to	必須	⠓⠀⠞⠕
+stay up	熬夜	⠌⠁⠽⠀⠥⠏

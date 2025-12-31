@@ -1,0 +1,38 @@
+sore throat	喉嚨痛	⠎⠕⠗⠑⠀⠹⠗⠕⠁⠞
+headache	頭痛	⠓⠂⠙⠁⠡⠑
+catch a cold	感冒	⠉⠁⠞⠡⠀⠁⠀⠉⠕⠇⠙
+hospital	醫院	⠓⠕⠎⠏⠊⠞⠁⠇
+leg	腿	⠇⠑⠛
+fever	發燒	⠋⠐⠑
+head	頭	⠓⠂⠙
+stomach	胃；肚子	⠌⠕⠍⠁⠡
+call	打電話；呼喊	⠉⠁⠇⠇
+speak	說話；講	⠎⠏⠂⠅
+send	寄；送	⠎⠢⠙
+message	訊息	⠍⠑⠎⠎⠁⠛⠑
+What happened?	發生了什麼事？	⠠⠱⠁⠞⠀⠓⠁⠏⠏⠢⠫⠦
+all	全部（的）	⠁⠇⠇
+why	為什麼	⠱⠽
+because	因為	⠆⠉
+country	國家；鄉間	⠉⠨⠞⠗⠽
+serious	嚴重的；認真的	⠎⠻⠊⠳⠎
+health	健康	⠓⠂⠇⠹
+hurt	疼痛；受傷的	⠓⠥⠗⠞
+bring	帶來	⠃⠗⠬
+ice cream	冰淇淋	⠊⠉⠑⠀⠉⠗⠂⠍
+so	所以	⠎
+too bad	太糟了	⠞⠕⠕⠀⠃⠁⠙
+treat	治療；對待	⠞⠗⠂⠞
+as	如同	⠵
+sick	生病的	⠎⠊⠉⠅
+however	然而	⠓⠪⠐⠑
+medicine	藥	⠍⠫⠊⠉⠔⠑
+heavy	厚實的；重的	⠓⠂⠧⠽
+coat	大衣	⠉⠕⠁⠞
+healthy	健康的	⠓⠂⠇⠹⠽
+keep	保持	⠅⠑⠑⠏
+body	身體	⠃⠕⠙⠽
+clothes	衣服	⠉⠇⠕⠮⠎
+try	嘗試	⠞⠗⠽
+put on	穿上	⠏⠥⠞⠀⠕⠝
+as for	至於	⠵⠀⠿

@@ -1,0 +1,37 @@
+attack	攻擊	⠁⠞⠞⠁⠉⠅
+foreigner	外國人	⠿⠑⠊⠛⠝⠻
+sharp	鋒利的	⠩⠜⠏
+fake	假的	⠋⠁⠅⠑
+while	當……時	⠱⠊⠇⠑
+lazy	懶惰的	⠇⠁⠵⠽
+bee	蜜蜂	⠃⠑⠑
+honey	蜂蜜	⠓⠐⠕⠽
+as soon as	一……就……	⠵⠀⠎⠕⠕⠝⠀⠵
+as long as	只要……就……	⠵⠀⠇⠰⠛⠀⠵
+bridge	橋	⠃⠗⠊⠙⠛⠑
+typhoon	颱風	⠞⠽⠏⠓⠕⠕⠝
+giant	巨大的	⠛⠊⠁⠝⠞
+kite	風箏	⠅⠊⠞⠑
+chalk	粉筆	⠡⠁⠇⠅
+bug	蟲	⠃⠥⠛
+insect	昆蟲	⠔⠎⠑⠉⠞
+China	中國	⠠⠡⠔⠁
+balcony	陽臺	⠃⠁⠇⠉⠕⠝⠽
+neighbor	鄰居	⠝⠑⠊⠣⠃⠕⠗
+yard	院子	⠽⠜⠙
+ant	螞蟻	⠁⠝⠞
+bench	長椅；替補隊員席	⠃⠢⠡
+spot	看出	⠎⠏⠕⠞
+source	資訊來源	⠎⠳⠗⠉⠑
+trusted	可信的；可靠的	⠞⠗⠥⠌⠫
+trust	信任	⠞⠗⠥⠌
+website	網站	⠺⠑⠃⠎⠊⠞⠑
+error	錯誤	⠻⠗⠕⠗
+copy	複製；複本	⠉⠕⠏⠽
+headline	標題	⠓⠂⠙⠇⠔⠑
+smoke	抽菸；煙	⠎⠍⠕⠅⠑
+truth	真相	⠞⠗⠥⠹
+angle	觀點；角度	⠁⠝⠛⠇⠑
+far	遙遠的；遙遠地	⠋⠜
+over-the-top	太過頭的	⠕⠧⠻⠤⠮⠤⠞⠕⠏
+tip	提示；指導	⠞⠊⠏

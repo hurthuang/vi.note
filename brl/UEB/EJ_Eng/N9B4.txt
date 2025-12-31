@@ -1,0 +1,22 @@
+gate	大門	⠛⠁⠞⠑
+blank	空白的	⠃⠇⠁⠝⠅
+pocket money	零用錢	⠏⠕⠉⠅⠑⠞⠀⠍⠐⠕⠽
+bake	烘焙	⠃⠁⠅⠑
+gram	公克	⠛⠗⠁⠍
+bite	一口之量	⠃⠊⠞⠑
+joke	玩笑	⠚⠕⠅⠑
+fail	失敗；未能做到	⠋⠁⠊⠇
+until	直到……	⠥⠝⠞⠊⠇
+hobby	嗜好	⠓⠕⠆⠽
+seat	座椅；座位	⠎⠂⠞
+fix	修理	⠋⠊⠭
+graduate	畢業	⠛⠗⠁⠙⠥⠁⠞⠑
+bulletin board	佈告欄	⠃⠥⠇⠇⠑⠞⠔⠀⠃⠕⠜⠙
+weird	奇怪的	⠺⠑⠊⠗⠙
+support	支持	⠎⠥⠏⠏⠕⠗⠞
+root	根源；原因	⠗⠕⠕⠞
+What's the matter?	怎麼了？	⠠⠱⠁⠞⠄⠎⠀⠮⠀⠍⠁⠞⠞⠻⠦
+knowledge	知識	⠅
+define	定義	⠙⠑⠋⠔⠑
+bow	鞠躬	⠃⠪
+fix	解決(問題)	⠋⠊⠭

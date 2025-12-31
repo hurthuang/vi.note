@@ -1,0 +1,38 @@
+ice cream	冰淇淋	⠊⠉⠑⠀⠉⠗⠂⠍
+sound	聽起來	⠎⠨⠙
+cut	切	⠉⠥⠞
+smell	聞起來	⠎⠍⠑⠇⠇
+tomato	番茄	⠞⠕⠍⠁⠞⠕
+cheese	起司	⠡⠑⠑⠎⠑
+stomach	胃	⠌⠕⠍⠁⠡
+feel	感覺起來	⠋⠑⠑⠇
+seller	賣家	⠎⠑⠇⠇⠻
+stand	攤位	⠌⠯
+bean	豆子	⠃⠂⠝
+bun	小圓麵包	⠃⠥⠝
+butter	奶油	⠃⠥⠞⠞⠻
+cookie	餅乾	⠉⠕⠕⠅⠊⠑
+French fries	薯條	⠠⠋⠗⠢⠡⠀⠋⠗⠊⠑⠎
+hot dog	熱狗	⠓⠕⠞⠀⠙⠕⠛
+popcorn	爆米花	⠏⠕⠏⠉⠕⠗⠝
+ham	火腿	⠓⠁⠍
+steak	肉排；牛排	⠌⠂⠅
+toast	烤麵包	⠞⠕⠁⠌
+hold	舉辦	⠓⠕⠇⠙
+main	主要的	⠍⠁⠔
+square	廣場	⠎⠟⠥⠜⠑
+ring	響鈴	⠗⠬
+bell	鐘；鈴	⠃⠑⠇⠇
+knock	敲打	⠅⠝⠕⠉⠅
+touch	觸摸	⠞⠳⠡
+deal	交易	⠙⠂⠇
+clap	拍(手)	⠉⠇⠁⠏
+shout	喊叫	⠩⠳⠞
+agree	同意	⠁⠛⠗⠑⠑
+shake hands	握手	⠩⠁⠅⠑⠀⠓⠯⠎
+smile	微笑	⠎⠍⠊⠇⠑
+village	村莊	⠧⠊⠇⠇⠁⠛⠑
+traditional	傳統的	⠞⠗⠁⠙⠊⠰⠝⠁⠇
+on display	展示	⠕⠝⠀⠲⠏⠇⠁⠽
+buyer	買家	⠃⠥⠽⠻
+pay a visit	拜訪	⠏⠁⠽⠀⠁⠀⠧⠊⠎⠊⠞

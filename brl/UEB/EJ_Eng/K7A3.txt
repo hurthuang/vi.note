@@ -1,0 +1,36 @@
+living room	客廳	⠇⠊⠧⠬⠀⠗⠕⠕⠍
+bedroom	臥室	⠃⠫⠗⠕⠕⠍
+bathroom	浴室	⠃⠁⠹⠗⠕⠕⠍
+dining room	飯廳	⠙⠔⠬⠀⠗⠕⠕⠍
+behind	在……後面	⠆⠓
+in front of	在……前面	⠔⠀⠋⠗⠕⠝⠞⠀⠷
+between	在……中間	⠆⠞
+next to	在……旁邊	⠝⠑⠭⠞⠀⠞⠕
+near	在……附近	⠝⠑⠜
+please int.	請	⠏⠇⠂⠎⠑⠀⠔⠞⠲
+house	房子	⠓⠳⠎⠑
+quiet	安靜的	⠟⠥⠊⠑⠞
+style	風格；款式	⠌⠽⠇⠑
+idea	想法；點子	⠊⠙⠑⠁
+get	獲得	⠛⠑⠞
+some	一些的；一些	⠐⠎
+tool	工具	⠞⠕⠕⠇
+smartphone	智慧型手機	⠎⠍⠜⠞⠏⠓⠐⠕
+step	步驟；一步	⠌⠑⠏
+upload	上傳	⠥⠏⠇⠕⠁⠙
+photo	相片	⠏⠓⠕⠞⠕
+theme	主題	⠮⠍⠑
+wait	等待	⠺⠁⠊⠞
+expensive	昂貴的	⠑⠭⠏⠢⠎⠊⠧⠑
+with	對……來說；和	⠾
+question	問題	⠐⠟
+soft	柔軟的	⠎⠷⠞
+hard	硬的	⠓⠜⠙
+in fact	事實上	⠔⠀⠋⠁⠉⠞
+around	圍繞；到處	⠜⠨⠙
+world	世界	⠸⠺
+kitchen	廚房	⠅⠊⠞⠡⠢
+beside	在……旁邊	⠆⠎
+ice	冰	⠊⠉⠑
+inside	在……裡面；在室內	⠔⠎⠊⠙⠑
+blanket	毛毯	⠃⠇⠁⠝⠅⠑⠞

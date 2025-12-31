@@ -1,0 +1,35 @@
+spider	蜘蛛	⠎⠏⠊⠙⠻
+raise	引起；養育	⠗⠁⠊⠎⠑
+gender	性別	⠛⠢⠙⠻
+stereotype	成見；刻板印象	⠌⠻⠑⠕⠞⠽⠏⠑
+weak	虛弱的	⠺⠂⠅
+helpless	無助的	⠓⠑⠇⠏⠨⠎
+value	價值	⠧⠁⠇⠥⠑
+engineer	工程師	⠢⠛⠔⠑⠻
+lawyer	律師	⠇⠁⠺⠽⠻
+powerful	有力量的；強大的	⠏⠪⠻⠰⠇
+honest	誠實的	⠓⠐⠕⠌
+modern	現代的	⠍⠕⠙⠻⠝
+limited	有限的	⠇⠊⠍⠊⠞⠫
+present	展現；禮物	⠏⠗⠑⠎⠢⠞
+lovely	討人喜歡的；漂亮的	⠇⠕⠧⠑⠇⠽
+born	出生的；誕生的	⠃⠕⠗⠝
+pretty	漂亮的	⠏⠗⠑⠞⠞⠽
+brave	勇敢的	⠃⠗⠁⠧⠑
+expect	期待；預計	⠑⠭⠏⠑⠉⠞
+blow... away	使……大為驚訝	⠃⠇⠪⠲⠲⠲⠀⠁⠺⠁⠽
+be filled with	充滿	⠆⠀⠋⠊⠇⠇⠫⠀⠾
+garbage	垃圾	⠛⠜⠃⠁⠛⠑
+heart	心；感情	⠓⠑⠜⠞
+thank goodness	謝天謝地	⠹⠁⠝⠅⠀⠛⠙⠰⠎
+hope	希望	⠓⠕⠏⠑
+except	除了……之外	⠑⠭⠉⠑⠏⠞
+quite	相當地	⠟
+stupid	愚蠢的；笨的	⠌⠥⠏⠊⠙
+ending	（故事的）結局	⠢⠙⠬
+ugly	醜陋的	⠥⠛⠇⠽
+hate	討厭；憎恨	⠓⠁⠞⠑
+allow	允許	⠁⠇⠇⠪
+opinion	意見	⠕⠏⠔⠊⠕⠝
+can't help but...	忍不住……	⠉⠄⠞⠀⠓⠑⠇⠏⠀⠃⠲⠲⠲
+put oneself in someone's shoes	設身處地以……的立場想	⠏⠥⠞⠀⠐⠕⠋⠀⠔⠀⠐⠎⠐⠕⠄⠎⠀⠩⠕⠑⠎

@@ -1,0 +1,39 @@
+earthquake	地震	⠑⠜⠹⠟⠥⠁⠅⠑
+unsafe	不安全的	⠥⠝⠎⠁⠋⠑
+elevator	電梯	⠑⠇⠑⠧⠁⠞⠕⠗
+shelf	架子	⠩⠑⠇⠋
+low	低的；低地	⠇⠪
+cover	遮蓋；遮蔽	⠉⠕⠧⠻
+unhappy	不快樂的	⠥⠝⠓⠁⠏⠏⠽
+hold onto	緊緊抓住；抱牢	⠓⠕⠇⠙⠀⠕⠝⠞⠕
+hit	襲擊；打	⠓⠊⠞
+abroad	在國外	⠁⠃⠗⠕⠁⠙
+moment	時刻	⠍⠕⠰⠞
+hide	躲藏	⠓⠊⠙⠑
+go out	燈熄滅	⠛⠀⠳
+hear	聽到	⠓⠑⠜
+someone	某人	⠐⠎⠐⠕
+scary	嚇人的	⠎⠉⠜⠽
+fall off	掉下	⠋⠁⠇⠇⠀⠷⠋
+cut	割傷；切	⠉⠥⠞
+arm	手臂	⠜⠍
+knee	膝蓋	⠅⠝⠑⠑
+luckily	幸好；幸運地	⠇⠥⠉⠅⠊⠇⠽
+scene	場景	⠎⠉⠢⠑
+leading	主要的	⠇⠂⠙⠬
+real-life	真實生活中的	⠗⠂⠇⠤⠇⠊⠋⠑
+ever	在任何時候	⠐⠑
+light	電燈	⠇⠊⠣⠞
+alone	單獨的獨自的	⠁⠇⠐⠕
+suddenly	突然	⠎⠥⠙⠙⠢⠇⠽
+event	事件	⠑⠧⠢⠞
+land	土地；地面	⠇⠯
+make up	組成	⠍⠁⠅⠑⠀⠥⠏
+rub against	摩擦	⠗⠥⠃⠀⠁⠛⠌
+each other	互相	⠑⠁⠡⠀⠕⠮⠗
+as a result	結果；因此	⠵⠀⠁⠀⠗⠑⠎⠥⠇⠞
+deep	深的	⠙⠑⠑⠏
+sea	海	⠎⠑⠁
+window	窗戶	⠺⠔⠙⠪
+dangerous	危險的	⠙⠁⠝⠛⠻⠳⠎
+plate	板塊	⠏⠇⠁⠞⠑

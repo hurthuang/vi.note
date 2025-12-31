@@ -1,0 +1,35 @@
+January	一月	⠠⠚⠁⠝⠥⠜⠽
+February	二月	⠠⠋⠑⠃⠗⠥⠜⠽
+March	三月	⠠⠍⠜⠡
+April	四月	⠠⠁⠏⠗⠊⠇
+May	五月	⠠⠍⠁⠽
+June	六月	⠠⠚⠥⠝⠑
+July	七月	⠠⠚⠥⠇⠽
+August	八月	⠠⠁⠥⠛⠥⠌
+September	九月	⠠⠎⠑⠏⠞⠑⠍⠃⠻
+October	十月	⠠⠕⠉⠞⠕⠃⠻
+November	十一月	⠠⠝⠕⠧⠑⠍⠃⠻
+December	十二月	⠠⠙⠑⠉⠑⠍⠃⠻
+Easter	復活節	⠠⠑⠁⠌⠻
+Halloween	萬聖節前夕	⠠⠓⠁⠇⠇⠪⠑⠢
+Thanksgiving	感恩節	⠠⠹⠁⠝⠅⠎⠛⠊⠧⠬
+Christmas	聖誕節	⠠⠡⠗⠊⠌⠍⠁⠎
+holiday	節日；假期	⠓⠕⠇⠊⠐⠙
+race	賽跑；競賽	⠗⠁⠉⠑
+whose	誰的	⠘⠱
+when	何時	⠱⠢
+second	第二的；第二；秒	⠎⠑⠉⠕⠝⠙
+date	日期；約會	⠙⠁⠞⠑
+third	第三的	⠹⠊⠗⠙
+away	離……之遠；離開	⠁⠺⠁⠽
+first	第一的首先	⠋⠌
+runner	跑者	⠗⠥⠝⠝⠻
+over there	在那邊	⠕⠧⠻⠀⠐⠮
+take care of	照顧	⠞⠁⠅⠑⠀⠉⠜⠑⠀⠷
+play the role of	扮演……的角色	⠏⠇⠁⠽⠀⠮⠀⠗⠕⠇⠑⠀⠷
+letter	信件；字母	⠇⠗
+dear	親愛的	⠙⠑⠜
+busy	忙碌的	⠃⠥⠎⠽
+miss	想念	⠍⠊⠎⠎
+everything	一切事物	⠐⠑⠽⠹⠬
+love	愛	⠇⠕⠧⠑

@@ -1,0 +1,42 @@
+plane	飛機	⠏⠇⠁⠝⠑
+airplane	飛機	⠁⠊⠗⠏⠇⠁⠝⠑
+bike	腳踏車	⠃⠊⠅⠑
+bicycle	腳踏車	⠃⠊⠉⠽⠉⠇⠑
+taxi	計程車	⠞⠁⠭⠊
+scooter	輕型機車	⠎⠉⠕⠕⠞⠻
+motorcycle	重型機車	⠍⠕⠞⠕⠗⠉⠽⠉⠇⠑
+truck	卡車	⠞⠗⠥⠉⠅
+ship	船；艦	⠩⠊⠏
+boat	小船	⠃⠕⠁⠞
+drive	駕駛（車）	⠙⠗⠊⠧⠑
+row	划（船）	⠗⠪
+north	北方（的）；朝北	⠝⠕⠗⠹
+west	西方（的）；朝西	⠺⠑⠌
+east	東方（的）；朝東	⠑⠁⠌
+south	南方（的）；朝南	⠎⠳⠹
+Excuse me.	不好意思。	⠠⠑⠭⠉⠥⠎⠑⠀⠍⠑⠲
+sir	先生	⠎⠊⠗
+wrong	錯誤的	⠺⠗⠰⠛
+forget	忘記	⠿⠛⠑⠞
+outside	在……外面；在室外	⠳⠞⠎⠊⠙⠑
+on foot	走路；步行	⠕⠝⠀⠋⠕⠕⠞
+turn right	右轉	⠞⠥⠗⠝⠀⠐⠗
+corner	轉角	⠉⠕⠗⠝⠻
+straight	直的	⠌⠗⠁⠊⠣⠞
+block	街區	⠃⠇⠕⠉⠅
+left	左邊（的）；向左地	⠇⠑⠋⠞
+across from	在……對面	⠁⠉⠗⠀⠋
+smartphone	智慧型手機	⠎⠍⠜⠞⠏⠓⠐⠕
+cost	花費（金錢）	⠉⠕⠌
+thousand	千	⠹⠳⠎⠯
+shake hands	握手	⠩⠁⠅⠑⠀⠓⠯⠎
+pocket	口袋	⠏⠕⠉⠅⠑⠞
+monster	怪獸	⠍⠕⠝⠌⠻
+clerk	店員	⠉⠇⠻⠅
+convenient	方便的	⠒⠧⠢⠊⠢⠞
+mistake	錯誤	⠍⠊⠌⠁⠅⠑
+cheap	便宜的	⠡⠂⠏
+expensive	昂貴的	⠑⠭⠏⠢⠎⠊⠧⠑
+pay	付錢	⠏⠁⠽
+beef	牛肉	⠃⠑⠑⠋
+parking space	停車位	⠏⠜⠅⠬⠀⠎⠏⠁⠉⠑

@@ -1,0 +1,44 @@
+vacation	假期	⠧⠁⠉⠁⠰⠝
+science	科學	⠎⠉⠊⠰⠑
+camp	營隊；露營	⠉⠁⠍⠏
+art	藝術；美術	⠜⠞
+music	音樂	⠍⠥⠎⠊⠉
+festival	節日；節慶	⠋⠑⠌⠊⠧⠁⠇
+swam	游泳	⠎⠺⠁⠍
+beach	海灘	⠃⠂⠡
+computer	電腦	⠉⠕⠍⠏⠥⠞⠻
+comic	漫畫	⠉⠕⠍⠊⠉
+surf the Internet	上網	⠎⠥⠗⠋⠀⠮⠀⠠⠔⠞⠻⠝⠑⠞
+tell	講；告訴	⠞⠑⠇⠇
+just	剛剛；只是；僅僅	⠚
+wedding	婚禮	⠺⠫⠙⠬
+interesting	有趣的	⠔⠞⠻⠑⠌⠬
+catch one's eye	吸引……的目光	⠉⠁⠞⠡⠀⠐⠕⠄⠎⠀⠑⠽⠑
+machine	機器	⠍⠁⠡⠔⠑
+sing	唱歌	⠎⠬
+song	歌曲	⠎⠰⠛
+else	其他	⠑⠇⠎⠑
+at the end of	在……結束時	⠁⠞⠀⠮⠀⠢⠙⠀⠷
+leftover	剩下的	⠇⠑⠋⠞⠕⠧⠻
+part	部分	⠐⠏
+dish	（一道）菜	⠙⠊⠩
+experience	經驗；經歷	⠑⠭⠏⠻⠊⠰⠑
+history	歷史	⠓⠊⠌⠕⠗⠽
+temple	寺廟	⠞⠑⠍⠏⠇⠑
+question	問題	⠐⠟
+maybe	也許	⠍⠁⠽⠃⠑
+through	透過	⠐⠹
+stay	停留	⠌⠁⠽
+balloon	氣球	⠃⠁⠇⠇⠕⠕⠝
+ride	搭乘；騎車	⠗⠊⠙⠑
+afraid	害怕的	⠁⠋⠗⠁⠊⠙
+cry	哭泣	⠉⠗⠽
+hold	握住；拿	⠓⠕⠇⠙
+hand	手	⠓⠯
+feet	感覺	⠋⠑⠑⠞
+safe	安全的	⠎⠁⠋⠑
+strong	堅固的；強壯的	⠌⠗⠰⠛
+view	景色	⠧⠊⠑⠺
+wonderful	美好的	⠺⠕⠝⠙⠻⠰⠇
+for	達；計	⠿
+take	搭乘	⠞⠁⠅⠑

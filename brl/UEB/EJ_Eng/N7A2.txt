@@ -1,0 +1,28 @@
+postcard	明信片	⠏⠕⠌⠉⠜⠙
+old	歲	⠕⠇⠙
+famous	有名的	⠋⠁⠍⠳⠎
+beautiful	美麗的	⠃⠂⠥⠞⠊⠰⠇
+all over the world	世界各地	⠁⠇⠇⠀⠕⠧⠻⠀⠮⠀⠸⠺
+hard	困難的	⠓⠜⠙
+easy	簡單的	⠑⠁⠎⠽
+late	遲的	⠇⠁⠞⠑
+family	家庭	⠋⠁⠍⠊⠇⠽
+farmer	農夫	⠋⠜⠍⠻
+housewife	家庭主婦	⠓⠳⠎⠑⠺⠊⠋⠑
+clerk	職員	⠉⠇⠻⠅
+actress	女演員	⠁⠉⠞⠗⠑⠎⠎
+son	兒子	⠎⠕⠝
+daughter	女兒	⠙⠁⠥⠣⠞⠻
+husband	丈夫	⠓⠥⠎⠃⠯
+wife	妻子	⠺⠊⠋⠑
+junior high school	國中	⠚⠥⠝⠊⠕⠗⠀⠓⠊⠣⠀⠎⠡⠕⠕⠇
+star	明星	⠌⠜
+still	還	⠌
+cute	可愛的	⠉⠥⠞⠑
+wonderful	絕妙的	⠺⠕⠝⠙⠻⠰⠇
+place	地方	⠏⠇⠁⠉⠑
+theme park	主題樂園	⠮⠍⠑⠀⠏⠜⠅
+founder	創辦者	⠋⠨⠙⠻
+cartoon	卡通	⠉⠜⠞⠕⠕⠝
+father	創始者	⠐⠋
+have a great time	玩得開心	⠓⠀⠁⠀⠛⠗⠞⠀⠐⠞

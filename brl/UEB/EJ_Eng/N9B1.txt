@@ -1,0 +1,34 @@
+sir	先生	⠎⠊⠗
+rule	規則	⠗⠥⠇⠑
+floor	樓層	⠋⠇⠕⠕⠗
+thick	濃厚的	⠹⠊⠉⠅
+enter	進入	⠢⠞⠻
+balcony	陽臺	⠃⠁⠇⠉⠕⠝⠽
+mistake	錯誤；過失	⠍⠊⠌⠁⠅⠑
+firefighter	消防隊員	⠋⠊⠗⠑⠋⠊⠣⠞⠻
+exam	考試	⠑⠭⠁⠍
+strength	體力	⠌⠗⠢⠛⠹
+safety	安全	⠎⠁⠋⠑⠞⠽
+building	建築物	⠃⠥⠊⠇⠙⠬
+appliance	家用電器	⠁⠏⠏⠇⠊⠨⠑
+stove	爐灶	⠌⠕⠧⠑
+not only... but also...	不但……而且……	⠝⠀⠕⠝⠇⠽⠲⠲⠲⠀⠃⠀⠁⠇⠲⠲⠲
+build up	使……健康或強壯	⠃⠥⠊⠇⠙⠀⠥⠏
+deal with	處理	⠙⠂⠇⠀⠾
+put out	撲滅	⠏⠥⠞⠀⠳
+repeat	重複	⠗⠑⠏⠂⠞
+shower	淋浴	⠩⠪⠻
+tidy up	使……整潔	⠞⠊⠙⠽⠀⠥⠏
+fry	油炸；油煎	⠋⠗⠽
+medium	中等的	⠍⠫⠊⠥⠍
+heat	高溫；熱度	⠓⠂⠞
+fill	充滿	⠋⠊⠇⠇
+mop	拖把	⠍⠕⠏
+cause	導致	⠉⠁⠥⠎⠑
+lid	蓋子	⠇⠊⠙
+break out	突然發生	⠃⠗⠂⠅⠀⠳
+refrigerator	冰箱	⠗⠑⠋⠗⠊⠛⠻⠁⠞⠕⠗
+stranger	陌生人	⠌⠗⠁⠝⠛⠻
+either... or...	不是……就是……	⠑⠊⠲⠲⠲⠀⠕⠗⠲⠲⠲
+neither... nor...	既不……也不……	⠝⠑⠊⠲⠲⠲⠀⠝⠕⠗⠲⠲⠲
+replace	替換；取代	⠗⠑⠏⠇⠁⠉⠑

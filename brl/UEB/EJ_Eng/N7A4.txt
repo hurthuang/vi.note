@@ -1,0 +1,35 @@
+animal	動物	⠁⠝⠊⠍⠁⠇
+surprise	驚喜	⠎⠥⠗⠏⠗⠊⠎⠑
+love	愛	⠇⠕⠧⠑
+gift	禮物	⠛⠊⠋⠞
+hunt	尋找	⠓⠥⠝⠞
+inside	在	⠔⠎⠊⠙⠑
+lunch	午餐	⠇⠥⠝⠡
+again	再一次	⠁⠛
+pin	別針	⠏⠔
+so	非常地	⠎
+kind	體貼的	⠅⠔⠙
+jacket	夾克	⠚⠁⠉⠅⠑⠞
+bamboo	竹子	⠃⠁⠍⠃⠕⠕
+Thanksgiving	感恩節	⠠⠹⠁⠝⠅⠎⠛⠊⠧⠬
+bathroom	浴室	⠃⠁⠹⠗⠕⠕⠍
+bedroom	臥室	⠃⠫⠗⠕⠕⠍
+living room	客廳	⠇⠊⠧⠬⠀⠗⠕⠕⠍
+window	窗戶	⠺⠔⠙⠪
+sofa	長沙發	⠎⠷⠁
+dining room	飯廳	⠙⠔⠬⠀⠗⠕⠕⠍
+kitchen	廚房	⠅⠊⠞⠡⠢
+swimming pool	游泳池	⠎⠺⠊⠍⠍⠬⠀⠏⠕⠕⠇
+garden	花園	⠛⠜⠙⠢
+behind	在	⠆⠓
+in front of	在	⠔⠀⠋⠗⠕⠝⠞⠀⠷
+between	在	⠆⠞
+garage	車庫	⠛⠜⠁⠛⠑
+hard-working	認真的	⠓⠜⠙⠤⠐⠺⠬
+smart	聰明的	⠎⠍⠜⠞
+area	區域	⠜⠑⠁
+pocket	口袋	⠏⠕⠉⠅⠑⠞
+spider	蜘蛛	⠎⠏⠊⠙⠻
+busy	忙碌的	⠃⠥⠎⠽
+water	水	⠺⠁⠞⠻
+bottle	瓶子	⠃⠕⠞⠞⠇⠑

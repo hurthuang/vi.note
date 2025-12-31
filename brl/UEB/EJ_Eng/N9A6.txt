@@ -1,0 +1,45 @@
+workbook	練習冊	⠐⠺⠃⠕⠕⠅
+quiz	測驗	⠟⠥⠊⠵
+Chinese	中文	⠠⠡⠔⠑⠎⠑
+helpful	有幫助的	⠓⠑⠇⠏⠰⠇
+my pleasure	不客氣	⠍⠽⠀⠏⠇⠂⠎⠥⠗⠑
+teenager	青少年	⠞⠑⠢⠁⠛⠻
+hang out	經常出入	⠓⠁⠝⠛⠀⠳
+gym	體育館	⠛⠽⠍
+playground	遊樂場	⠏⠇⠁⠽⠛⠗⠨⠙
+pack	打包	⠏⠁⠉⠅
+whose	誰的	⠘⠱
+post office	郵局	⠏⠕⠌⠀⠷⠋⠊⠉⠑
+church	教堂	⠡⠥⠗⠡
+hurry	加快	⠓⠥⠗⠗⠽
+exchange	交換	⠑⠭⠡⠁⠝⠛⠑
+nap	小睡	⠝⠁⠏
+stay up	熬夜	⠌⠁⠽⠀⠥⠏
+character	字元	⠐⠡
+bookstore	書店	⠃⠕⠕⠅⠌⠕⠗⠑
+blackboard	黑板	⠃⠇⠁⠉⠅⠃⠕⠜⠙
+chalk	粉筆	⠡⠁⠇⠅
+drawer	抽屜	⠙⠗⠁⠺⠻
+copy machine	影印機	⠉⠕⠏⠽⠀⠍⠁⠡⠔⠑
+dictionary	字典	⠙⠊⠉⠰⠝⠜⠽
+vocabulary	字彙	⠧⠕⠉⠁⠃⠥⠇⠜⠽
+marker	麥克筆	⠍⠜⠅⠻
+notebook	筆記本	⠝⠕⠞⠑⠃⠕⠕⠅
+envelope	信封	⠢⠧⠑⠇⠕⠏⠑
+glue	膠水	⠛⠇⠥⠑
+tape	膠帶	⠞⠁⠏⠑
+stick	棍狀物	⠌⠊⠉⠅
+sticky	黏的	⠌⠊⠉⠅⠽
+store	儲存	⠌⠕⠗⠑
+pop up	出現	⠏⠕⠏⠀⠥⠏
+grade	成績	⠛⠗⠁⠙⠑
+except	除……之外	⠑⠭⠉⠑⠏⠞
+probably	有可能地	⠏⠗⠕⠃⠁⠃⠇⠽
+shy	害羞的	⠩⠽
+explain	解釋	⠑⠭⠏⠇⠁⠔
+afraid	害怕的	⠁⠋⠗⠁⠊⠙
+stupid	愚蠢的	⠌⠥⠏⠊⠙
+subject	科目	⠎⠥⠃⠚⠑⠉⠞
+diary	日記	⠙⠊⠜⠽
+whole	全部的	⠱⠕⠇⠑
+get used to	習慣	⠛⠑⠞⠀⠥⠎⠫⠀⠞⠕

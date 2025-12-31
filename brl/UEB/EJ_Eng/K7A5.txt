@@ -1,0 +1,33 @@
+week	星期	⠺⠑⠑⠅
+Monday	星期一	⠠⠍⠕⠝⠐⠙
+Tuesday	星期二	⠠⠞⠥⠑⠎⠐⠙
+Wednesday	星期三	⠠⠺⠫⠝⠑⠎⠐⠙
+basketball	籃球	⠃⠁⠎⠅⠑⠞⠃⠁⠇⠇
+Thursday	星期四	⠠⠹⠥⠗⠎⠐⠙
+Friday	星期五	⠠⠋⠗⠊⠐⠙
+Saturday	星期六	⠠⠎⠁⠞⠥⠗⠐⠙
+birthday	生日	⠃⠊⠗⠹⠐⠙
+party	派對	⠐⠏⠽
+Sunday	星期日	⠠⠎⠥⠝⠐⠙
+day	日	⠐⠙
+weekend	週末	⠺⠑⠑⠅⠢⠙
+noon	中午	⠝⠕⠕⠝
+wake up	醒來	⠺⠁⠅⠑⠀⠥⠏
+look for	尋找	⠇⠕⠕⠅⠀⠿
+by the way	順帶一提	⠃⠽⠀⠮⠀⠺⠁⠽
+join	參加；加入	⠚⠕⠔
+group	團體	⠛⠗⠳⠏
+chat	談話	⠡⠁⠞
+tonight	今晚	⠞⠝
+meeting	會議	⠍⠑⠑⠞⠬
+p.m.	下午；晚上	⠏⠲⠍⠲
+life	生活	⠇⠊⠋⠑
+prepare	準備	⠏⠗⠑⠏⠜⠑
+clock adv.	……點鐘	⠉⠇⠕⠉⠅⠀⠁⠙⠧⠲
+a.m.	上午；凌晨	⠁⠲⠍⠲
+city	城市	⠉⠰⠽
+say	說	⠎⠁⠽
+sun	太陽	⠎⠥⠝
+rise	上升	⠗⠊⠎⠑
+shine	照耀；發光	⠩⠔⠑
+dinner	晚餐	⠙⠔⠝⠻

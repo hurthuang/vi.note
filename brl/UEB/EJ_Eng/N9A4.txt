@@ -1,0 +1,42 @@
+meeting	會議	⠍⠑⠑⠞⠬
+group	團體	⠛⠗⠳⠏
+upload	上傳	⠥⠏⠇⠕⠁⠙
+topic	主題	⠞⠕⠏⠊⠉
+correct	正確的	⠉⠕⠗⠗⠑⠉⠞
+list	清單	⠇⠊⠌
+have... in mind	想好；考慮到	⠓⠲⠲⠲⠀⠔⠀⠍⠔⠙
+interview	採訪	⠔⠞⠻⠧⠊⠑⠺
+program	節目	⠏⠗⠕⠛⠗⠁⠍
+glad	高興的	⠛⠇⠁⠙
+on the same page	有共識的	⠕⠝⠀⠮⠀⠎⠁⠍⠑⠀⠏⠁⠛⠑
+hope	希望	⠓⠕⠏⠑
+director	導演	⠙⠊⠗⠑⠉⠞⠕⠗
+wonder	想知道……	⠺⠕⠝⠙⠻
+film	拍攝	⠋⠊⠇⠍
+helicopter	直升機	⠓⠑⠇⠊⠉⠕⠏⠞⠻
+report	報告	⠗⠑⠏⠕⠗⠞
+drive	駕駛	⠙⠗⠊⠧⠑
+taxi	計程車	⠞⠁⠭⠊
+ship	船；艦	⠩⠊⠏
+scooter	機車	⠎⠉⠕⠕⠞⠻
+motorcycle	摩托車	⠍⠕⠞⠕⠗⠉⠽⠉⠇⠑
+airport	機場	⠁⠊⠗⠏⠕⠗⠞
+hill	山丘	⠓⠊⠇⠇
+wave	海浪	⠺⠁⠧⠑
+cloud	雲朵	⠉⠇⠳⠙
+pond	池塘	⠏⠕⠝⠙
+born	出生的	⠃⠕⠗⠝
+expect	期待	⠑⠭⠏⠑⠉⠞
+sight	景色	⠎⠊⠣⠞
+national	國家的	⠝⠁⠰⠝⠁⠇
+roll	滾落	⠗⠕⠇⠇
+civil service	公職	⠉⠊⠧⠊⠇⠀⠎⠻⠧⠊⠉⠑
+height	高度	⠓⠑⠊⠣⠞
+ahead	向前	⠁⠓⠂⠙
+land	土地	⠇⠯
+a bird's eye view	鳥瞰	⠁⠀⠃⠊⠗⠙⠄⠎⠀⠑⠽⠑⠀⠧⠊⠑⠺
+damage	損害	⠙⠁⠍⠁⠛⠑
+comment	評論	⠉⠕⠍⠰⠞
+such	這樣的	⠎⠡
+pride	驕傲	⠏⠗⠊⠙⠑
+raise	扶養	⠗⠁⠊⠎⠑

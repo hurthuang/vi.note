@@ -1,0 +1,36 @@
+delivery	運送	⠙⠑⠇⠊⠧⠻⠽
+app	應用程式	⠁⠏⠏
+among	在……中	⠁⠍⠰⠛
+age	年齡	⠁⠛⠑
+chart	圖表	⠡⠜⠞
+interested	感興趣的	⠔⠞⠻⠑⠌⠫
+several	幾個的；數個的	⠎⠐⠑⠁⠇
+reason	原因	⠗⠂⠎⠕⠝
+helpful	有用的	⠓⠑⠇⠏⠰⠇
+tired	疲勞的	⠞⠊⠗⠫
+service	服務	⠎⠻⠧⠊⠉⠑
+such as	例如；像	⠎⠡⠀⠵
+choice	選擇	⠡⠕⠊⠉⠑
+driver	駕駛；司機	⠙⠗⠊⠧⠻
+uniform	制服	⠥⠝⠊⠿⠍
+news	消息；新聞	⠝⠑⠺⠎
+excited	感到興奮的	⠑⠭⠉⠊⠞⠫
+boring	無聊的；無趣的	⠃⠕⠗⠬
+bored	感到厭煩的	⠃⠕⠗⠫
+scared	感到害怕的	⠎⠉⠜⠫
+tiring	令人疲倦的	⠞⠊⠗⠬
+surprising	令人驚訝的	⠎⠥⠗⠏⠗⠊⠎⠬
+tip	給……小費；小費	⠞⠊⠏
+surprised	感到驚訝的	⠎⠥⠗⠏⠗⠊⠎⠫
+couch	沙發	⠉⠳⠡
+interest	興趣；使……感興趣	⠔⠞⠻⠑⠌
+mind	介意	⠍⠔⠙
+chance	機會	⠡⠨⠑
+download	下載	⠙⠪⠝⠇⠕⠁⠙
+discount	折扣	⠲⠉⠨⠞
+surprise	驚喜；使……驚訝	⠎⠥⠗⠏⠗⠊⠎⠑
+list	清單	⠇⠊⠌
+at least	至少	⠁⠞⠀⠇⠂⠌
+angry	生氣的	⠁⠝⠛⠗⠽
+location	位置	⠇⠕⠉⠁⠰⠝
+tap	輕觸	⠞⠁⠏

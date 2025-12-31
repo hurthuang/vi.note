@@ -1,0 +1,40 @@
+monkey	猴子	⠍⠕⠝⠅⠑⠽
+fox	狐狸	⠋⠕⠭
+tiger	老虎	⠞⠊⠛⠻
+zebra	斑馬	⠵⠑⠃⠗⠁
+lion	獅子	⠇⠊⠕⠝
+mouse	老鼠	⠍⠳⠎⠑
+mice	老鼠(複數形)	⠍⠊⠉⠑
+bear	熊	⠃⠑⠜
+movie theater	電影院	⠍⠕⠧⠊⠑⠀⠮⠁⠞⠻
+Chinese	中國的；中國人；中文	⠠⠡⠔⠑⠎⠑
+animal	動物	⠁⠝⠊⠍⠁⠇
+sign	符號	⠎⠊⠛⠝
+rat	大老鼠	⠗⠁⠞
+ox	(公)牛	⠕⠭
+oxen	(公)牛(複數形)	⠕⠭⠢
+rabbit	兔	⠗⠁⠆⠊⠞
+dragon	龍	⠙⠗⠁⠛⠕⠝
+snake	蛇	⠎⠝⠁⠅⠑
+horse	馬	⠓⠕⠗⠎⠑
+goat	山羊	⠛⠕⠁⠞
+rooster	公雞	⠗⠕⠕⠌⠻
+smart	聰明的	⠎⠍⠜⠞
+energetic	充滿活力的	⠢⠻⠛⠑⠞⠊⠉
+true	真的；真實的	⠞⠗⠥⠑
+no wonder	難怪	⠝⠕⠀⠺⠕⠝⠙⠻
+person	人(單數形)	⠏⠻⠎⠕⠝
+people	人們	⠏
+people person	人緣好的人	⠏⠀⠏⠻⠎⠕⠝
+What about...?	……怎麼樣？	⠠⠱⠁⠞⠀⠁⠃⠲⠲⠲⠦
+picture	照片；圖畫	⠏⠊⠉⠞⠥⠗⠑
+elephant	大象	⠑⠇⠑⠏⠓⠁⠝⠞
+or	或者	⠕⠗
+size	尺寸	⠎⠊⠵⠑
+different	不同的	⠙⠊⠖⠻⠢⠞
+very	很；非常	⠧
+their	牠們的；他們的	⠸⠮
+meter	公尺	⠍⠑⠞⠻
+but	但是	⠃
+only	僅僅；只	⠕⠝⠇⠽
+lifespan	壽命	⠇⠊⠋⠑⠎⠏⠁⠝

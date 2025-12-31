@@ -1,0 +1,39 @@
+king	國王	⠅⠬
+wet	濕的	⠺⠑⠞
+mud	泥土	⠍⠥⠙
+deep	深的	⠙⠑⠑⠏
+beside	在……旁邊	⠆⠎
+before	在……之前	⠆⠋
+difficult	困難的	⠙⠊⠖⠊⠉⠥⠇⠞
+butterfly	蝴蝶	⠃⠥⠞⠞⠻⠋⠇⠽
+laugh	大笑	⠇⠁⠥⠣
+possible	可能的	⠏⠕⠎⠎⠊⠃⠇⠑
+spider	蜘蛛	⠎⠏⠊⠙⠻
+pass by	經過	⠏⠁⠎⠎⠀⠃⠽
+climb	攀爬	⠉⠇⠊⠍⠃
+bottom	底部	⠃⠕⠞⠞⠕⠍
+die	死亡	⠙⠊⠑
+tired	感到疲倦的	⠞⠊⠗⠫
+finally	終於	⠋⠔⠁⠇⠇⠽
+arrive	抵達	⠜⠗⠊⠧⠑
+surprised	感到驚訝的	⠎⠥⠗⠏⠗⠊⠎⠫
+snake	蛇	⠎⠝⠁⠅⠑
+type	打字	⠞⠽⠏⠑
+cellphone	手機	⠉⠑⠇⠇⠏⠓⠐⠕
+hear	聽見	⠓⠑⠜
+toad	蟾蜍	⠞⠕⠁⠙
+suddenly	突然地	⠎⠥⠙⠙⠢⠇⠽
+hole	洞	⠓⠕⠇⠑
+helpless	無助的	⠓⠑⠇⠏⠨⠎
+message	訊息	⠍⠑⠎⠎⠁⠛⠑
+deaf	耳聾的	⠙⠂⠋
+cry	叫喊	⠉⠗⠽
+go by	經過	⠛⠀⠃⠽
+over and over	一遍又一遍	⠕⠧⠻⠀⠯⠀⠕⠧⠻
+in time	及時	⠔⠀⠐⠞
+cheer... on	鼓勵……	⠡⠑⠻⠲⠲⠲⠀⠕⠝
+bat	蝙蝠	⠃⠁⠞
+fox	狐狸	⠋⠕⠭
+sheep	綿羊	⠩⠑⠑⠏
+rat	老鼠	⠗⠁⠞
+hen	母雞	⠓⠢

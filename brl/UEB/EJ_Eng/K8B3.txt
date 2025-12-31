@@ -1,0 +1,43 @@
+salad	沙拉	⠎⠁⠇⠁⠙
+bean soup	豆子湯	⠃⠂⠝⠀⠎⠳⠏
+pork	豬肉	⠏⠕⠗⠅
+cheese	起司；乳酪	⠡⠑⠑⠎⠑
+ham sandwich	火腿三明治	⠓⠁⠍⠀⠎⠯⠺⠊⠡
+vegetable soup	蔬菜湯	⠧⠑⠛⠑⠞⠁⠃⠇⠑⠀⠎⠳⠏
+French fries	薯條	⠠⠋⠗⠢⠡⠀⠋⠗⠊⠑⠎
+steak	牛排	⠌⠂⠅
+coffee	咖啡	⠉⠷⠋⠑⠑
+toast	烤麵包片	⠞⠕⠁⠌
+bun	小圓麵包	⠃⠥⠝
+bread	麵包	⠃⠗⠂⠙
+fried chicken	炸雞	⠋⠗⠊⠫⠀⠡⠊⠉⠅⠢
+hamburger	漢堡	⠓⠁⠍⠃⠥⠗⠛⠻
+pizza	披薩	⠏⠊⠵⠵⠁
+meat	肉	⠍⠂⠞
+sidewalk	人行道	⠎⠊⠙⠑⠺⠁⠇⠅
+dark	黑暗的；深色的	⠙⠜⠅
+wall	牆壁	⠺⠁⠇⠇
+meal	一餐	⠍⠂⠇
+oil	油；石油	⠕⠊⠇
+sugar	糖	⠎⠥⠛⠜
+order	點餐；訂購	⠕⠗⠙⠻
+weight	體重；重量	⠺⠑⠊⠣⠞
+smell	聞起來	⠎⠍⠑⠇⠇
+panda	熊貓	⠏⠯⠁
+taste	嘗起來	⠞⠁⠌⠑
+fresh	新鮮的	⠋⠗⠑⠩
+dig in	開始吃	⠙⠊⠛⠀⠔
+soon	很快地	⠎⠕⠕⠝
+sound	聽起來	⠎⠨⠙
+put on	增加體重	⠏⠥⠞⠀⠕⠝
+get	變得	⠛⠑⠞
+notice	注意；看到	⠝⠕⠞⠊⠉⠑
+invite	邀請	⠔⠧⠊⠞⠑
+friendly	令人愉快的；友善的	⠋⠗⠇⠽
+besides	此外；而且	⠆⠎⠎
+become	變成	⠆⠉⠕⠍⠑
+probably	也許	⠏⠗⠕⠃⠁⠃⠇⠽
+bite	一口的量；咬	⠃⠊⠞⠑
+stand for	代表	⠌⠯⠀⠿
+matter	有關係	⠍⠁⠞⠞⠻
+sign	招牌；標誌	⠎⠊⠛⠝

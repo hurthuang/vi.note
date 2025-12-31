@@ -1,0 +1,33 @@
+yearbook	畢業紀念冊	⠽⠑⠜⠃⠕⠕⠅
+neck	脖子	⠝⠑⠉⠅
+prize	獎；獎金	⠏⠗⠊⠵⠑
+quiz	小考	⠟⠥⠊⠵
+workbook	習作	⠐⠺⠃⠕⠕⠅
+notes	筆記	⠝⠕⠞⠑⠎
+forever	永遠	⠿⠐⠑
+cow	母牛	⠉⠪
+goose	鵝	⠛⠕⠕⠎⠑
+duck	鴨子	⠙⠥⠉⠅
+kick	踢	⠅⠊⠉⠅
+tail	尾巴	⠞⠁⠊⠇
+slim down	變瘦	⠎⠇⠊⠍⠀⠙⠪⠝
+slim	苗條的	⠎⠇⠊⠍
+program	計畫	⠏⠗⠕⠛⠗⠁⠍
+mile	英里	⠍⠊⠇⠑
+plant	植物；種植	⠏⠇⠁⠝⠞
+rose	玫瑰	⠗⠕⠎⠑
+seed	種子	⠎⠑⠫
+circle	圓圈	⠉⠊⠗⠉⠇⠑
+death	死亡	⠙⠂⠹
+ghost	鬼	⠣⠕⠌
+band	樂團	⠃⠯
+square	廣場；正方形的	⠎⠟⠥⠜⠑
+handsome	英俊的	⠓⠯⠐⠎
+knock down	擊倒	⠅⠝⠕⠉⠅⠀⠙⠪⠝
+knock	擊；敲	⠅⠝⠕⠉⠅
+sail	航程；航行	⠎⠁⠊⠇
+rainbow	彩虹	⠗⠁⠔⠃⠪
+hill	小山；丘陵	⠓⠊⠇⠇
+shoulder	肩膀	⠩⠳⠇⠙⠻
+root	根；根源	⠗⠕⠕⠞
+put up with	忍受	⠏⠥⠞⠀⠥⠏⠀⠾

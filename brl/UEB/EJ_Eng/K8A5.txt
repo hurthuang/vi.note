@@ -1,0 +1,36 @@
+bookstore	書店	⠃⠕⠕⠅⠌⠕⠗⠑
+supermarket	超級市場	⠎⠥⠏⠻⠍⠜⠅⠑⠞
+post office	郵局	⠏⠕⠌⠀⠷⠋⠊⠉⠑
+bank	銀行	⠃⠁⠝⠅
+church	教堂	⠡⠥⠗⠡
+bakery	麵包店	⠃⠁⠅⠻⠽
+elementary school	小學	⠑⠇⠑⠰⠞⠜⠽⠀⠎⠡⠕⠕⠇
+hotel	飯店	⠓⠕⠞⠑⠇
+department store	百貨公司	⠙⠑⠐⠏⠰⠞⠀⠌⠕⠗⠑
+flower shop	花店	⠋⠇⠪⠻⠀⠩⠕⠏
+shop	商店；購買	⠩⠕⠏
+guess	猜	⠛⠥⠑⠎⠎
+somewhere	在某處	⠐⠎⠐⠱
+tomorrow	明天	⠞⠍
+will	將	⠺
+would	將	⠺⠙
+during	在……期間	⠙⠥⠗⠬
+live	居住	⠇⠊⠧⠑
+hike	健行	⠓⠊⠅⠑
+public	大眾；公眾的	⠏⠥⠃⠇⠊⠉
+should	應該	⠩⠙
+spend	花費（時間；金錢）	⠎⠏⠢⠙
+ski	滑雪	⠎⠅⠊
+lucky	幸運的	⠇⠥⠉⠅⠽
+how long	多久（時間；距離）	⠓⠪⠀⠇⠰⠛
+take	花費（時間）	⠞⠁⠅⠑
+lucky money	壓歲錢	⠇⠥⠉⠅⠽⠀⠍⠐⠕⠽
+dozen	一打	⠙⠕⠵⠢
+decide	決定	⠙⠑⠉⠊⠙⠑
+guy	傢伙；人	⠛⠥⠽
+leave	離開；留下	⠇⠂⠧⠑
+firework	煙火	⠋⠊⠗⠑⠐⠺
+nature	大自然	⠝⠁⠞⠥⠗⠑
+the sights	景點	⠮⠀⠎⠊⠣⠞⠎
+remember	記得	⠗⠑⠍⠑⠍⠃⠻
+leave for	前往	⠇⠂⠧⠑⠀⠿

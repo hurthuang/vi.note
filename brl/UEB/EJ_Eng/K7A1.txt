@@ -1,0 +1,35 @@
+family	家人；家庭	⠋⠁⠍⠊⠇⠽
+husband	丈夫	⠓⠥⠎⠃⠯
+wife	妻子	⠺⠊⠋⠑
+son	兒子	⠎⠕⠝
+daughter	女兒	⠙⠁⠥⠣⠞⠻
+parent	雙親之一	⠏⠜⠢⠞
+child	孩子	⠡
+children	孩子(複數形)	⠡⠝
+man	男人	⠍⠁⠝
+men	男人(複數形)	⠍⠢
+handsome	英俊的	⠓⠯⠐⠎
+our	我們的	⠳⠗
+PE	體育	⠠⠠⠏⠑
+really	真地	⠗⠂⠇⠇⠽
+classroom	教室	⠉⠇⠁⠎⠎⠗⠕⠕⠍
+same	一樣的	⠎⠁⠍⠑
+class	班級；課程	⠉⠇⠁⠎⠎
+again	再一次	⠁⠛
+too	也；太	⠞⠕⠕
+news	消息；新聞	⠝⠑⠺⠎
+problem	問題	⠏⠗⠕⠃⠇⠑⠍
+strict	嚴格的	⠌⠗⠊⠉⠞
+junior high school	國民中學	⠚⠥⠝⠊⠕⠗⠀⠓⠊⠣⠀⠎⠡⠕⠕⠇
+warm	溫暖的	⠺⠜⠍
+farmer	農夫	⠋⠜⠍⠻
+cook	廚師；煮	⠉⠕⠕⠅
+nurse	護理師；護士	⠝⠥⠗⠎⠑
+beautiful	漂亮的；美麗的	⠃⠂⠥⠞⠊⠰⠇
+woman	女人	⠺⠕⠍⠁⠝
+women	女人(複數形)	⠺⠕⠍⠢
+doctor	醫生	⠙⠕⠉⠞⠕⠗
+senior high school	高級中學	⠎⠢⠊⠕⠗⠀⠓⠊⠣⠀⠎⠡⠕⠕⠇
+pet	寵物	⠏⠑⠞
+cute	可愛的	⠉⠥⠞⠑
+nice	好的；好心的	⠝⠊⠉⠑

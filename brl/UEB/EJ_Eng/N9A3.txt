@@ -1,0 +1,46 @@
+club	社團	⠉⠇⠥⠃
+boring	令人無聊的	⠃⠕⠗⠬
+bored	感到無聊的	⠃⠕⠗⠫
+news	新聞	⠝⠑⠺⠎
+report	報導	⠗⠑⠏⠕⠗⠞
+in total	總共	⠔⠀⠞⠕⠞⠁⠇
+God	上帝；神	⠠⠛⠕⠙
+teach	教導	⠞⠂⠡
+crazy	瘋狂的	⠉⠗⠁⠵⠽
+fact	事實	⠋⠁⠉⠞
+real	真實的	⠗⠂⠇
+steal	偷竊	⠌⠂⠇
+search for	尋找	⠎⠑⠜⠡⠀⠿
+fake	假的	⠋⠁⠅⠑
+fact-check	核實	⠋⠁⠉⠞⠤⠡⠑⠉⠅
+lesson	教訓	⠇⠑⠎⠎⠕⠝
+medicine	藥品	⠍⠫⠊⠉⠔⠑
+on sale	特賣	⠕⠝⠀⠎⠁⠇⠑
+heavy	重的	⠓⠂⠧⠽
+slim	纖細的	⠎⠇⠊⠍
+handsome	英俊的	⠓⠯⠐⠎
+drop	下降；掉落	⠙⠗⠕⠏
+pound	磅	⠏⠨⠙
+kilogram	公斤	⠅⠊⠇⠕⠛⠗⠁⠍
+inch	英吋	⠔⠡
+centimeter	公分	⠉⠢⠞⠊⠍⠑⠞⠻
+sore throat	喉嚨痛	⠎⠕⠗⠑⠀⠹⠗⠕⠁⠞
+headache	頭痛	⠓⠂⠙⠁⠡⠑
+fever	發燒	⠋⠐⠑
+finger	手指	⠋⠬⠻
+toe	腳趾	⠞⠕⠑
+purple	紫色的	⠏⠥⠗⠏⠇⠑
+rose	玫瑰	⠗⠕⠎⠑
+fool	愚弄	⠋⠕⠕⠇
+interest	使……感興趣	⠔⠞⠻⠑⠌
+take a moment	花一些時間	⠞⠁⠅⠑⠀⠁⠀⠍⠕⠰⠞
+below	在……下面	⠆⠇
+dig	挖掘	⠙⠊⠛
+tool	工具	⠞⠕⠕⠇
+excited	感到興奮的	⠑⠭⠉⠊⠞⠫
+habit	習慣	⠓⠁⠃⠊⠞
+headline	標題	⠓⠂⠙⠇⠔⠑
+trusted	可信賴的	⠞⠗⠥⠌⠫
+website	網站	⠺⠑⠃⠎⠊⠞⠑
+tip	訣竅	⠞⠊⠏
+keyword	關鍵字	⠅⠑⠽⠘⠺

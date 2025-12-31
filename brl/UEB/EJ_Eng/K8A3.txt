@@ -1,0 +1,39 @@
+map	地圖	⠍⠁⠏
+beginning	開頭	⠆⠛⠔⠝⠬
+middle	中間（的）	⠍⠊⠙⠙⠇⠑
+take place	發生	⠞⠁⠅⠑⠀⠏⠇⠁⠉⠑
+quarter	十五分鐘；四分之一	⠟⠥⠜⠞⠻
+crow	烏鴉	⠉⠗⠪
+chicken	雞	⠡⠊⠉⠅⠢
+road	道路	⠗⠕⠁⠙
+bright	晴朗的；明亮的	⠃⠐⠗
+sky	天空	⠎⠅⠽
+clear	晴朗的；清楚的	⠉⠇⠑⠜
+cross	跨越	⠉⠗⠕⠎⠎
+forest	森林	⠿⠑⠌
+dry	（使）變乾	⠙⠗⠽
+find	找到	⠋⠔⠙
+something	某物；某事	⠐⠎⠹⠬
+jar	罐子	⠚⠜
+beak	鳥嘴	⠃⠂⠅
+reach	達到；伸出手臂（拿）	⠗⠂⠡
+rock	岩石；搖動	⠗⠕⠉⠅
+fly	飛行；駕駛（飛機）	⠋⠇⠽
+pick up	撿起	⠏⠊⠉⠅⠀⠥⠏
+back	回原處；後面（的）	⠃⠁⠉⠅
+drop	丟下；落下	⠙⠗⠕⠏
+Good job!	做得好！	⠠⠛⠙⠀⠚⠕⠃⠖
+think	想	⠹⠔⠅
+be proud of	以……為榮	⠆⠀⠏⠗⠳⠙⠀⠷
+back and forth	來回地	⠃⠁⠉⠅⠀⠯⠀⠿⠹
+finally	最後	⠋⠔⠁⠇⠇⠽
+top	頂端；最好的	⠞⠕⠏
+half	一半（的）；二分之一	⠓⠁⠇⠋
+past	經過；過去（的）	⠏⠁⠌
+finish	完成；結束	⠋⠔⠊⠩
+anything	任何事物	⠁⠝⠽⠹⠬
+ask	問；要求	⠁⠎⠅
+before	在……之前	⠆⠋
+when	當……時	⠱⠢
+after	在……之後	⠁⠋
+close	接近地	⠉⠇⠕⠎⠑

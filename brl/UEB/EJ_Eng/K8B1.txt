@@ -1,0 +1,41 @@
+on sale	特價	⠕⠝⠀⠎⠁⠇⠑
+sold	販售	⠎⠕⠇⠙
+price	價格；代價	⠏⠗⠊⠉⠑
+cap	帽子	⠉⠁⠏
+jeans	牛仔褲	⠚⠂⠝⠎
+jacket	夾克	⠚⠁⠉⠅⠑⠞
+skirt	裙子	⠎⠅⠊⠗⠞
+shorts	短褲	⠩⠕⠗⠞⠎
+shirt	襯衫	⠩⠊⠗⠞
+dress	洋裝	⠙⠗⠑⠎⠎
+a pair of	一件褲子；一雙鞋	⠁⠀⠏⠁⠊⠗⠀⠷
+pants	長褲	⠏⠁⠝⠞⠎
+wear	穿	⠺⠑⠜
+try on	試穿	⠞⠗⠽⠀⠕⠝
+take off	脫下	⠞⠁⠅⠑⠀⠷⠋
+be full of	充滿	⠆⠀⠋⠥⠇⠇⠀⠷
+fashionable	流行的；時尚的	⠋⠁⠩⠊⠕⠝⠁⠃⠇⠑
+light	輕薄的	⠇⠊⠣⠞
+than	比；比較	⠹⠁⠝
+already	已經	⠁⠇⠗
+style	風格；款式	⠌⠽⠇⠑
+fashion	流行；時尚	⠋⠁⠩⠊⠕⠝
+fan	狂熱愛好者；迷	⠋⠁⠝
+fast	快速的；很快地	⠋⠁⠌
+medium	中等尺寸；中等的	⠍⠫⠊⠥⠍
+large	大尺寸；大的	⠇⠜⠛⠑
+fitting room	試衣間	⠋⠊⠞⠞⠬⠀⠗⠕⠕⠍
+agree	同意	⠁⠛⠗⠑⠑
+comfortable	舒服的	⠉⠕⠍⠿⠞⠁⠃⠇⠑
+fix	修理；解決問題	⠋⠊⠭
+laundry	洗衣店	⠇⠁⠥⠝⠙⠗⠽
+customer	顧客	⠉⠥⠌⠕⠍⠻
+throw away	扔掉	⠹⠗⠪⠀⠁⠺⠁⠽
+sweater	毛衣	⠎⠺⠂⠞⠻
+item	項目	⠊⠞⠑⠍
+page	網頁；頁	⠏⠁⠛⠑
+grew	增加；成長	⠛⠗⠑⠺
+save	省下；拯救	⠎⠁⠧⠑
+nothing	沒有東西；沒有事情	⠝⠕⠹⠬
+Earth	地球	⠠⠑⠜⠹
+planet	星球	⠏⠇⠁⠝⠑⠞

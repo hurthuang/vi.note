@@ -1,0 +1,35 @@
+candle	蠟燭	⠉⠯⠇⠑
+lamp	燈	⠇⠁⠍⠏
+radio	收音機	⠗⠁⠙⠊⠕
+refrigerator	冰箱	⠗⠑⠋⠗⠊⠛⠻⠁⠞⠕⠗
+tape recorder	錄音機	⠞⠁⠏⠑⠀⠗⠑⠉⠕⠗⠙⠻
+tape	錄音帶	⠞⠁⠏⠑
+washing machine	洗衣機	⠺⠁⠩⠬⠀⠍⠁⠡⠔⠑
+turn on	打開電器	⠞⠥⠗⠝⠀⠕⠝
+turn off	關上電器	⠞⠥⠗⠝⠀⠷⠋
+broken	損壞的；破碎的	⠃⠗⠕⠅⠢
+out of order	故障的	⠳⠀⠷⠀⠕⠗⠙⠻
+fan	電扇	⠋⠁⠝
+apartment	公寓	⠁⠐⠏⠰⠞
+drawer	抽屜	⠙⠗⠁⠺⠻
+strange	奇怪的；陌生的	⠌⠗⠁⠝⠛⠑
+used to	過去經常	⠥⠎⠫⠀⠞⠕
+record	錄音；錄影	⠗⠑⠉⠕⠗⠙
+button	按鈕	⠃⠥⠞⠞⠕⠝
+pull	抽出；拉	⠏⠥⠇⠇
+actually	實際上	⠁⠉⠞⠥⠁⠇⠇⠽
+joke	開玩笑；笑話	⠚⠕⠅⠑
+most	最；最多的	⠍⠕⠌
+valuable	有價值的	⠧⠁⠇⠥⠁⠃⠇⠑
+push	按；推	⠏⠥⠩
+anymore	再也不……	⠁⠝⠽⠍⠕⠗⠑
+sweet	甜蜜的；甜的	⠎⠺⠑⠑⠞
+memory	回憶；記憶	⠍⠑⠍⠕⠗⠽
+file	檔案	⠋⠊⠇⠑
+useful	有用的	⠥⠎⠑⠰⠇
+sound	聲音	⠎⠨⠙
+took one's place	取代……	⠞⠕⠕⠅⠀⠐⠕⠄⠎⠀⠏⠇⠁⠉⠑
+software	軟體	⠎⠷⠞⠺⠜⠑
+slow	緩慢的；緩慢地	⠎⠇⠪
+poor	可憐的；貧窮的	⠏⠕⠕⠗
+save	儲存	⠎⠁⠧⠑
