@@ -1,0 +1,107 @@
+#Starter 		
+one hundred	一百	⠐⠕⠀⠓⠥⠝⠙⠗⠫
+two hundred	兩百	⠞⠺⠕⠀⠓⠥⠝⠙⠗⠫
+three hundred	三百	⠹⠗⠑⠑⠀⠓⠥⠝⠙⠗⠫
+four hundred	四百	⠋⠳⠗⠀⠓⠥⠝⠙⠗⠫
+five hundred	五百	⠋⠊⠧⠑⠀⠓⠥⠝⠙⠗⠫
+six hundred	六百	⠎⠊⠭⠀⠓⠥⠝⠙⠗⠫
+seven hundred	七百	⠎⠑⠧⠢⠀⠓⠥⠝⠙⠗⠫
+eight hundred	八百	⠑⠊⠣⠞⠀⠓⠥⠝⠙⠗⠫
+nine hundred	九百	⠝⠔⠑⠀⠓⠥⠝⠙⠗⠫
+one thousand	一千	⠐⠕⠀⠹⠳⠎⠯
+king	國王	⠅⠬
+ring	戒指	⠗⠬
+swing	鞦韆	⠎⠺⠬
+bank	銀行	⠃⠁⠝⠅
+pink	粉紅色（的）	⠏⠔⠅
+wink	眨眼	⠺⠔⠅
+		
+#Unit 1 What's Wrong?		
+eyes	眼睛（複數）	⠑⠽⠑⠎
+ears	耳朵（複數）	⠑⠜⠎
+nose	鼻子	⠝⠕⠎⠑
+mouth	嘴	⠍⠳⠹
+hands	手（複數）	⠓⠯⠎
+arms	手臂（複數）	⠜⠍⠎
+legs	腿（複數）	⠇⠑⠛⠎
+foot	腳	⠋⠕⠕⠞
+feet	腳（複數）	⠋⠑⠑⠞
+wrong	不對的，錯誤的	⠺⠗⠰⠛
+hurt	疼痛	⠓⠥⠗⠞
+whale	鯨魚	⠱⠁⠇⠑
+wheel	輪子	⠱⠑⠑⠇
+white	白色（的）	⠱⠊⠞⠑
+phone	電話	⠏⠓⠐⠕
+photo	照片	⠏⠓⠕⠞⠕
+dolphin	海豚	⠙⠕⠇⠏⠓⠔
+		
+		
+#Unit 2 Do You Have a Headache?		
+cold	感冒	⠉⠕⠇⠙
+fever	發燒	⠋⠐⠑
+runny nose	流鼻涕	⠗⠥⠝⠝⠽⠀⠝⠕⠎⠑
+sore throat	喉嚨痛	⠎⠕⠗⠑⠀⠹⠗⠕⠁⠞
+headache	頭痛	⠓⠂⠙⠁⠡⠑
+toothache	牙痛	⠞⠕⠕⠹⠁⠡⠑
+stomachache	胃痛	⠌⠕⠍⠁⠡⠁⠡⠑
+have	有	⠓
+has	有（第三人稱單數用）	⠓⠁⠎
+three	三	⠹⠗⠑⠑
+bathroom	浴室	⠃⠁⠹⠗⠕⠕⠍
+teeth	牙齒（複數）	⠞⠑⠑⠹
+this	這個	⠹
+that	那個	⠞
+those	那些	⠘⠹
+		
+#Unit 3 What Would You Like for Dinner?		
+breakfast	早餐	⠃⠗⠂⠅⠋⠁⠌
+lunch	午餐	⠇⠥⠝⠡
+dinner	晚餐	⠙⠔⠝⠻
+bread	麵包	⠃⠗⠂⠙
+chicken	雞；雞肉	⠡⠊⠉⠅⠢
+salad	沙拉	⠎⠁⠇⠁⠙
+soup	湯	⠎⠳⠏
+noodles	麵條（複數）	⠝⠕⠕⠙⠇⠑⠎
+would like	想要	⠺⠙⠀⠇
+please	請	⠏⠇⠂⠎⠑
+chicken	雞；雞肉	⠡⠊⠉⠅⠢
+church	教堂	⠡⠥⠗⠡
+lunch	午餐	⠇⠥⠝⠡
+shop	商店	⠩⠕⠏
+short	矮的；短的	⠩⠕⠗⠞
+fish	魚；魚肉	⠋⠊⠩
+		
+#Unit 4 Whose Backpack Is That?		
+backpack	背包	⠃⠁⠉⠅⠏⠁⠉⠅
+cap	棒球帽	⠉⠁⠏
+lunchbox	午餐盒	⠇⠥⠝⠡⠃⠕⠭
+umbrella	雨傘	⠥⠍⠃⠗⠑⠇⠇⠁
+water bottle	水壺	⠺⠁⠞⠻⠀⠃⠕⠞⠞⠇⠑
+workbook	作業本	⠐⠺⠃⠕⠕⠅
+glasses	眼鏡	⠛⠇⠁⠎⠎⠑⠎
+shoes	鞋（複數）	⠩⠕⠑⠎
+whose	誰的	⠘⠱
+whale	鯨魚	⠱⠁⠇⠑
+wheel	輪子	⠱⠑⠑⠇
+white	白色（的）	⠱⠊⠞⠑
+phone	電話	⠏⠓⠐⠕
+photo	照片	⠏⠓⠕⠞⠕
+dolphin	海豚	⠙⠕⠇⠏⠓⠔
+three	三	⠹⠗⠑⠑
+bathroom	浴室	⠃⠁⠹⠗⠕⠕⠍
+teeth	牙齒（複數）	⠞⠑⠑⠹
+this	這個	⠹
+that	那個	⠞
+those	那些	⠘⠹
+chicken	雞；雞肉	⠡⠊⠉⠅⠢
+church	教堂	⠡⠥⠗⠡
+lunch	午餐	⠇⠥⠝⠡
+shop	商店	⠩⠕⠏
+short	矮的；短的	⠩⠕⠗⠞
+fish	魚；魚肉	⠋⠊⠩
+		
+#Festival: The Dragon Boat Festival		
+a sachet	香包	⠁⠀⠎⠁⠡⠑⠞
+a zongzi (rice dumpling) 粽子		⠁⠀⠵⠰⠛⠵⠊⠀⠐⠣⠗⠊⠉⠑⠀⠙⠥⠍⠏⠇⠬⠐⠜⠀⠄⡳⠭⠛⠉⠃⠙⠄⠄⡳⠭⠑⠃⠑⠚⠄
+dragon boat race	龍舟競賽	⠙⠗⠁⠛⠕⠝⠀⠃⠕⠁⠞⠀⠗⠁⠉⠑
+stand an egg	立蛋	⠌⠯⠀⠁⠝⠀⠑⠛⠛

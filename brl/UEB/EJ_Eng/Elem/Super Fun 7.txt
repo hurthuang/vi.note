@@ -1,0 +1,102 @@
+#Phonics Fun 1		
+arm	手臂	⠜⠍
+corn	玉米	⠉⠕⠗⠝
+car	汽車	⠉⠜
+fork	叉子	⠿⠅
+farm	農場	⠋⠜⠍
+forty	四十（數字）	⠿⠞⠽
+party	派對	⠐⠏⠽
+horse	馬	⠓⠕⠗⠎⠑
+		
+#Phonics Fun 2		
+bird	鳥	⠃⠊⠗⠙
+nurse	護士	⠝⠥⠗⠎⠑
+dirty	髒的	⠙⠊⠗⠞⠽
+purple	紫色	⠏⠥⠗⠏⠇⠑
+girl	女孩	⠛⠊⠗⠇
+surf	衝浪	⠎⠥⠗⠋
+shirt	襯衫	⠩⠊⠗⠞
+turtle	烏龜	⠞⠥⠗⠞⠇⠑
+		
+#Phonics Fun 3		
+cry	哭	⠉⠗⠽
+baby	嬰兒	⠃⠁⠃⠽
+fly	飛行	⠋⠇⠽
+happy	快樂的	⠓⠁⠏⠏⠽
+sky	天空	⠎⠅⠽
+jelly	果凍	⠚⠑⠇⠇⠽
+spy	偵探	⠎⠏⠽
+kitty	小貓	⠅⠊⠞⠞⠽
+		
+#Phonics Fun 4		
+coin	硬幣	⠉⠕⠔
+boy	男孩	⠃⠕⠽
+noise	噪音	⠝⠕⠊⠎⠑
+Joy	（女子名）	⠠⠚⠕⠽
+oil	油	⠕⠊⠇
+soybean	黃豆	⠎⠕⠽⠃⠂⠝
+point	指向	⠏⠕⠔⠞
+toy	玩具	⠞⠕⠽
+		
+#Phonics Fun 5		
+cloud	雲朵	⠉⠇⠳⠙
+brown	棕色	⠃⠗⠪⠝
+house	房屋	⠓⠳⠎⠑
+cow	母牛	⠉⠪
+mouse	老鼠	⠍⠳⠎⠑
+down	向下	⠙⠪⠝
+shout	吼叫	⠩⠳⠞
+owl	貓頭鷹	⠪⠇
+		
+#Lesson 1		
+the USA	美國	⠮⠀⠠⠠⠥⠎⠁
+Japan	日本	⠠⠚⠁⠏⠁⠝
+the UK	英國	⠮⠀⠠⠠⠥⠅
+Taiwan	臺灣	⠠⠞⠁⠊⠺⠁⠝
+France	法國	⠠⠋⠗⠨⠑
+Australia	澳洲	⠠⠁⠥⠌⠗⠁⠇⠊⠁
+Vietnam	越南	⠠⠧⠊⠑⠞⠝⠁⠍
+from	來自	⠋
+Korea	韓國	⠠⠅⠕⠗⠑⠁
+		
+#Lesson 2		
+play basketball	打籃球	⠏⠇⠁⠽⠀⠃⠁⠎⠅⠑⠞⠃⠁⠇⠇
+watch TV	看電視	⠺⠁⠞⠡⠀⠠⠠⠞⠧
+play video games	打電動遊戲	⠏⠇⠁⠽⠀⠧⠊⠙⠑⠕⠀⠛⠁⠍⠑⠎
+go shopping	逛街購物	⠛⠀⠩⠕⠏⠏⠬
+ride a bike	騎腳踏車	⠗⠊⠙⠑⠀⠁⠀⠃⠊⠅⠑
+go camping	露營	⠛⠀⠉⠁⠍⠏⠬
+visit my friend	拜訪朋友	⠧⠊⠎⠊⠞⠀⠍⠽⠀⠋⠗
+free time	空閒時間	⠋⠗⠑⠑⠀⠐⠞
+		
+#Lesson 3		
+eggs	雞蛋（複數）	⠑⠶⠎
+sandwiches	三明治（複數）	⠎⠯⠺⠊⠡⠑⠎
+oranges	柳橙（複數）	⠕⠗⠁⠝⠛⠑⠎
+how many	幾個	⠓⠪⠀⠸⠍
+strawberries	草莓（複數）	⠌⠗⠁⠺⠃⠻⠗⠊⠑⠎
+need	需要	⠝⠑⠫
+watermelons	西瓜（複數）	⠺⠁⠞⠻⠍⠑⠇⠕⠝⠎
+how much	多少錢	⠓⠪⠀⠍⠡
+cookies	餅乾（複數）	⠉⠕⠕⠅⠊⠑⠎
+dollar	元（貨幣單位）	⠙⠕⠇⠇⠜
+hamburgers	漢堡（複數）	⠓⠁⠍⠃⠥⠗⠛⠻⠎
+hundred	百（數字）	⠓⠥⠝⠙⠗⠫
+hot dogs	熱狗（複數）	⠓⠕⠞⠀⠙⠕⠛⠎
+		
+#Lesson 4		
+breakfast	早餐	⠃⠗⠂⠅⠋⠁⠌
+dinner	晚餐	⠙⠔⠝⠻
+rice	米飯	⠗⠊⠉⠑
+bread	麵包	⠃⠗⠂⠙
+soup	湯	⠎⠳⠏
+chicken	雞肉	⠡⠊⠉⠅⠢
+lunch	午餐	⠇⠥⠝⠡
+would like	想要	⠺⠙⠀⠇
+noodles	麵	⠝⠕⠕⠙⠇⠑⠎
+		
+#Culture & Festival: Moon Festival		
+have a barbecue	烤肉	⠓⠀⠁⠀⠃⠜⠃⠑⠉⠥⠑
+watch the full moon	賞滿月	⠺⠁⠞⠡⠀⠮⠀⠋⠥⠇⠇⠀⠍⠕⠕⠝
+eat the mooncake	吃月餅	⠑⠁⠞⠀⠮⠀⠍⠕⠕⠝⠉⠁⠅⠑
+peel the pomelo	剝柚子	⠏⠑⠑⠇⠀⠮⠀⠏⠕⠍⠑⠇⠕

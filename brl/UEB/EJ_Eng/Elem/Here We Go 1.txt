@@ -1,0 +1,114 @@
+#Starter		
+one	一	⠐⠕
+two	二	⠞⠺⠕
+three	三	⠹⠗⠑⠑
+four	四	⠋⠳⠗
+five	五	⠋⠊⠧⠑
+ant	螞蟻	⠁⠝⠞
+apple	蘋果	⠁⠏⠏⠇⠑
+bag	袋子	⠃⠁⠛
+boy	男孩	⠃⠕⠽
+cat	貓	⠉⠁⠞
+cup	杯子	⠉⠥⠏
+dog	狗	⠙⠕⠛
+duck	鴨子	⠙⠥⠉⠅
+egg	蛋	⠑⠛⠛
+elephant	大象	⠑⠇⠑⠏⠓⠁⠝⠞
+		
+#Unit 1 What's Your Name?		
+I	我	⠠⠊
+am	是	⠁⠍
+is	是	⠊⠎
+my	我的	⠍⠽
+name	名字	⠐⠝
+what	什麼	⠱⠁⠞
+your	你的	⠽⠗
+Abu	（男子名）	⠠⠁⠃⠥
+Amber	（女子名）	⠠⠁⠍⠃⠻
+Edison	（男子名）	⠠⠫⠊⠎⠕⠝
+Mia	（女子名）	⠠⠍⠊⠁
+Rocky	（男子名）	⠠⠗⠕⠉⠅⠽
+Teddy	（男子名）	⠠⠞⠫⠙⠽
+fish	魚	⠋⠊⠩
+fan	扇子	⠋⠁⠝
+goat	山羊	⠛⠕⠁⠞
+girl	女孩	⠛⠊⠗⠇
+hand	手	⠓⠯
+hat	帽子	⠓⠁⠞
+ink	墨水	⠔⠅
+insect	昆蟲	⠔⠎⠑⠉⠞
+jet	噴射機	⠚⠑⠞
+jam	果醬	⠚⠁⠍
+		
+#Unit 2 How Old Are You?		
+six	六	⠎⠊⠭
+seven	七	⠎⠑⠧⠢
+eight	八	⠑⠊⠣⠞
+nine	九	⠝⠔⠑
+ten	十	⠞⠢
+how old	幾歲	⠓⠪⠀⠕⠇⠙
+are	是	⠜⠑
+you	你	⠽
+year	年；歲	⠽⠑⠜
+key	鑰匙	⠅⠑⠽
+kite	風箏	⠅⠊⠞⠑
+lion	獅子	⠇⠊⠕⠝
+leg	腿	⠇⠑⠛
+monkey	猴子	⠍⠕⠝⠅⠑⠽
+milk	牛奶	⠍⠊⠇⠅
+nose	鼻子	⠝⠕⠎⠑
+neck	脖子	⠝⠑⠉⠅
+ox	公牛	⠕⠭
+otter	水獺	⠕⠞⠞⠻
+		
+#Unit 3 What's This?		
+book	書	⠃⠕⠕⠅
+pen	原子筆	⠏⠢
+pencil	鉛筆	⠏⠢⠉⠊⠇
+eraser	橡皮擦	⠻⠁⠎⠻
+this	這個	⠹
+that	那個	⠞
+it	它；牠	⠭
+a	一個（隻……等）	⠁
+an	一個（隻……等）	⠁⠝
+ruler	尺	⠗⠥⠇⠻
+marker	彩色筆	⠍⠜⠅⠻
+pig	豬	⠏⠊⠛
+pink	粉紅色的	⠏⠔⠅
+queen	皇后	⠟⠥⠑⠢
+quiz	小測驗	⠟⠥⠊⠵
+red	紅色（的）	⠗⠫
+rabbit	兔子	⠗⠁⠆⠊⠞
+snake	蛇	⠎⠝⠁⠅⠑
+sun	太陽	⠎⠥⠝
+turtle	烏龜	⠞⠥⠗⠞⠇⠑
+tiger	老虎	⠞⠊⠛⠻
+		
+#Unit 4 What Color Is It?		
+blue	藍色（的）	⠃⠇⠥⠑
+green	綠色（的）	⠛⠗⠑⠢
+red	紅色（的）	⠗⠫
+yellow	黃色（的）	⠽⠑⠇⠇⠪
+color	顏色	⠉⠕⠇⠕⠗
+black	黑色（的）	⠃⠇⠁⠉⠅
+white	白色（的）	⠱⠊⠞⠑
+up	向上	⠥⠏
+umbrella	雨傘	⠥⠍⠃⠗⠑⠇⠇⠁
+van	廂型車	⠧⠁⠝
+vest	背心	⠧⠑⠌
+watch	手錶	⠺⠁⠞⠡
+window	窗戶	⠺⠔⠙⠪
+fox	狐狸	⠋⠕⠭
+box	箱子	⠃⠕⠭
+yo-yo	溜溜球	⠽⠕⠤⠽⠕
+yogurt	優格	⠽⠕⠛⠥⠗⠞
+zoo	動物園	⠵⠕⠕
+zebra	斑馬	⠵⠑⠃⠗⠁
+		
+#Festivals: Halloween		
+bat	蝙蝠	⠃⠁⠞
+ghost	鬼	⠣⠕⠌
+pumpkin	南瓜	⠏⠥⠍⠏⠅⠔
+spider	蜘蛛	⠎⠏⠊⠙⠻
+witch	女巫	⠺⠊⠞⠡
+vampire	吸血鬼	⠧⠁⠍⠏⠊⠗⠑

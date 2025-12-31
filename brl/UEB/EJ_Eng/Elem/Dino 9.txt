@@ -1,0 +1,114 @@
+#Starter Unit
+first	第一
+second	第二
+third	第三
+fourth	第四
+fifth	第五
+sixth	第六
+seventh	第七
+eighth	第八
+ninth	第九
+tenth	第十
+eleventh	第十一
+twelfth	第十二
+see	看見
+zoo	動物園
+jump	跳
+eat	吃
+winter	冬天
+market	市場
+tiger	老虎
+yellow	黃色
+banana	香蕉
+animal	動物
+hamburger	漢堡
+Saturday	星期六
+watermelon	西瓜
+supermarket	超級市場
+Australia	澳洲
+
+#Unit 1 Where Did You Go Last Weekend?
+department store	百貨公司
+night market	夜市
+ate snacks	吃零食（過去式）
+drank juice	喝果汁（過去式）
+flew a kite	放風箏（過去式）
+rode a bike	騎單車（過去式）
+saw a movie	看電影（過去式）
+went shopping	去購物（過去式）
+last weekend	上週末
+amusement park	遊樂園
+riverside park	河濱公園
+dance	跳舞
+city	城市
+bicycle	腳踏車
+cab	計程車
+cone	交通錐
+circus	馬戲團
+
+#Unit 2 What Did He Do Yesterday?
+drew a picture	畫圖（過去式）
+had a picnic	野餐（過去式）
+ran	奔，跑（過去式）
+sang songs	唱歌（過去式）
+swam	游泳（過去式）
+took a walk	散步（過去式）
+wrote a letter	寫信（過去式）
+got a haircut	剪頭髮（過去式）
+page	頁面
+giraffe	長頸鹿
+gym	體育館
+game	遊戲
+gorilla	大猩猩
+gum	口香糖
+
+#Unit 3 What Would You Like?
+a bowl of	一碗
+a plate of	一盤
+a cup of	一杯
+a glass of	一杯（玻璃杯裝）
+a box of	一盒
+would like	想要
+knock	敲門
+knob	門把
+knife	刀子
+lamb	小羊，羔羊
+comb	梳頭髮，梳子
+thumb	大拇指
+
+#Unit 4 When Is Your Birthday?
+March	三月
+April	四月
+May	五月
+June	六月
+July	七月
+August	八月
+October	十月
+December	十二月
+when	何時
+birthday	生日
+January	一月
+February	二月
+September	九月
+November	十一月
+knight	騎士
+light	光
+right	右邊
+write	寫
+wrong	錯誤的
+wrap	包裝
+
+#Culture: Table Manners You Should Know
+bread and butter plate	麵包盤
+butter knife	奶油刀
+napkin	餐巾
+salad fork	沙拉叉
+dinner fork	主餐叉
+dinner plate	主餐盤
+salad plate	沙拉盤
+soup bowl	湯碗
+wine glass	酒杯
+water glass	水杯
+dinner knife	主餐刀
+salad knife	沙拉刀
+soup spoon	湯匙

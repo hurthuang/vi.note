@@ -1,0 +1,86 @@
+#Phonics Fun 1		
+black	黑色	⠃⠇⠁⠉⠅
+blow	吹	⠃⠇⠪
+plane	飛機	⠏⠇⠁⠝⠑
+plug	插頭	⠏⠇⠥⠛
+clean	乾淨的	⠉⠇⠂⠝
+clock	時鐘	⠉⠇⠕⠉⠅
+glass	玻璃杯；玻璃	⠛⠇⠁⠎⠎
+glue	膠水	⠛⠇⠥⠑
+		
+#Phonics Fun 2		
+French fries	薯條	⠠⠋⠗⠢⠡⠀⠋⠗⠊⠑⠎
+frog	青蛙	⠋⠗⠕⠛
+grapes	葡萄	⠛⠗⠁⠏⠑⠎
+grass	草	⠛⠗⠁⠎⠎
+dress	洋裝	⠙⠗⠑⠎⠎
+driver	司機	⠙⠗⠊⠧⠻
+trash	垃圾	⠞⠗⠁⠩
+truck	卡車	⠞⠗⠥⠉⠅
+		
+#Phonics Fun 3		
+skate	輪冰	⠎⠅⠁⠞⠑
+skirt	裙子	⠎⠅⠊⠗⠞
+spider	蜘蛛	⠎⠏⠊⠙⠻
+spoon	湯匙	⠎⠏⠕⠕⠝
+star	星星	⠌⠜
+sticker	貼紙	⠌⠊⠉⠅⠻
+		
+#Phonics Fun 4		
+knee	膝蓋	⠅⠝⠑⠑
+knife	刀子	⠅⠝⠊⠋⠑
+wreath	花圈	⠺⠗⠂⠹
+wrench	扳手	⠺⠗⠢⠡
+comb	梳子	⠉⠕⠍⠃
+thumb	拇指	⠹⠥⠍⠃
+		
+#Phonics Fun 5		
+long	長的	⠇⠰⠛
+ring	戒指	⠗⠬
+swing	鞦韆	⠎⠺⠬
+bank	銀行	⠃⠁⠝⠅
+pink	粉紅色	⠏⠔⠅
+sink	水槽	⠎⠔⠅
+		
+#Lesson 1		
+last Sunday	上個星期日	⠇⠁⠌⠀⠠⠎⠥⠝⠐⠙
+yesterday	昨天	⠽⠑⠌⠻⠐⠙
+this morning	今天早上	⠹⠀⠍⠕⠗⠝⠬
+an hour ago	一個小時前	⠁⠝⠀⠓⠳⠗⠀⠁⠛⠕
+ten minutes ago	十分鐘前	⠞⠢⠀⠍⠔⠥⠞⠑⠎⠀⠁⠛⠕
+		
+#Lesson 2		
+at home	在家	⠁⠞⠀⠓⠕⠍⠑
+at school	在學校	⠁⠞⠀⠎⠡⠕⠕⠇
+at the museum	在博物館	⠁⠞⠀⠮⠀⠍⠥⠎⠑⠥⠍
+at the restaurant	在餐廳	⠁⠞⠀⠮⠀⠗⠑⠌⠁⠥⠗⠁⠝⠞
+at the amusement park	在遊樂園	⠁⠞⠀⠮⠀⠁⠍⠥⠎⠑⠰⠞⠀⠏⠜⠅
+at the department store	在百貨公司	⠁⠞⠀⠮⠀⠙⠑⠐⠏⠰⠞⠀⠌⠕⠗⠑
+		
+#Lesson 3		
+firefighter	消防員	⠋⠊⠗⠑⠋⠊⠣⠞⠻
+police officer	警察	⠏⠕⠇⠊⠉⠑⠀⠷⠋⠊⠉⠻
+baseball player	棒球選手	⠃⠁⠎⠑⠃⠁⠇⠇⠀⠏⠇⠁⠽⠻
+reporter	記者	⠗⠑⠏⠕⠗⠞⠻
+scientist	科學家	⠎⠉⠊⠢⠞⠊⠌
+singer	歌手	⠎⠬⠻
+YouTuber	影片創作者	⠠⠽⠳⠠⠞⠥⠃⠻
+engineer	工程師	⠢⠛⠔⠑⠻
+be	成為；是	⠆
+		
+#Lesson 4		
+phone	電話	⠏⠓⠐⠕
+jacket	外套	⠚⠁⠉⠅⠑⠞
+lunch bag	午餐袋	⠇⠥⠝⠡⠀⠃⠁⠛
+umbrella	雨傘	⠥⠍⠃⠗⠑⠇⠇⠁
+watch	手錶	⠺⠁⠞⠡
+key	鑰匙	⠅⠑⠽
+glasses	眼鏡	⠛⠇⠁⠎⠎⠑⠎
+shoes	鞋子(複數)	⠩⠕⠑⠎
+whose	誰的	⠘⠱
+		
+#Culture & Festival: World Bicycle Day		
+have fun	玩得愉快	⠓⠀⠋⠥⠝
+stay healthy	維持健康	⠌⠁⠽⠀⠓⠂⠇⠹⠽
+keep the air clean	保持空氣清淨	⠅⠑⠑⠏⠀⠮⠀⠁⠊⠗⠀⠉⠇⠂⠝
+save money	節省金錢	⠎⠁⠧⠑⠀⠍⠐⠕⠽

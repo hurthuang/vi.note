@@ -1,0 +1,72 @@
+#Characters & Get Ready
+dad	爸爸
+mad	發狂的；非常生氣的
+bat	蝙蝠
+cat	貓
+eleven	十一
+twelve	十二
+thirteen	十三
+fourteen	十四
+fifteen	十五
+
+#Unit 1  Funny Animals
+bird	鳥
+cat	貓
+dog	狗
+frog	青蛙
+rabbit	兔子
+ox	牛
+hen	母雞
+pen	筆
+net	網子
+vet	獸醫
+
+#Unit 2 Teamwork 
+dance 	跳舞
+draw 	畫圖
+sing	唱歌
+swim	游泳
+fly a kite	放風箏
+ride a bike	騎腳踏車
+can	會；能夠
+pig	豬
+wig	假髮
+kit	工具箱
+sit	坐
+
+#Unit 3 The Monster Parade
+grandfather	爺爺；外公
+grandpa	爺爺；外公
+grandmother	奶奶；外婆
+grandma	奶奶；外婆
+father	爸爸
+dad	爸爸
+mother	媽媽
+mom	媽媽
+brother	哥哥；弟弟
+sister	姐姐；妹妹
+who	誰
+he	他
+she	她
+hot	熱的
+pot	鍋子
+box	箱子
+fox	狐狸
+
+#Unit 4 Jello's Family
+cook	廚師
+doctor	醫師
+nurse	護理師；護理人員
+student	學生
+teacher	教師
+bug	蟲子
+mug	馬克杯
+bun	小圓麵包
+run	跑
+
+#Culture & Festivals: Mother's Day 
+card	卡片
+flower	花朵
+gift	禮物
+hug	擁抱
+kiss	親吻

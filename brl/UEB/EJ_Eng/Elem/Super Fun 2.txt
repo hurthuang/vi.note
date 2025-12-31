@@ -1,0 +1,94 @@
+#Classroom Language             		
+Look.	你看。	⠠⠇⠕⠕⠅⠲
+Listen.	你聽。	⠠⠇⠊⠌⠢⠲
+Come here, please.	請過來這裡。	⠠⠉⠕⠍⠑⠀⠐⠓⠂⠀⠏⠇⠂⠎⠑⠲
+Go back to your seat.	回到你的位子。	⠠⠛⠀⠃⠁⠉⠅⠀⠞⠕⠀⠽⠗⠀⠎⠂⠞⠲
+Take out your book.	把你的書拿出來。	⠠⠞⠁⠅⠑⠀⠳⠀⠽⠗⠀⠃⠕⠕⠅⠲
+Put away your book.	把你的書收起來。	⠠⠏⠥⠞⠀⠁⠺⠁⠽⠀⠽⠗⠀⠃⠕⠕⠅⠲
+Repeat after me.	跟著我唸。	⠠⠗⠑⠏⠂⠞⠀⠁⠋⠀⠍⠑⠲
+Louder, please.	請大聲一點。	⠠⠇⠳⠙⠻⠂⠀⠏⠇⠂⠎⠑⠲
+		
+#Numbers                    		
+eleven	十一	⠑⠇⠑⠧⠢
+twelve	十二	⠞⠺⠑⠇⠧⠑
+thirteen	十三	⠹⠊⠗⠞⠑⠢
+fourteen	十四	⠋⠳⠗⠞⠑⠢
+fifteen	十五	⠋⠊⠋⠞⠑⠢
+		
+#Phonics 1		
+map 	地圖	⠍⠁⠏⠀
+mop	拖把	⠍⠕⠏
+cap	帽子	⠉⠁⠏
+tap	水龍頭	⠞⠁⠏
+hop	單腳跳	⠓⠕⠏
+top	頂端	⠞⠕⠏
+		
+#Phonics 2		
+bag	袋子	⠃⠁⠛
+bug	小昆蟲	⠃⠥⠛
+rag	抹布	⠗⠁⠛
+tag	標籤	⠞⠁⠛
+mug	馬克杯	⠍⠥⠛
+hug	擁抱	⠓⠥⠛
+		
+#Phonics 3		
+pet 	寵物	⠏⠑⠞⠀
+pit	坑洞	⠏⠊⠞
+jet	噴射機	⠚⠑⠞
+net	網子	⠝⠑⠞
+sit	坐下	⠎⠊⠞
+hit	打擊	⠓⠊⠞
+		
+#Phonics 4		
+fix	地圖	⠋⠊⠭
+fox	狐狸	⠋⠕⠭
+six	六	⠎⠊⠭
+mix	混合	⠍⠊⠭
+ox	公牛	⠕⠭
+box	箱子	⠃⠕⠭
+		
+#Lesson 1		
+eraser	橡皮擦	⠻⠁⠎⠻
+ruler	尺	⠗⠥⠇⠻
+pen 	原子筆；鋼筆	⠏⠢⠀
+marker	彩色筆	⠍⠜⠅⠻
+pencil	鉛筆	⠏⠢⠉⠊⠇
+this	這個	⠹
+that	那個	⠞
+it	它	⠭
+a	一個	⠁
+an	一個	⠁⠝
+		
+#Lesson 2		
+red	紅色	⠗⠫
+yellow	黃色	⠽⠑⠇⠇⠪
+blue	藍色	⠃⠇⠥⠑
+green	綠色	⠛⠗⠑⠢
+orange	橘色	⠕⠗⠁⠝⠛⠑
+purple	紫色	⠏⠥⠗⠏⠇⠑
+color	顏色	⠉⠕⠇⠕⠗
+		
+#Lesson 3		
+bear	熊	⠃⠑⠜
+monkey	猴子	⠍⠕⠝⠅⠑⠽
+tiger	老虎	⠞⠊⠛⠻
+lion 	獅子	⠇⠊⠕⠝⠀
+horse	馬	⠓⠕⠗⠎⠑
+goat	山羊	⠛⠕⠁⠞
+		
+#Lesson 4		
+sing	唱歌	⠎⠬
+dance	跳舞	⠙⠨⠑
+read	閱讀	⠗⠂⠙
+write	寫字	⠺⠗⠊⠞⠑
+draw	畫畫	⠙⠗⠁⠺
+can	能夠	⠉
+can't	不能	⠉⠄⠞
+		
+#Culture & Festival: Mother's Day		
+mom	媽媽	⠍⠕⠍
+mommy	媽媽	⠍⠕⠍⠍⠽
+mother	媽媽	⠐⠍
+card	卡片	⠉⠜⠙
+flower	花	⠋⠇⠪⠻
+cake	蛋糕	⠉⠁⠅⠑

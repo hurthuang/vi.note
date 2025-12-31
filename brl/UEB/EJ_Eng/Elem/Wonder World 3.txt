@@ -1,0 +1,82 @@
+#Characters & Get Ready
+cap	棒球帽
+mat	墊子；腳踏墊
+tap	水龍頭
+cape	披風
+mate	夥伴
+tape	膠帶
+eleven	十一
+twelve	十二
+thirteen	十三
+fourteen	十四
+fifteen	十五
+sixteen	十六
+seventeen	十七
+eighteen	十八
+nineteen	十九
+twenty	二十
+
+#Unit 1 The Big Wind 
+cloudy	陰天的
+rainy	下雨的
+sunny	晴朗的
+windy	颳風的
+cold	冷的
+hot	熱的
+how	如何
+weather	天氣
+pet	寵物
+jet	噴射機
+Ted	（人名）
+Pete	（人名）
+theme park	主題樂園
+Chinese	中文；國語
+
+#Unit 2  Going Back Home
+fifteen	十五
+twenty	二十
+twenty-five	二十五
+thirty	三十
+forty	四十
+fifty	五十
+time	時間
+o'clock	……點鐘
+kit	工具箱
+pin	別針
+win	贏
+kite	風箏
+pine	松樹
+wine	葡萄酒
+
+#Unit 3  Be Honest 
+book	書
+eraser	橡皮擦
+marker	簽字筆；彩色筆
+pen	原子筆
+pencil	鉛筆
+ruler	尺
+cod	鱈魚	code	代碼
+hop	單腳跳	hope	希望
+rob	搶劫	robe	長袍
+
+#Unit 4  Earthquake Drill
+in	在……裡面
+on	在……上面
+under	在……底下
+box	盒子
+chair	椅子
+desk	書桌
+where	哪裡
+cub	（獅、熊、狼等的）幼獸
+cut	剪；切
+duck	鴨子
+cube	立方體
+cute	可愛的
+duke	公爵
+
+#Culture & Festivals: Halloween
+a ghost	鬼魂
+a jack-o'-lantern	南瓜燈
+a mummy	木乃伊
+a vampire	吸血鬼
+a witch	女巫

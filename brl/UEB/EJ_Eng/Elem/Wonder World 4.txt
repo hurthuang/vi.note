@@ -1,0 +1,73 @@
+#Characters & Get Ready
+cap	棒球帽	
+cape	披風
+pet	寵物	
+Pete	（人名）
+kit	工具箱	
+kite	風箏
+sixty	六十
+seventy	七十
+eighty	八十
+ninety	九十
+one hundred	一百
+
+
+#Unit 1 A Dollhouse for Jello
+bathroom	浴室；洗手間
+bedroom	臥室
+kitchen	廚房
+dining room	餐廳
+living room	客廳
+three	三
+teeth	牙齒
+mouth	嘴巴
+this	這個
+father	爸爸
+mother	媽媽
+
+#Unit 2 A Video Call from Boka
+cooking	（正在）下廚
+eating	（正在）吃東西
+reading	（正在）讀書
+sleeping	（正在）睡覺
+writing	（正在）寫字
+running	（正在）跑步
+sing	唱歌
+king	國王
+song	歌曲
+sink	水槽
+pink	粉紅色
+rink	溜冰場
+
+#Unit 3 Let's Have Fun!
+hamburger / hamburgers	漢堡／漢堡（複數）
+hot dog / hot dogs	熱狗／熱狗（複數）
+juice	果汁
+milk	牛奶
+water	水
+ice cream	冰淇淋
+white	白色
+wheel	輪子
+whale	鯨魚
+photo	照片
+phone	電話
+dolphin	海豚
+
+#Unit 4 At the Zoo
+bears	熊（複數）
+lions	獅子（複數）
+monkeys	猴子（複數）
+tigers	老虎（複數）
+zebras	斑馬（複數）
+shirt	襯衫
+fish	魚
+wash	洗
+chips	薯片
+cheese	起司
+lunch	午餐
+
+Culture & Festivals: Dragon Boat Festival
+a sachet	香包
+a dragon boat race	划龍舟比賽
+a rice dumpling	粽子
+stand an egg	立蛋

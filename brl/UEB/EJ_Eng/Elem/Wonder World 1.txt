@@ -1,0 +1,114 @@
+Wonder World 1
+
+#Characters & Get Ready
+ant	螞蟻
+apple	蘋果
+bed	床
+bag	袋子
+cat	貓
+cab	計程車
+duck	鴨子
+dad	爸爸
+egg	蛋
+elephant	大象
+one	一
+two	二
+three	三
+four	四
+five	五
+
+#Unit 1  The Birthday Party
+six	六
+seven	七
+eight	八
+nine	九
+ten	十
+how old	幾歲
+are	是
+you	你
+I	我
+am	是
+years old 	歲（複數）
+fish	魚
+fan	風扇
+goat	山羊
+gap	縫隙
+hat	帽子
+ham	火腿
+ink	墨水
+igloo	冰屋
+jam	果醬
+jet	噴射機
+
+#Unit 2  Poor Kevin
+angry	生氣的
+happy	快樂的
+sad 	難過的
+hungry	飢餓的
+thirsty	口渴的
+yes	是的
+no	不；不是
+not	不是
+key	鑰匙
+kid	小孩
+lion	獅子
+leg	腿
+monkey	猴子
+mop	拖把
+nod	點頭
+net	網子
+octopus	章魚
+ox	公牛
+
+
+#Unit 3  At B&J's Toys
+ball	皮球
+car	車
+doll	洋娃娃
+kite	風箏
+robot	機器人
+yo-yo	溜溜球
+a	一個
+what	什麼
+this	這個
+that	那個
+it	它
+is	是
+pig	豬
+pan	平底鍋
+queen	皇后
+quiz	小考；測驗
+rabbit	兔子
+red	紅色
+seven	七
+sun	太陽
+top	陀螺
+ten	十
+
+#Unit 4  Baby Dragon's Gift
+blue	藍色
+green	綠色
+pink	粉紅色
+purple	紫色
+red	紅色
+yellow	黃色
+color	顏色
+umbrella	雨傘
+up	向上
+vest	背心
+van	廂型車
+watch	手錶
+wig	假髮
+six	六
+fox	狐狸
+yo-yo	溜溜球
+yellow	黃色
+zoo	動物園
+zip	拉拉鍊
+
+#Culture & Festivals: Merry Christmas!
+Christmas tree	耶誕樹
+Santa Claus	耶誕老人
+snowman	雪人
+star	星星
+stocking	長筒襪

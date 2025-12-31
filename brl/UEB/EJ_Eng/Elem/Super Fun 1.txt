@@ -1,0 +1,93 @@
+#Classroom English		
+Stand up.	起立。	⠠⠌⠯⠀⠥⠏⠲
+Sit down.	坐下。	⠠⠎⠊⠞⠀⠙⠪⠝⠲
+Be quiet, please.	請安靜。	⠠⠆⠀⠟⠥⠊⠑⠞⠂⠀⠏⠇⠂⠎⠑⠲
+Line up, please.	請排隊。	⠠⠇⠔⠑⠀⠥⠏⠂⠀⠏⠇⠂⠎⠑⠲
+Open your book.	打開你的書。	⠠⠕⠏⠢⠀⠽⠗⠀⠃⠕⠕⠅⠲
+Close your book.	闔上你的書。	⠠⠉⠇⠕⠎⠑⠀⠽⠗⠀⠃⠕⠕⠅⠲
+Raise your hand.	舉手。	⠠⠗⠁⠊⠎⠑⠀⠽⠗⠀⠓⠯⠲
+Put down your hand.	把手放下。	⠠⠏⠥⠞⠀⠙⠪⠝⠀⠽⠗⠀⠓⠯⠲
+		
+#Numbers		
+one	一	⠐⠕
+two	二	⠞⠺⠕
+three	三	⠹⠗⠑⠑
+four	四	⠋⠳⠗
+five	五	⠋⠊⠧⠑
+		
+#Phonics 1		
+ant	螞蟻	⠁⠝⠞
+bag	袋子	⠃⠁⠛
+cat	貓咪	⠉⠁⠞
+dog	狗	⠙⠕⠛
+egg	蛋	⠑⠛⠛
+fish	魚	⠋⠊⠩
+		
+#Phonics 2		
+girl	女孩	⠛⠊⠗⠇
+hat	帽子	⠓⠁⠞
+insect	昆蟲	⠔⠎⠑⠉⠞
+jet	噴射機	⠚⠑⠞
+kite	風箏	⠅⠊⠞⠑
+lion	獅子	⠇⠊⠕⠝
+monkey	猴子	⠍⠕⠝⠅⠑⠽
+		
+#Phonics 3		
+nose	鼻子	⠝⠕⠎⠑
+ox	公牛	⠕⠭
+pig	豬	⠏⠊⠛
+queen	女王	⠟⠥⠑⠢
+rabbit	兔子	⠗⠁⠆⠊⠞
+six	六	⠎⠊⠭
+		
+#Phonics 4		
+ten	十	⠞⠢
+up	向上	⠥⠏
+vest	背心	⠧⠑⠌
+window	窗戶	⠺⠔⠙⠪
+fox	狐狸	⠋⠕⠭
+yo-yo	溜溜球	⠽⠕⠤⠽⠕
+zebra	斑馬	⠵⠑⠃⠗⠁
+		
+#Lesson 1		
+what	什麼	⠱⠁⠞
+your	你的	⠽⠗
+name	名字	⠐⠝
+my	我的	⠍⠽
+Mike	（男子名）	⠠⠍⠊⠅⠑
+Ken	（男子名）	⠠⠅⠢
+Alan	（男子名）	⠠⠁⠇⠁⠝
+Emma	（女子名）	⠠⠑⠍⠍⠁
+Wendy	（女子名）	⠠⠺⠢⠙⠽
+		
+#Lesson 2		
+how old	幾歲	⠓⠪⠀⠕⠇⠙
+years old	歲（複數）	⠽⠑⠜⠎⠀⠕⠇⠙
+six	六	⠎⠊⠭
+seven	七	⠎⠑⠧⠢
+eight	八	⠑⠊⠣⠞
+nine	九	⠝⠔⠑
+ten	十	⠞⠢
+		
+#Lesson 3		
+he	他	⠓⠑
+she	她	⠩⠑
+strong	強壯的	⠌⠗⠰⠛
+thin	瘦的	⠹⠔
+short	矮的	⠩⠕⠗⠞
+tall	高的	⠞⠁⠇⠇
+		
+#Lesson 4		
+tired	疲累的	⠞⠊⠗⠫
+angry	生氣的	⠁⠝⠛⠗⠽
+happy	快樂的	⠓⠁⠏⠏⠽
+sad	難過的	⠎⠁⠙
+yes	是的	⠽⠑⠎
+no	不	⠝⠕
+not	不是	⠝
+		
+#Culture & Festival: Christmas		
+Christmas tree	耶誕樹	⠠⠡⠗⠊⠌⠍⠁⠎⠀⠞⠗⠑⠑
+stocking	長襪	⠌⠕⠉⠅⠬
+gift	禮物	⠛⠊⠋⠞
+Santa Claus	耶誕老人	⠠⠎⠁⠝⠞⠁⠀⠠⠉⠇⠁⠥⠎

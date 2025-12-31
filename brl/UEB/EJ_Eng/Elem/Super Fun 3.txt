@@ -1,0 +1,111 @@
+#Classroom English		
+Let's go.	我們出發吧。	⠠⠇⠑⠞⠄⠎⠀⠛⠲
+Hurry up.	快一點。	⠠⠓⠥⠗⠗⠽⠀⠥⠏⠲
+Time's up.	時間到。	⠠⠐⠞⠄⠎⠀⠥⠏⠲
+Show me your homework.	給我看看你的作業。	⠠⠩⠪⠀⠍⠑⠀⠽⠗⠀⠓⠕⠍⠑⠐⠺⠲
+Don't talk.	請勿交談。	⠠⠙⠕⠝⠄⠞⠀⠞⠁⠇⠅⠲
+Don't run.	請勿奔跑。	⠠⠙⠕⠝⠄⠞⠀⠗⠥⠝⠲
+Turn on the light.	請開燈。	⠠⠞⠥⠗⠝⠀⠕⠝⠀⠮⠀⠇⠊⠣⠞⠲
+Turn off the light.	請關燈。	⠠⠞⠥⠗⠝⠀⠷⠋⠀⠮⠀⠇⠊⠣⠞⠲
+		
+#Numbers		
+sixteen	十六	⠎⠊⠭⠞⠑⠢
+seventeen	十七	⠎⠑⠧⠢⠞⠑⠢
+eighteen	十八	⠑⠊⠣⠞⠑⠢
+nineteen	十九	⠝⠔⠑⠞⠑⠢
+twenty	二十	⠞⠺⠢⠞⠽
+		
+#Phonics 1		
+bat	球棒	⠃⠁⠞
+big	大的	⠃⠊⠛
+pat	輕拍	⠏⠁⠞
+pig	豬	⠏⠊⠛
+bus	巴士	⠃⠥⠎
+pin	大頭針	⠏⠔
+bed	床	⠃⠫
+pot	鍋子	⠏⠕⠞
+		
+#Phonics 2		
+den	洞穴	⠙⠢
+dip	浸泡	⠙⠊⠏
+ten	十	⠞⠢
+tip	尖端	⠞⠊⠏
+dad	爸爸	⠙⠁⠙
+top	頂端	⠞⠕⠏
+duck	鴨子	⠙⠥⠉⠅
+tub	浴缸	⠞⠥⠃
+		
+#Phonics 3		
+gap	間隙	⠛⠁⠏
+gut	腸道	⠛⠥⠞
+cap	鴨舌帽	⠉⠁⠏
+cut	切；剪	⠉⠥⠞
+gum	口香糖	⠛⠥⠍
+cat	貓	⠉⠁⠞
+gas	瓦斯	⠛⠁⠎
+cop	警察	⠉⠕⠏
+		
+#Phonics 4		
+van	箱型車	⠧⠁⠝
+vest	背心	⠧⠑⠌
+fan	電風扇	⠋⠁⠝
+fest	節日	⠋⠑⠌
+vat	桶	⠧⠁⠞
+fat	胖的	⠋⠁⠞
+vet	獸醫	⠧⠑⠞
+fox	狐狸	⠋⠕⠭
+		
+#Phonics 5		
+zip	拉鍊	⠵⠊⠏
+Zack	（男子名）	⠠⠵⠁⠉⠅
+sip	啜飲	⠎⠊⠏
+sack	麻布袋	⠎⠁⠉⠅
+zit	痘痘；疹子	⠵⠊⠞
+sit	坐下	⠎⠊⠞
+zag	急轉	⠵⠁⠛
+sun	太陽	⠎⠥⠝
+		
+#Lesson 1		
+who	誰	⠱⠕
+father	爸爸	⠐⠋
+dad	爸爸	⠙⠁⠙
+grandfather	祖父；爺爺	⠛⠗⠯⠐⠋
+grandpa	祖父；爺爺	⠛⠗⠯⠏⠁
+grandmother	祖母；奶奶	⠛⠗⠯⠐⠍
+grandma	祖母；奶奶	⠛⠗⠯⠍⠁
+sister	姐妹	⠎⠊⠌⠻
+mother	媽媽	⠐⠍
+mom	媽媽	⠍⠕⠍
+brother	兄弟	⠃⠗⠕⠮⠗
+		
+#Lesson 2		
+teacher	老師	⠞⠂⠡⠻
+student	學生	⠌⠥⠙⠢⠞
+cook	廚師	⠉⠕⠕⠅
+doctor	醫生	⠙⠕⠉⠞⠕⠗
+nurse	護理師	⠝⠥⠗⠎⠑
+farmer	農夫	⠋⠜⠍⠻
+		
+#Lesson 3		
+where	哪裡	⠐⠱
+bathroom	浴室	⠃⠁⠹⠗⠕⠕⠍
+bedroom	臥室	⠃⠫⠗⠕⠕⠍
+kitchen	廚房	⠅⠊⠞⠡⠢
+dining room	飯廳	⠙⠔⠬⠀⠗⠕⠕⠍
+living room	客廳	⠇⠊⠧⠬⠀⠗⠕⠕⠍
+		
+#Lesson 4		
+bird	鳥	⠃⠊⠗⠙
+rabbit	兔子	⠗⠁⠆⠊⠞
+turtle	烏龜	⠞⠥⠗⠞⠇⠑
+cat	貓	⠉⠁⠞
+dog	狗	⠙⠕⠛
+fish	魚	⠋⠊⠩
+		
+#Culture & Festival: Halloween		
+bat	蝙蝠	⠃⠁⠞
+ghost	鬼	⠣⠕⠌
+jack-o'-lantern	南瓜燈	⠚⠁⠉⠅⠤⠕⠄⠤⠇⠁⠝⠞⠻⠝
+spider	蜘蛛	⠎⠏⠊⠙⠻
+Trick or treat.	不給糖就搗蛋。	⠠⠞⠗⠊⠉⠅⠀⠕⠗⠀⠞⠗⠂⠞⠲
+Happy Halloween.	萬聖節快樂。	⠠⠓⠁⠏⠏⠽⠀⠠⠓⠁⠇⠇⠪⠑⠢⠲

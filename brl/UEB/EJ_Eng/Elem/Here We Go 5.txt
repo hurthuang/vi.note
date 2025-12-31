@@ -1,0 +1,98 @@
+#Starter 		
+ten	十	⠞⠢
+twenty	二十	⠞⠺⠢⠞⠽
+thirty	三十	⠹⠊⠗⠞⠽
+forty	四十	⠿⠞⠽
+fifty	五十	⠋⠊⠋⠞⠽
+sixty	六十	⠎⠊⠭⠞⠽
+seventy	七十	⠎⠑⠧⠢⠞⠽
+eighty	八十	⠑⠊⠣⠞⠽
+ninety	九十	⠝⠔⠑⠞⠽
+one hundred	一百	⠐⠕⠀⠓⠥⠝⠙⠗⠫
+cake	蛋糕	⠉⠁⠅⠑
+lake	湖泊	⠇⠁⠅⠑
+email	電子郵件	⠑⠍⠁⠊⠇
+rain	雨	⠗⠁⠔
+May	（女子名）	⠠⠍⠁⠽
+today	今天	⠞⠙
+		
+#Unit 1 What Day Is Today?		
+Sunday	星期日	⠠⠎⠥⠝⠐⠙
+Monday	星期一	⠠⠍⠕⠝⠐⠙
+Tuesday	星期二	⠠⠞⠥⠑⠎⠐⠙
+Wednesday	星期三	⠠⠺⠫⠝⠑⠎⠐⠙
+Thursday	星期四	⠠⠹⠥⠗⠎⠐⠙
+Friday	星期五	⠠⠋⠗⠊⠐⠙
+Saturday	星期六	⠠⠎⠁⠞⠥⠗⠐⠙
+today	今天	⠞⠙
+Pete	（男孩名）	⠠⠏⠑⠞⠑
+these	這些	⠘⠮
+bee	蜜蜂	⠃⠑⠑
+tree	樹木	⠞⠗⠑⠑
+tea	茶	⠞⠑⠁
+sea	海洋	⠎⠑⠁
+		
+#Unit 2 Do You Have PE Class on Monday?		
+art	美術	⠜⠞
+Chinese	中文	⠠⠡⠔⠑⠎⠑
+English	英語	⠠⠢⠛⠇⠊⠩
+math	數學	⠍⠁⠹
+music	音樂	⠍⠥⠎⠊⠉
+PE	體育	⠠⠠⠏⠑
+science	自然	⠎⠉⠊⠰⠑
+social studies	社會	⠎⠕⠉⠊⠁⠇⠀⠌⠥⠙⠊⠑⠎
+does	（助動詞，第三人稱單數時用）	⠙⠕⠑⠎
+have	有	⠓
+class	課	⠉⠇⠁⠎⠎
+kite	風箏	⠅⠊⠞⠑
+nine	九	⠝⠔⠑
+tie	領帶	⠞⠊⠑
+pie	派	⠏⠊⠑
+fly	蒼蠅	⠋⠇⠽
+sky	天空	⠎⠅⠽
+		
+#Unit 3 Where Are You Going?		
+bank	銀行	⠃⠁⠝⠅
+bookstore	書店	⠃⠕⠕⠅⠌⠕⠗⠑
+hospital	醫院	⠓⠕⠎⠏⠊⠞⠁⠇
+library	圖書館	⠇⠊⠃⠗⠜⠽
+museum	博物館	⠍⠥⠎⠑⠥⠍
+park	公園	⠏⠜⠅
+post office	郵局	⠏⠕⠌⠀⠷⠋⠊⠉⠑
+supermarket	超級市場	⠎⠥⠏⠻⠍⠜⠅⠑⠞
+go to	去（某地）	⠛⠀⠞⠕
+road	路	⠗⠕⠁⠙
+street	街	⠌⠗⠑⠑⠞
+note	筆記；便條	⠝⠕⠞⠑
+rose	玫瑰花	⠗⠕⠎⠑
+boat	船	⠃⠕⠁⠞
+goat	山羊	⠛⠕⠁⠞
+low	低的	⠇⠪
+row	划船	⠗⠪
+		
+#Unit 4 How Many Koalas Are There?		
+elephant	大象	⠑⠇⠑⠏⠓⠁⠝⠞
+horse	馬	⠓⠕⠗⠎⠑
+lion	獅子	⠇⠊⠕⠝
+monkey	猴子	⠍⠕⠝⠅⠑⠽
+tiger	老虎	⠞⠊⠛⠻
+turtle	烏龜	⠞⠥⠗⠞⠇⠑
+zebra	斑馬	⠵⠑⠃⠗⠁
+How many	多少⋯⋯？	⠠⠓⠪⠀⠸⠍
+koala	無尾熊	⠅⠕⠁⠇⠁
+cute	可愛的	⠉⠥⠞⠑
+tube	軟管	⠞⠥⠃⠑
+Luke	（男子名）	⠠⠇⠥⠅⠑
+flute	長笛	⠋⠇⠥⠞⠑
+blue	藍色（的）	⠃⠇⠥⠑
+glue	黏膠	⠛⠇⠥⠑
+juice	果汁	⠚⠥⠊⠉⠑
+suit	西裝	⠎⠥⠊⠞
+		
+#Festival: Christmas		
+a bell	鈴鐺	⠁⠀⠃⠑⠇⠇
+a candy cane	拐杖糖	⠁⠀⠉⠯⠽⠀⠉⠁⠝⠑
+a Christmas tree	耶誕樹	⠁⠀⠠⠡⠗⠊⠌⠍⠁⠎⠀⠞⠗⠑⠑
+a star	星星	⠁⠀⠌⠜
+a stocking	長襪	⠁⠀⠌⠕⠉⠅⠬
+Santa Claus	耶誕老人	⠠⠎⠁⠝⠞⠁⠀⠠⠉⠇⠁⠥⠎

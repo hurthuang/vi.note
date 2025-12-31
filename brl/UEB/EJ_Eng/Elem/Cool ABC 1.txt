@@ -1,0 +1,33 @@
+#Unit	1
+ant	螞蟻
+bird	鳥
+cat	貓
+apple	蘋果
+bag	袋子
+cup	杯	
+
+#Unit	2
+dog	狗
+egg	蛋
+fish	魚
+duck	鴨子
+elephant	大象
+fox	狐狸
+
+#Unit	3
+girl	女孩
+goat	山羊
+hat	帽子
+ham	火腿
+insect	昆蟲
+ink	墨水
+
+#Unit	4	
+jet	噴射機
+juice	果汁
+kite	風箏
+lion	獅子
+monkey	猴子
+key	鑰匙
+lamp	燈
+map	地圖

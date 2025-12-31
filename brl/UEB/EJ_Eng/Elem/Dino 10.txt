@@ -1,0 +1,104 @@
+#Starter Unit 
+
+#Unit 1 Where's the Tea Shop?
+across from	在⋯⋯對面
+behind	在⋯⋯後面
+between... and...	在⋯⋯和⋯⋯之間
+in front of	在⋯⋯前面
+bakery	麵包店
+bus stop	公車站
+clinic	診所
+police station	警察局
+tea shop	飲料店
+chain	鍊子
+chair	椅子
+pail	水桶
+pair	一對、一雙
+cake	蛋糕
+care	關懷
+hate	討厭
+hare	野兔
+
+
+#Unit 2 How Does the Mochi Taste?
+bamboo rice	竹筒飯
+barbecue	烤肉
+grilled corn	烤玉米
+bitter	苦的
+salty	鹹的
+sour	酸的
+spicy	辣的
+sweet	甜的
+mochi	麻糬
+yellow	黃的
+yummy	美味的
+yucky	噁心的、不愉快的
+angry	生氣的
+city	城市
+puppy	幼犬
+fly	飛
+cry	哭泣
+sky	天空
+
+#Unit 3 What Will You Do in Alishan?
+buy souvenirs	買紀念品
+check in	用行動裝置定位打卡
+go hiking	健行
+send a postcard	寄明信片
+take a walk	散步
+take pictures	拍照
+kit	（成套）工具
+kite	風箏
+pip	果核
+pipe	水管、導管
+pie	派、餡餅
+tie	繫、拴、捆、紮
+night	夜晚
+light	光、光線  
+
+#Unit 4 What Do You Do on Graduation Day?
+give flowers	送花
+make a time capsule	做時空膠囊
+say thank you to the teachers	向老師說謝謝
+sign yearbooks	簽畢業紀念冊
+sing the graduation song	唱畢業歌
+book	書
+boot	靴子
+foot	腳
+food	食物
+look	看
+pool	水池
+
+#Culture: Breakfast Around the World
+baked beans	焗豆 
+tea	茶 
+brown sauce	棕醬
+baked tomatoes	烤番茄 
+fruit juice	果汁 
+ketchup	番茄醬
+mushrooms	蘑菇
+sunny side up eggs	荷包蛋
+pancakes	鬆餅　　　　　 
+coffee	咖啡 
+syrup	糖漿
+bacon	培根 
+milk	牛奶 
+butter	奶油
+bagels	貝果　
+hash browns	薯餅
+steamed rice	米飯　　　　 
+green tea	綠茶 
+lemon juice	檸檬汁
+tofu	豆腐　 
+soy sauce	醬油
+grilled fish	烤魚　
+miso soup	味噌湯
+clay oven rolls	燒餅 
+soybean milk	豆漿 
+chili sauce	辣椒醬
+fried bread sticks	油條 
+rice and peanut milk	米漿 
+thick soy sauce 醬油膏
+turnip cakes	蘿蔔糕
+rice balls	飯糰
+egg pancake rolls	蛋餅

@@ -1,0 +1,151 @@
+#Unit 1 Food
+curry	咖哩
+stinky tofu	臭豆腐
+sushi	壽司
+sausages	香腸
+tacos	炸餅
+Germany	德國
+India	印度
+Japan	日本
+Mexico	墨西哥
+Taiwan	臺灣
+fish and chips	炸魚薯條
+hamburgers	漢堡
+pizza	披薩
+Italy	義大利
+the UK	英國
+the USA	美國
+a plate of	一盤
+another	另一個
+best	最好的
+bet	打賭
+chef	主廚
+chewy	耐嚼的
+classic	經典的
+combo	組合
+coriander	香菜
+crispy	酥脆的
+else	其他
+feature	特色
+iconic	代表性的
+originate	起源
+peanut powder	花生粉
+pickled cabbage	泡菜
+pickled mustard greens	酸菜
+scenery	風景
+tapioca	樹薯
+tasity	美味的
+
+#Unit 2 Sports
+badminton	羽球
+baseball	棒球
+basketball	籃球
+soccer	足球
+table tennis	桌球
+tennis	網球
+volleyball	排球
+dodge ball	躲避球
+golf	高爾夫球
+ice hockey	冰上曲棍球
+already	已經
+athlete	運動員
+defense	防守
+however	然而
+look out	小心
+mess up	搞砸
+motto	座右銘
+Olympics	奧林匹克
+probably	很可能
+profile	簡介
+record	紀錄
+run through	用完
+score a goal	射門得分
+shuttlecock	羽毛球
+silver medal	銀牌
+successful	成功的
+swing	揮拍
+
+#Unit 3 Plans
+have a haircut	剪頭髮
+have a party	舉辦派對
+have a picnic	野餐
+stay at home	待在家裡
+study in the library	在圖書館讀書
+take a trip	旅行
+visit my grandparents	拜訪我的祖父母
+clean the room	整理房間
+surf the Internet	上網
+visit the museum	參觀博物館
+wash the dishes	洗碗盤
+agei	阿給
+book report	讀書報告
+forget	忘記
+Former British Consular Residence	前清英國領事官邸
+Fort San Domingo	紅毛城
+iron egg	鐵蛋
+next time	下一次
+Oxford College	理學堂大書院
+sour plum drink	酸梅湯
+Tamsui Church	淡水禮拜堂
+Tamsui Fisherman's Wharf	淡水漁人碼頭
+total loss	全部損失
+totally	完全的
+warn	提醒；告誡
+
+#Unit 4 Occupations
+actor	男演員
+actress	女演員
+chef	主廚
+dentist	牙醫
+engineer	工程師
+mail carrier	郵差
+scientist	科學家
+singer	歌手
+bus driver	公車司機
+farmer	農夫
+housewife	家庭主婦
+nurse	護士
+police officer	警察
+a piece of cake	容易的事
+Beats me!	難倒我了！
+become	成為
+choice	選擇
+exercise	運動
+language	語言
+microgravity	微重力
+musician	音樂家
+refrigerator	冰箱
+research	研究
+rock star	搖滾明星
+strap	用帶子繫（或捆、綁）
+tour	旅遊；巡迴
+
+#Culture & Festivals
+first	第一
+second	第二
+third	第三
+fourth	第四
+fifth	第五
+sixth	第六
+seventh	第七
+eighth	第八
+ninth	第九
+tenth	第十
+altar	祭壇
+blessing	祝福
+celebration	慶祝
+church	教堂
+decorate	裝飾（動詞）
+decoration	裝飾（名詞）
+during	在……期間
+grave	墳墓
+happiness	快樂
+health	健康
+kimono	和服
+parade	遊行
+pour	倒、灌
+shrine	神社
+skull	骷髏
+splash	濺、潑
+tourist	觀光客
+windowsill	窗臺

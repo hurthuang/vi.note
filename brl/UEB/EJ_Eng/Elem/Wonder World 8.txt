@@ -1,0 +1,61 @@
+#Unit 1 A New Friend
+listen to music	聽音樂
+play basketball 	打籃球
+watch TV	看電視
+go camping	去露營
+go hiking	去健行
+go shopping	去購物
+go swimming	去游泳
+free time	休閒時間
+knight	騎士
+knot	繩結
+wrap	纏繞
+wrong	錯誤的
+climb	攀爬
+lamb	小羊
+
+#Unit 2 Kevin's Dream Job
+artist	藝術家
+dentist 	牙醫
+farmer 	農民
+singer	歌手
+writer	作家
+basketball player	籃球員
+bus driver	公車司機
+police officer	警察
+be	從事……職業
+farmer	農夫
+fish	魚
+phone	電話
+photo	照片
+cough	咳嗽
+laugh	笑
+
+#Unit 3  Where Was Kevin?
+two days ago	兩天前
+yesterday	昨天
+last night	昨天晚上
+two hours ago	兩個小時前
+an hour ago	一個小時前
+was	是（is, am 的過去式）
+were	是（are 的過去式）
+cap	棒球帽；無邊便帽
+cot	折疊床
+cup	杯子
+dance	跳舞
+city	城市
+bicycle	腳踏車
+
+#Unit 4  Friends Forever
+library	圖書館
+museum	博物館
+coffee shop	咖啡店
+movie theater	電影院
+night market	夜市
+sports center	運動中心
+gate	大門
+goat	山羊
+gum	口香糖
+bridge	橋梁
+giant	巨人
+gym 	健身房

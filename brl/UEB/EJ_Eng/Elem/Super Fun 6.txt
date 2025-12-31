@@ -1,0 +1,106 @@
+#Phonics 1		
+cake	蛋糕	⠉⠁⠅⠑
+plate	盤子	⠏⠇⠁⠞⠑
+rain	雨；下雨	⠗⠁⠔
+mail	郵件	⠍⠁⠊⠇
+gray	灰色	⠛⠗⠁⠽
+play	玩	⠏⠇⠁⠽
+		
+#Phonics 2		
+Eve	（女子名）	⠠⠑⠧⠑
+these	這些	⠘⠮
+feet	腳（複數）	⠋⠑⠑⠞
+tree	樹	⠞⠗⠑⠑
+tea	茶	⠞⠑⠁
+read	閱讀	⠗⠂⠙
+ 		⠀
+#Phonics 3		
+bike	腳踏車	⠃⠊⠅⠑
+nine	九（數字）	⠝⠔⠑
+pie	派	⠏⠊⠑
+tie	領帶	⠞⠊⠑
+light	燈	⠇⠊⠣⠞
+night	夜晚	⠝⠊⠣⠞
+		
+#Phonics 4		
+nose	鼻子	⠝⠕⠎⠑
+rope	繩子	⠗⠕⠏⠑
+goat	山羊	⠛⠕⠁⠞
+road	道路	⠗⠕⠁⠙
+window	窗戶	⠺⠔⠙⠪
+snow	雪；下雪	⠎⠝⠪
+		
+#Phonics 5		
+cube	方塊	⠉⠥⠃⠑
+blue	藍色	⠃⠇⠥⠑
+mute	靜音	⠍⠥⠞⠑
+glue	膠水	⠛⠇⠥⠑
+June	六月	⠠⠚⠥⠝⠑
+juice	果汁	⠚⠥⠊⠉⠑
+flute	長笛	⠋⠇⠥⠞⠑
+fruit	水果	⠋⠗⠥⠊⠞
+		
+#Lesson 1		
+cook	煮	⠉⠕⠕⠅
+jump	跳	⠚⠥⠍⠏
+sleep	睡	⠎⠇⠑⠑⠏
+study	讀書	⠌⠥⠙⠽
+write	寫	⠺⠗⠊⠞⠑
+dance	跳舞	⠙⠨⠑
+run	跑	⠗⠥⠝
+do	做	⠙
+cooking	正在煮	⠉⠕⠕⠅⠬
+jumping	正在跳	⠚⠥⠍⠏⠬
+sleeping	正在睡	⠎⠇⠑⠑⠏⠬
+studying	正在讀書	⠌⠥⠙⠽⠬
+writing	正在寫	⠺⠗⠊⠞⠬
+dancing	正在跳舞	⠙⠁⠝⠉⠬
+running	正在跑	⠗⠥⠝⠝⠬
+doing	正在做	⠙⠕⠬
+		
+#Lesson 2		
+fever	發燒	⠋⠐⠑
+runny nose	流鼻水	⠗⠥⠝⠝⠽⠀⠝⠕⠎⠑
+toothache	牙痛	⠞⠕⠕⠹⠁⠡⠑
+headache	頭痛	⠓⠂⠙⠁⠡⠑
+hurt	疼痛 	⠓⠥⠗⠞
+leg	腿（單數）	⠇⠑⠛
+foot	腳（單數）	⠋⠕⠕⠞
+hand	手（單數）	⠓⠯
+eye	眼（單數）	⠑⠽⠑
+legs	腿（複數）	⠇⠑⠛⠎
+feet	腳（複數）	⠋⠑⠑⠞
+hands	手（複數）	⠓⠯⠎
+eyes	眼（複數）	⠑⠽⠑⠎
+wrong	不對的；不對勁	⠺⠗⠰⠛
+hurt	疼痛	⠓⠥⠗⠞
+		
+#Lesson 3		
+park	公園	⠏⠜⠅
+library	圖書館	⠇⠊⠃⠗⠜⠽
+hospital	醫院	⠓⠕⠎⠏⠊⠞⠁⠇
+supermarket	超市	⠎⠥⠏⠻⠍⠜⠅⠑⠞
+bookstore	書店	⠃⠕⠕⠅⠌⠕⠗⠑
+tea shop	飲料店	⠞⠑⠁⠀⠩⠕⠏
+post office	郵局	⠏⠕⠌⠀⠷⠋⠊⠉⠑
+zoo	動物園	⠵⠕⠕
+road	路；道路	⠗⠕⠁⠙
+next to…	在…旁邊	⠝⠑⠭⠞⠀⠞⠕⠲⠲⠲
+		
+#Lesson 4	 	
+by bike	騎腳踏車	⠃⠽⠀⠃⠊⠅⠑
+by bus	搭公車	⠃⠽⠀⠃⠥⠎
+by car	搭汽車；開車	⠃⠽⠀⠉⠜
+by metro	搭捷運	⠃⠽⠀⠍⠑⠞⠗⠕
+by train	搭火車	⠃⠽⠀⠞⠗⠁⠔
+by scooter	搭機車；騎機車	⠃⠽⠀⠎⠉⠕⠕⠞⠻
+on foot	走路；步行	⠕⠝⠀⠋⠕⠕⠞
+get	到達	⠛⠑⠞
+		
+#Culture & Festival: Earth Day		
+plastic bag	塑膠袋	⠏⠇⠁⠌⠊⠉⠀⠃⠁⠛
+shopping bag	購物袋	⠩⠕⠏⠏⠬⠀⠃⠁⠛
+water bottle	水壺	⠺⠁⠞⠻⠀⠃⠕⠞⠞⠇⠑
+reusable fork and spoon	環保叉子和湯匙	⠗⠑⠥⠎⠁⠃⠇⠑⠀⠿⠅⠀⠯⠀⠎⠏⠕⠕⠝
+reusable cup and box	環保杯和餐盒	⠗⠑⠥⠎⠁⠃⠇⠑⠀⠉⠥⠏⠀⠯⠀⠃⠕⠭
+reusable straw	環保吸管	⠗⠑⠥⠎⠁⠃⠇⠑⠀⠌⠗⠁⠺

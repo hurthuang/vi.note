@@ -1,0 +1,109 @@
+#Starter		
+planet	星球	⠏⠇⠁⠝⠑⠞
+plum	李子；梅子	⠏⠇⠥⠍
+black	黑色（的）	⠃⠇⠁⠉⠅
+blanket	毯子	⠃⠇⠁⠝⠅⠑⠞
+clap	拍手	⠉⠇⠁⠏
+clock	時鐘	⠉⠇⠕⠉⠅
+glad	高興的	⠛⠇⠁⠙
+glass	玻璃（杯）	⠛⠇⠁⠎⠎
+		
+#Unit 1 Where Were You Yesterday?		
+at home	在家	⠁⠞⠀⠓⠕⠍⠑
+at school	在學校	⠁⠞⠀⠎⠡⠕⠕⠇
+at the mall	在購物中心	⠁⠞⠀⠮⠀⠍⠁⠇⠇
+at the movie theater	在電影院	⠁⠞⠀⠮⠀⠍⠕⠧⠊⠑⠀⠮⠁⠞⠻
+at the restaurant	在餐廳	⠁⠞⠀⠮⠀⠗⠑⠌⠁⠥⠗⠁⠝⠞
+at the zoo	在動物園	⠁⠞⠀⠮⠀⠵⠕⠕
+was	（am/is 的過去式）	⠴
+were	（are 的過去式）	⠶
+yesterday	昨天	⠽⠑⠌⠻⠐⠙
+crab	螃蟹	⠉⠗⠁⠃
+cream	鮮奶油	⠉⠗⠂⠍
+grass	草	⠛⠗⠁⠎⠎
+Greece	希臘	⠠⠛⠗⠑⠑⠉⠑
+train	火車	⠞⠗⠁⠔
+truck	卡車	⠞⠗⠥⠉⠅
+drink	飲料	⠙⠗⠔⠅
+drum	鼓	⠙⠗⠥⠍
+		
+#Unit 2 What Did You Do Last Night?		
+cleaned my room	打掃我的房間（過去式）	⠉⠇⠂⠝⠫⠀⠍⠽⠀⠗⠕⠕⠍
+listened to music	聽音樂（過去式）	⠇⠊⠌⠢⠫⠀⠞⠕⠀⠍⠥⠎⠊⠉
+played basketball	打籃球（過去式）	⠏⠇⠁⠽⠫⠀⠃⠁⠎⠅⠑⠞⠃⠁⠇⠇
+walked the dog	遛狗（過去式）	⠺⠁⠇⠅⠫⠀⠮⠀⠙⠕⠛
+watched videos	看影片（過去式）	⠺⠁⠞⠡⠫⠀⠧⠊⠙⠑⠕⠎
+visited a friend	拜訪朋友（過去式）	⠧⠊⠎⠊⠞⠫⠀⠁⠀⠋⠗
+did	（do 的過去式）	⠙⠊⠙
+last	上一次；最後	⠇⠁⠌
+night	夜晚	⠝⠊⠣⠞
+swan	天鵝	⠎⠺⠁⠝
+swim	游泳	⠎⠺⠊⠍
+spade	鏟子	⠎⠏⠁⠙⠑
+spoon	湯匙	⠎⠏⠕⠕⠝
+star	星星	⠌⠜
+stone	石頭	⠌⠐⠕
+skunk	臭鼬	⠎⠅⠥⠝⠅
+sky	天空	⠎⠅⠽
+		
+#Unit 3 How much Is the T-shirt?		
+coat	外套；大衣	⠉⠕⠁⠞
+dress	洋裝	⠙⠗⠑⠎⠎
+hat	（有邊的）帽子	⠓⠁⠞
+jacket	夾克	⠚⠁⠉⠅⠑⠞
+skirt	裙子	⠎⠅⠊⠗⠞
+T-shirt	T 恤	⠰⠠⠞⠤⠩⠊⠗⠞
+jeans	牛仔褲	⠚⠂⠝⠎
+pants	褲子；長褲	⠏⠁⠝⠞⠎
+shorts	短褲	⠩⠕⠗⠞⠎
+how much	多少（錢）	⠓⠪⠀⠍⠡
+dollar	一美元	⠙⠕⠇⠇⠜
+bag	袋子	⠃⠁⠛
+cap	棒球帽	⠉⠁⠏
+bed	床	⠃⠫
+shell	貝殼	⠩⠑⠇⠇
+brick	磚頭	⠃⠗⠊⠉⠅
+stick	枝條	⠌⠊⠉⠅
+fox	狐狸	⠋⠕⠭
+rock	岩石	⠗⠕⠉⠅
+jump	跳	⠚⠥⠍⠏
+run	跑	⠗⠥⠝
+		
+#Unit 4 What's Your Favorite Season?		
+spring	春天	⠎⠏⠗⠬
+summer	夏天	⠎⠥⠍⠍⠻
+fall	秋天	⠋⠁⠇⠇
+winter	冬天	⠺⠔⠞⠻
+dry	乾燥的	⠙⠗⠽
+wet	潮濕的	⠺⠑⠞
+foggy	有霧的	⠋⠕⠶⠽
+snowy	下雪的	⠎⠝⠪⠽
+favorite	特別喜愛的	⠋⠁⠧⠕⠗⠊⠞⠑
+season	季節	⠎⠂⠎⠕⠝
+lake	湖泊	⠇⠁⠅⠑
+rain	雨	⠗⠁⠔
+May	（女子名）	⠠⠍⠁⠽
+these	這些	⠘⠮
+see	看	⠎⠑⠑
+peach	桃子	⠏⠂⠡
+shine	發光；照耀	⠩⠔⠑
+pie	派	⠏⠊⠑
+fly	飛	⠋⠇⠽
+rose	玫瑰	⠗⠕⠎⠑
+toast	烤吐司	⠞⠕⠁⠌
+blow	吹	⠃⠇⠪
+cute	可愛的	⠉⠥⠞⠑
+flute	長笛	⠋⠇⠥⠞⠑
+suit	西裝	⠎⠥⠊⠞
+		
+#Culture: Sports Around the World		
+sumo	相撲	⠎⠥⠍⠕
+athlete	運動員	⠁⠹⠇⠑⠞⠑
+wrestler	摔角選手	⠺⠗⠑⠌⠇⠻
+American football	美式足球(或稱橄㰖球)	⠠⠁⠍⠻⠊⠉⠁⠝⠀⠋⠕⠕⠞⠃⠁⠇⠇
+score points	得分	⠎⠉⠕⠗⠑⠀⠏⠕⠔⠞⠎
+across the goal line	穿過球門線	⠁⠉⠗⠀⠮⠀⠛⠕⠁⠇⠀⠇⠔⠑
+through the goal posts	進球門	⠐⠹⠀⠮⠀⠛⠕⠁⠇⠀⠏⠕⠌⠎
+polo	馬球	⠏⠕⠇⠕
+horseback	馬背	⠓⠕⠗⠎⠑⠃⠁⠉⠅
+drive	擊(球)	⠙⠗⠊⠧⠑

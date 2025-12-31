@@ -1,0 +1,92 @@
+#Starter		
+eleven	十一	⠑⠇⠑⠧⠢
+twelve	十二	⠞⠺⠑⠇⠧⠑
+thirteen	十三	⠹⠊⠗⠞⠑⠢
+fourteen	十四	⠋⠳⠗⠞⠑⠢
+fifteen	十五	⠋⠊⠋⠞⠑⠢
+dad 	爸爸	⠙⠁⠙⠀
+mad 	生氣的	⠍⠁⠙⠀
+sad 	傷心的	⠎⠁⠙⠀
+cat 	貓	⠉⠁⠞⠀
+fat	胖的	⠋⠁⠞
+mat 	墊子	⠍⠁⠞⠀
+		
+#Unit 1 Is That a Dog?		
+small 	小的	⠎⠍⠁⠇⠇⠀
+big 	大的	⠃⠊⠛⠀
+dog 	狗	⠙⠕⠛⠀
+cat 	貓	⠉⠁⠞⠀
+bird 	鳥	⠃⠊⠗⠙⠀
+fish 	魚	⠋⠊⠩⠀
+no 	不	⠝⠕⠀
+not 	不是	⠝⠀
+yes 	是	⠽⠑⠎⠀
+bed	床	⠃⠫
+red	紅色的	⠗⠫
+Ted	(男子名)	⠠⠞⠫
+get	得到	⠛⠑⠞
+pet	寵物	⠏⠑⠞
+wet	濕的	⠺⠑⠞
+		
+		
+#Unit 2 Can You Swim?		
+dance	跳舞	⠙⠨⠑
+draw	畫畫	⠙⠗⠁⠺
+jump	跳	⠚⠥⠍⠏
+read	閱讀	⠗⠂⠙
+sing	唱歌	⠎⠬
+swim	游泳	⠎⠺⠊⠍
+write	寫字	⠺⠗⠊⠞⠑
+can	能；會	⠉
+do	做	⠙
+big	大的	⠃⠊⠛
+dig	挖	⠙⠊⠛
+pig	豬	⠏⠊⠛
+kick	踢	⠅⠊⠉⠅
+Nick	(男子名)	⠠⠝⠊⠉⠅
+sick	生病的	⠎⠊⠉⠅
+		
+		
+#Unit 3 Who's She?		
+grandfather	爺爺	⠛⠗⠯⠐⠋
+grandpa	爺爺	⠛⠗⠯⠏⠁
+grandmother	奶奶	⠛⠗⠯⠐⠍
+grandma	奶奶	⠛⠗⠯⠍⠁
+father	爸爸	⠐⠋
+dad	爸爸	⠙⠁⠙
+mother	媽媽	⠐⠍
+mom	媽媽	⠍⠕⠍
+brother	哥哥；弟弟	⠃⠗⠕⠮⠗
+sister	姐姐；妹妹	⠎⠊⠌⠻
+tall	高的	⠞⠁⠇⠇
+short	矮的	⠩⠕⠗⠞
+who	誰	⠱⠕
+he	他	⠓⠑
+she	她	⠩⠑
+hop	單腳跳	⠓⠕⠏
+mop	拖；擦	⠍⠕⠏
+top	陀螺	⠞⠕⠏
+dot	圓點	⠙⠕⠞
+hot	熱的	⠓⠕⠞
+pot	鍋子	⠏⠕⠞
+		
+#Unit 4 Is He a Teacher?		
+student	學生	⠌⠥⠙⠢⠞
+teacher	教師	⠞⠂⠡⠻
+doctor	醫生	⠙⠕⠉⠞⠕⠗
+nurse	護理師	⠝⠥⠗⠎⠑
+cook	廚師	⠉⠕⠕⠅
+driver	司機	⠙⠗⠊⠧⠻
+cub	幼獸	⠉⠥⠃
+sub	潛水艇	⠎⠥⠃
+tub	浴缸	⠞⠥⠃
+cut	切；剪	⠉⠥⠞
+hut	小屋	⠓⠥⠞
+nut	堅果	⠝⠥⠞
+		
+#Festival: Mother's Day		
+card	卡片	⠉⠜⠙
+flower	花	⠋⠇⠪⠻
+gift	禮物	⠛⠊⠋⠞
+heart	心	⠓⠑⠜⠞
+love	愛	⠇⠕⠧⠑

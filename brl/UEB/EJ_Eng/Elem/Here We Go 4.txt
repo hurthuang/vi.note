@@ -1,0 +1,89 @@
+#Starter		
+twenty-one	二十一	⠞⠺⠢⠞⠽⠤⠐⠕
+twenty-two	二十二 	⠞⠺⠢⠞⠽⠤⠞⠺⠕
+twenty-three	二十三	⠞⠺⠢⠞⠽⠤⠹⠗⠑⠑
+twenty-four	二十四	⠞⠺⠢⠞⠽⠤⠋⠳⠗
+twenty-five	二十五	⠞⠺⠢⠞⠽⠤⠋⠊⠧⠑
+twenty-six	二十六	⠞⠺⠢⠞⠽⠤⠎⠊⠭
+twenty-seven	二十七	⠞⠺⠢⠞⠽⠤⠎⠑⠧⠢
+twenty-eight	二十八	⠞⠺⠢⠞⠽⠤⠑⠊⠣⠞
+twenty-nine	二十九	⠞⠺⠢⠞⠽⠤⠝⠔⠑
+thirty	三十	⠹⠊⠗⠞⠽
+cap	棒球帽	⠉⠁⠏
+Sam	（男子名)	⠠⠎⠁⠍
+cape	披風	⠉⠁⠏⠑
+same	相同的	⠎⠁⠍⠑
+bake	烤	⠃⠁⠅⠑
+cake	蛋糕	⠉⠁⠅⠑
+		
+#Unit 1 What Time Is It?		
+twenty	二十	⠞⠺⠢⠞⠽
+thirty	三十	⠹⠊⠗⠞⠽
+forty	四十	⠿⠞⠽
+fifty	五十	⠋⠊⠋⠞⠽
+twenty-five	二十五	⠞⠺⠢⠞⠽⠤⠋⠊⠧⠑
+thirty-five	三十五	⠹⠊⠗⠞⠽⠤⠋⠊⠧⠑
+forty-five	四十五	⠿⠞⠽⠤⠋⠊⠧⠑
+fifty-five	五十五	⠋⠊⠋⠞⠽⠤⠋⠊⠧⠑
+time	時間	⠐⠞
+pet	寵物	⠏⠑⠞
+web	蜘蛛網	⠺⠑⠃
+Pete	（男子名）	⠠⠏⠑⠞⠑
+Chinese	中文	⠠⠡⠔⠑⠎⠑
+Eve	（女子名）	⠠⠑⠧⠑
+these	這些。	⠘⠮
+		
+#Unit 2 What Are You Doing?		
+drinking	（正在）喝	⠙⠗⠔⠅⠬
+eating	（正在）吃	⠑⠁⠞⠬
+reading	（正在）閱讀	⠗⠂⠙⠬
+sleeping	（正在）睡覺	⠎⠇⠑⠑⠏⠬
+writing	（正在）寫字	⠺⠗⠊⠞⠬
+running	（正在）跑步	⠗⠥⠝⠝⠬
+swimming	（正在）游泳	⠎⠺⠊⠍⠍⠬
+doing	（正在）做	⠙⠕⠬
+kit	醫藥箱	⠅⠊⠞
+Tim	（男子名）	⠠⠞⠊⠍
+kite	風箏	⠅⠊⠞⠑
+time	時間	⠐⠞
+bike	腳踏車	⠃⠊⠅⠑
+ride	騎	⠗⠊⠙⠑
+		
+#Unit 3 Where Are You?		
+bathroom	浴室	⠃⠁⠹⠗⠕⠕⠍
+bedroom	臥室	⠃⠫⠗⠕⠕⠍
+dining room	飯廳	⠙⠔⠬⠀⠗⠕⠕⠍
+living room	客廳	⠇⠊⠧⠬⠀⠗⠕⠕⠍
+kitchen	廚房	⠅⠊⠞⠡⠢
+yard	院子	⠽⠜⠙
+where	哪裡	⠐⠱
+in	在 ……裡面 	⠔
+on	在 ……上面	⠕⠝
+under	在 ……下面	⠐⠥
+by	在 ……旁邊	⠃⠽
+hop	單腳跳	⠓⠕⠏
+not	不；沒有	⠝
+hope	希望	⠓⠕⠏⠑
+note	筆記；便條	⠝⠕⠞⠑
+nose	鼻子	⠝⠕⠎⠑
+rose	玫瑰花	⠗⠕⠎⠑
+		
+#Unit 4 Where's My Hat?		
+bag	包包；袋子	⠃⠁⠛
+box	箱子	⠃⠕⠭
+chair	椅子	⠡⠁⠊⠗
+computer	電腦	⠉⠕⠍⠏⠥⠞⠻
+desk	書桌	⠙⠑⠎⠅
+table	桌子	⠞⠁⠃⠇⠑
+cut	剪；切	⠉⠥⠞
+cub	幼獸	⠉⠥⠃
+cute	可愛的	⠉⠥⠞⠑
+cube	立方體	⠉⠥⠃⠑
+mute	靜音	⠍⠥⠞⠑
+fuse	保險絲	⠋⠥⠎⠑
+		
+#Festival: Happy Easter		
+the Easter bunny	復活節兔子	⠮⠀⠠⠑⠁⠌⠻⠀⠃⠥⠝⠝⠽
+a basket	籃子	⠁⠀⠃⠁⠎⠅⠑⠞
+color the eggs	畫彩蛋	⠉⠕⠇⠕⠗⠀⠮⠀⠑⠶⠎
+go egg hunting	找彩蛋	⠛⠀⠑⠛⠛⠀⠓⠥⠝⠞⠬

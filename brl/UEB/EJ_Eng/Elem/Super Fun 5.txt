@@ -1,0 +1,101 @@
+#Phonics Fun 1		
+chair	椅子	⠡⠁⠊⠗
+shell	貝殼	⠩⠑⠇⠇
+lunch	午餐	⠇⠥⠝⠡
+sheep	綿羊	⠩⠑⠑⠏
+watch	手錶	⠺⠁⠞⠡
+fish	魚	⠋⠊⠩
+witch	巫婆	⠺⠊⠞⠡
+wash	清洗	⠺⠁⠩
+		
+#Phonics Fun 2		
+white	白色	⠱⠊⠞⠑
+phone	電話	⠏⠓⠐⠕
+wheel	輪子	⠱⠑⠑⠇
+photo	照片	⠏⠓⠕⠞⠕
+whale	鯨魚	⠱⠁⠇⠑
+dolphin	海豚	⠙⠕⠇⠏⠓⠔
+whistle	哨子	⠱⠊⠌⠇⠑
+elephant	大象	⠑⠇⠑⠏⠓⠁⠝⠞
+ 		⠀
+#Phonics Fun 3		
+thin	瘦的	⠹⠔
+this	這個	⠹
+three	三（數字）	⠹⠗⠑⠑
+that	那個	⠞
+teeth	牙齒（複數）	⠞⠑⠑⠹
+father	父親	⠐⠋
+bath	泡澡	⠃⠁⠹
+mother	母親	⠐⠍
+		
+#Phonics Fun 4		
+car	汽車	⠉⠜
+cent	分（貨幣單位）	⠉⠢⠞
+candy	糖果	⠉⠯⠽
+city	城市	⠉⠰⠽
+picnic	野餐	⠏⠊⠉⠝⠊⠉
+pencil	鉛筆	⠏⠢⠉⠊⠇
+music	音樂	⠍⠥⠎⠊⠉
+Nancy	女子名	⠠⠝⠁⠝⠉⠽
+		
+#Phonics 5		
+gum	口香糖	⠛⠥⠍
+gem	寶石	⠛⠑⠍
+gate	大門	⠛⠁⠞⠑
+giraffe	長頸鹿	⠛⠊⠗⠁⠖⠑
+pig 	豬	⠏⠊⠛⠀
+gym	健身房；體育館	⠛⠽⠍
+mug	馬克杯	⠍⠥⠛
+magic	魔術	⠍⠁⠛⠊⠉
+		
+#Lesson 1		
+Sunday	星期日	⠠⠎⠥⠝⠐⠙
+Monday	星期一	⠠⠍⠕⠝⠐⠙
+Tuesday	星期二	⠠⠞⠥⠑⠎⠐⠙
+Wednesday	星期三	⠠⠺⠫⠝⠑⠎⠐⠙
+Thursday	星期四	⠠⠹⠥⠗⠎⠐⠙
+Friday	星期五	⠠⠋⠗⠊⠐⠙
+Saturday	星期六	⠠⠎⠁⠞⠥⠗⠐⠙
+day	一天；日	⠐⠙
+today	今天	⠞⠙
+		
+#Lesson 2	 	
+get up 	起床	⠛⠑⠞⠀⠥⠏⠀
+go to school	去上學	⠛⠀⠞⠕⠀⠎⠡⠕⠕⠇
+go home	回家	⠛⠀⠓⠕⠍⠑
+eat dinner	吃晚餐	⠑⠁⠞⠀⠙⠔⠝⠻
+do my homework	做我的功課	⠙⠀⠍⠽⠀⠓⠕⠍⠑⠐⠺
+take a shower	洗澡；淋浴	⠞⠁⠅⠑⠀⠁⠀⠩⠪⠻
+go to bed	去睡覺	⠛⠀⠞⠕⠀⠃⠫
+what time	幾點	⠱⠁⠞⠀⠐⠞
+at 	在…（時刻）	⠁⠞⠀
+		
+#Lesson 3		
+sunny	晴天的	⠎⠥⠝⠝⠽
+rainy	雨天的	⠗⠁⠔⠽
+cloudy	多雲的	⠉⠇⠳⠙⠽
+windy	起風的	⠺⠔⠙⠽
+hot	炎熱的	⠓⠕⠞
+cold	寒冷的	⠉⠕⠇⠙
+warm	溫暖的	⠺⠜⠍
+cool	涼爽的	⠉⠕⠕⠇
+weather	天氣	⠺⠂⠮⠗
+		
+#Lesson 4		
+art	美術	⠜⠞
+science	自然	⠎⠉⠊⠰⠑
+Chinese	國語	⠠⠡⠔⠑⠎⠑
+social studies	社會	⠎⠕⠉⠊⠁⠇⠀⠌⠥⠙⠊⠑⠎
+music	音樂	⠍⠥⠎⠊⠉
+PE (physical education)	體育	⠠⠠⠏⠑⠀⠐⠣⠏⠓⠽⠎⠊⠉⠁⠇⠀⠫⠥⠉⠁⠰⠝⠐⠜
+math	數學	⠍⠁⠹
+subject	科目	⠎⠥⠃⠚⠑⠉⠞
+English	英文	⠠⠢⠛⠇⠊⠩
+		
+#Culture & Festival: Chinese New Year		
+spring couplets	春聯	⠎⠏⠗⠬⠀⠉⠳⠏⠇⠑⠞⠎
+lion dance	 舞獅	⠇⠊⠕⠝⠀⠙⠨⠑
+firecrackers	 鞭炮	⠋⠊⠗⠑⠉⠗⠁⠉⠅⠻⠎
+rice cake	年糕	⠗⠊⠉⠑⠀⠉⠁⠅⠑
+hot pot	火鍋	⠓⠕⠞⠀⠏⠕⠞
+lucky money	壓歲錢	⠇⠥⠉⠅⠽⠀⠍⠐⠕⠽

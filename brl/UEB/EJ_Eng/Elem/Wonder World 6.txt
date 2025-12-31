@@ -1,0 +1,78 @@
+#Unit 1 A Surprise for Jello
+bakery	麵包店
+bank	銀行
+bookstore	書店
+hospital	醫院
+park	公園
+post office	郵局
+restaurant	餐廳
+supermarket	超市
+black	黑色的
+block	積木
+plane	飛機
+plant	植物
+glad	高興
+glass 	玻璃
+clay	黏土
+clean	清潔
+
+#Unit 2 City Adventure
+bike	腳踏車
+bus	公車
+car	汽車
+MRT	捷運
+plane	飛機
+scooter	機車
+taxi	計程車
+train	火車
+get	到達
+by	搭乘
+there	那裡
+bread	麵包
+brown	咖啡色的
+prince	王子
+prize	獎
+grapes	葡萄
+grass	草
+crab	螃蟹
+crush	壓碎
+
+#Unit 3 Clothes Shopping for a Wedding
+dress	洋裝
+skirt	裙子
+sweater	毛衣
+T-shirt	短袖上衣
+pants	長褲
+shorts	短褲
+sneakers	運動鞋
+socks	襪子
+how much 	多少
+dollar	元
+train	火車
+tree	樹
+truck	卡車
+dragonfly	蜻蜓
+draw	畫圖
+drum	鼓
+
+#Unit 4 Whose Backpack Is It?
+jacket	夾克
+smartphone	智慧型手機
+umbrella 	雨傘
+watch	手錶
+water bottle	水壺
+keys	鑰匙
+glasses	眼鏡
+whose	誰的
+spoon	湯匙
+spy	間諜
+star	星星
+storm	暴風雨
+ski	滑雪
+sky	天空
+
+#Culture & Festivals: Earth Day
+reduce	減少
+reuse	重複使用
+recycle	回收
+Earth	地球
