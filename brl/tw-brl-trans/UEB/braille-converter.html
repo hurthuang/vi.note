@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Braille Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 0 20px;
+        }
+        .container {
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin: 10px 0;
+            padding: 10px;
+        }
+        #output {
+            min-height: 100px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 24px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Braille Converter</h1>
+        <div>
+            <label for="input">Input Text:</label>
+            <textarea id="input" placeholder="Enter text to convert to braille..."></textarea>
+        </div>
+        <div>
+            <label>Braille Output:</label>
+            <div id="output"></div>
+        </div>
+    </div>
+
+    <script>
+        async function loadRules() {
+            try {
+                // Load the display/sign rules from text_nabcc.dis
+                const content = await window.fs.readFile('text_nabcc.dis', { encoding: 'utf8' });
+                return parseRules(content);
+            } catch(error) {
+                console.error('Error loading rules:', error);
+                return {};
+            }
+        }
+
+        function parseRules(content) {
+            const rules = {};
+            const lines = content.split('\n');
+            
+            for(const line of lines) {
+                const trimmed = line.trim();
+                if(!trimmed || trimmed.startsWith('#')) continue;
+                
+                const parts = line.split(/\s+/);
+                if(parts[0] === 'display') {
+                    // Convert hex notation to actual character
+                    let char = parts[1];
+                    if(char.startsWith('\\x')) {
+                        char = String.fromCharCode(parseInt(char.slice(2), 16));
+                    }
+                    
+                    // Parse dot pattern
+                    const dots = parts[2].split('').map(Number);
+                    rules[char] = dots;
+                }
+            }
+            
+            return rules;
+        }
+
+        function convertToBraille(text, rules) {
+            let result = '';
+            for(const char of text) {
+                if(rules[char]) {
+                    // Convert dot pattern to Unicode braille
+                    const dots = rules[char];
+                    let brailleCode = 0x2800; // Base Unicode braille pattern
+                    
+                    for(const dot of dots) {
+                        if(dot > 0) {
+                            brailleCode |= 1 << (dot - 1);
+                        }
+                    }
+                    
+                    result += String.fromCharCode(brailleCode);
+                } else {
+                    // Keep unchanged if no rule exists
+                    result += char;
+                }
+            }
+            return result;
+        }
+
+        // Initialize
+        let brailleRules = {};
+        
+        window.onload = async () => {
+            brailleRules = await loadRules();
+            
+            const input = document.getElementById('input');
+            const output = document.getElementById('output');
+            
+            input.addEventListener('input', (e) => {
+                const text = e.target.value;
+                output.textContent = convertToBraille(text, brailleRules);
+            });
+        };
+    </script>
+</body>
+</html>

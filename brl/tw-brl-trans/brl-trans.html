@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>點字轉換器</title>
+    <style>
+        body {
+            font-family: "Microsoft JhengHei", sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .input-area, .output-area {
+            margin: 20px 0;
+        }
+        textarea {
+            width: 100%;
+            height: 150px;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        #debug-info {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>點字轉換器</h1>
+
+    <div class="input-area">
+        <label for="input-text">輸入文字：</label>
+        <textarea id="input-text" placeholder="請輸入要轉換的文字（支援中文、英文和數字）"></textarea>
+        <button onclick="convertText()">轉換</button>
+    </div>
+
+    <div class="output-area">
+        <label for="output-text">轉換結果：</label>
+        <textarea id="output-text" readonly></textarea>
+    </div>
+
+    <div id="debug-info"></div>
+
+    <script>
+        let brailleMap = new Map();
+        let contextRules = new Map();
+        let correctionRules = [];
+
+        async function loadRules() {
+            try {
+                const [latin6Response, zhResponse, digitsResponse] = await Promise.all([
+                    fetch('latinLetterDef6Dots.txt'),
+                    fetch('zh-tw.txt'),
+                    fetch('loweredDigits6Dots.txt')
+                ]);
+
+                if (!latin6Response.ok || !zhResponse.ok || !digitsResponse.ok) {
+                    throw new Error('無法載入規則文件');
+                }
+
+                const latin6Text = await latin6Response.text();
+                const zhText = await zhResponse.text();
+                const digitsText = await digitsResponse.text();
+
+                parseLatin6Dots(latin6Text);
+                parseZhTw(zhText);
+                parseDigits(digitsText);
+
+                updateDebugInfo();
+            } catch (error) {
+                document.getElementById('debug-info').textContent = 
+                    `載入規則文件失敗: ${error.message}\n` +
+                    '請確保規則文件在正確的位置。';
+            }
+        }
+
+        function parseLatin6Dots(rulesText) {
+            const lines = rulesText.split('\n');
+            const baseMap = new Map();
+
+            lines.forEach(line => {
+                const lowercaseMatch = line.match(/^lowercase\s+(\S)\s+([⠀-⣿]+)/);
+                if (lowercaseMatch) {
+                    const [, letter, braille] = lowercaseMatch;
+                    brailleMap.set(letter, braille);
+                }
+
+                const baseMatch = line.match(/^base\s+uppercase\s+(\S)\s+(\S)/);
+                if (baseMatch) {
+                    const [, upperLetter, baseLetter] = baseMatch;
+                    baseMap.set(upperLetter, baseLetter);
+                }
+            });
+
+            baseMap.forEach((baseLetter, upperLetter) => {
+                const baseBraille = brailleMap.get(baseLetter);
+                if (baseBraille) {
+                    brailleMap.set(upperLetter, '⠠' + baseBraille);
+                }
+            });
+        }
+
+        function parseZhTw(rulesText) {
+            const lines = rulesText.split('\n');
+            let currentPhrase = null;
+            let currentBraille = null;
+        
+            lines.forEach(line => {
+                line = line.trim();
+                if (!line) return;
+        
+                // 解析註釋中的完整轉換規則
+                if (line.startsWith('#')) {
+                    const match = line.match(/^#\s*([^\s]+)\s+([⠀-⣿]+)/);
+                    if (match) {
+                        currentPhrase = match[1];
+                        currentBraille = match[2];
+                        contextRules.set(currentPhrase, {
+                            braille: currentBraille,
+                            pattern: null
+                        });
+                    }
+                }
+                // 解析標點符號規則
+                else if (line.startsWith('punctuation')) {
+                    const match = line.match(/^punctuation\s+(\S+)\s+([⠀-⣿]+)/);
+                    if (match) {
+                        const [, punct, braille] = match;
+                        brailleMap.set(punct, braille);
+                    }
+                }
+                // 解析一般字母規則
+                else if (line.startsWith('letter')) {
+                    const letterMatch = line.match(/^letter\s+(\S+)\s+([⠀-⣿]+)/);
+                    if (letterMatch) {
+                        brailleMap.set(letterMatch[1], letterMatch[2]);
+                    }
+                }
+                // 解析 noback context 規則
+                else if (line.startsWith('noback context')) {
+                    if (currentPhrase && currentBraille) {
+                        const parts = line.split('@');
+                        if (parts.length === 2) {
+                            const ruleInfo = contextRules.get(currentPhrase);
+                            ruleInfo.pattern = parts[0].replace('noback context', '').trim();
+                        }
+                    }
+                }
+            });
+        }
+
+        function parseDigits(rulesText) {
+            const lines = rulesText.split('\n');
+            lines.forEach(line => {
+                const digitMatch = line.match(/^digit\s+(\d)\s+([⠀-⣿]+)/);
+                if (digitMatch) {
+                    brailleMap.set(digitMatch[1], digitMatch[2]);
+                }
+            });
+        }
+
+        function findSpecialPhrases(text) {
+            let result = [];
+            let processedIndexes = new Set();
+
+            // 按照長度排序規則，先處理較長的片段
+            const phrases = Array.from(contextRules.keys()).sort((a, b) => b.length - a.length);
+
+            for (const phrase of phrases) {
+                let startIndex = 0;
+                while (true) {
+                    const index = text.indexOf(phrase, startIndex);
+                    if (index === -1) break;
+
+                    // 檢查這個位置是否已經被處理過
+                    let overlap = false;
+                    for (let i = index; i < index + phrase.length; i++) {
+                        if (processedIndexes.has(i)) {
+                            overlap = true;
+                            break;
+                        }
+                    }
+
+                    if (!overlap) {
+                        result.push({
+                            start: index,
+                            end: index + phrase.length,
+                            phrase: phrase,
+                            braille: contextRules.get(phrase).braille
+                        });
+                        // 標記已處理的索引
+                        for (let i = index; i < index + phrase.length; i++) {
+                            processedIndexes.add(i);
+                        }
+                    }
+                    startIndex = index + 1;
+                }
+            }
+
+            // 按開始位置排序
+            result.sort((a, b) => a.start - b.start);
+            return result;
+        }
+
+        function convertText() {
+            const inputText = document.getElementById('input-text').value;
+            const specialPhrases = findSpecialPhrases(inputText);
+            let outputText = '';
+            let lastIndex = 0;
+
+            // 處理特殊片段和一般文字
+            for (const {start, end, braille} of specialPhrases) {
+                // 處理特殊片段之前的一般文字
+                for (let i = lastIndex; i < start; i++) {
+                    const char = inputText[i];
+                    outputText += brailleMap.has(char) ? brailleMap.get(char) : char;
+                }
+                // 添加特殊片段的點字
+                outputText += braille;
+                lastIndex = end;
+            }
+
+            // 處理最後一個特殊片段之後的一般文字
+            for (let i = lastIndex; i < inputText.length; i++) {
+                const char = inputText[i];
+                outputText += brailleMap.has(char) ? brailleMap.get(char) : char;
+            }
+
+            document.getElementById('output-text').value = outputText;
+        }
+
+        function updateDebugInfo() {
+            const debugInfo = document.getElementById('debug-info');
+            let info = '規則載入狀態：';
+            info += `基本轉換規則：${brailleMap.size} 個 `;
+            info += `特殊片段規則：${contextRules.size} 個 `;
+            
+            debugInfo.textContent = info;
+        }
+
+        document.addEventListener('DOMContentLoaded', loadRules);
+    </script>
+</body>
+</html>

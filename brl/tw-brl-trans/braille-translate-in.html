@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>點字即時轉換器</title>
+    <style>
+        body {
+            font-family: "Microsoft JhengHei", sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+        .input-area, .output-area {
+            flex: 1;
+        }
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            line-height: 1.5;
+            resize: vertical;
+        }
+        .status {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+        #debug-info {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            font-size: 14px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .rules-status {
+            background: #e8f5e9;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>點字即時轉換器</h1>
+        <div class="rules-status" id="rules-status">載入規則中...</div>
+    </div>
+
+    <div class="container">
+        <div class="input-area">
+            <label for="input-text">輸入文字：</label>
+            <textarea 
+                id="input-text" 
+                placeholder="請輸入要轉換的文字（支援中文、英文、數字和標點符號）"
+                autofocus
+            ></textarea>
+            <div class="status" id="input-status">已輸入: 0 字元</div>
+        </div>
+
+        <div class="output-area">
+            <label for="output-text">點字結果：</label>
+            <textarea id="output-text" readonly></textarea>
+            <div class="status" id="output-status">已轉換: 0 字元</div>
+        </div>
+    </div>
+
+    <div id="debug-info"></div>
+
+    <script>
+        let brailleMap = new Map();
+        let contextRules = new Map();
+        let correctionRules = [];
+        let isRulesLoaded = false;
+
+        // 使用防抖動來避免過於頻繁的轉換
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+
+        async function loadAllRules() {
+            try {
+                const [zhResponse, latinResponse, digitsResponse, uebResponse] = await Promise.all([
+                    fetch('zh-tw.txt'),
+                    fetch('latinLetterDef6Dots.txt'),
+                    fetch('loweredDigits6Dots.txt'),
+                    fetch('en-ueb-chardefs.txt')
+                ]);
+
+                if (!zhResponse.ok || !latinResponse.ok || !digitsResponse.ok || !uebResponse.ok) {
+                    throw new Error('無法載入規則文件');
+                }
+
+                const zhText = await zhResponse.text();
+                const latinText = await latinResponse.text();
+                const digitsText = await digitsResponse.text();
+                const uebText = await uebResponse.text();
+
+                parseZhTw(zhText);
+                parseLatin6Dots(latinText);
+                parseDigits(digitsText);
+                parseUEB(uebText);
+
+                isRulesLoaded = true;
+                updateRulesStatus();
+                updateDebugInfo();
+            } catch (error) {
+                console.error('載入規則文件失敗:', error);
+                document.getElementById('rules-status').textContent = 
+                    `載入失敗: ${error.message}`;
+            }
+        }
+
+        function parseUEB(rulesText) {
+            const lines = rulesText.split('\n');
+            lines.forEach(line => {
+                line = line.trim();
+                if (!line || line.startsWith('#')) return;
+
+                const spaceMatch = line.match(/^space\s+(\S+)\s+([⠀-⣿]+)/);
+                if (spaceMatch) {
+                    brailleMap.set(spaceMatch[1], spaceMatch[2]);
+                    return;
+                }
+
+                const punctMatch = line.match(/^punctuation\s+(\S+)\s+([⠀-⣿]+)/);
+                if (punctMatch) {
+                    brailleMap.set(punctMatch[1], punctMatch[2]);
+                    return;
+                }
+
+                const signMatch = line.match(/^sign\s+(\S+)\s+([⠀-⣿]+)/);
+                if (signMatch) {
+                    brailleMap.set(signMatch[1], signMatch[2]);
+                    return;
+                }
+            });
+        }
+
+        function parseLatin6Dots(rulesText) {
+            const lines = rulesText.split('\n');
+            const baseMap = new Map();
+
+            lines.forEach(line => {
+                const lowercaseMatch = line.match(/^lowercase\s+(\S)\s+([⠀-⣿]+)/);
+                if (lowercaseMatch) {
+                    const [, letter, braille] = lowercaseMatch;
+                    brailleMap.set(letter, braille);
+                }
+
+                const baseMatch = line.match(/^base\s+uppercase\s+(\S)\s+(\S)/);
+                if (baseMatch) {
+                    const [, upperLetter, baseLetter] = baseMatch;
+                    baseMap.set(upperLetter, baseLetter);
+                }
+            });
+
+            baseMap.forEach((baseLetter, upperLetter) => {
+                const baseBraille = brailleMap.get(baseLetter);
+                if (baseBraille) {
+                    brailleMap.set(upperLetter, '⠠' + baseBraille);
+                }
+            });
+        }
+
+        function parseZhTw(rulesText) {
+            const lines = rulesText.split('\n');
+            let currentPhrase = null;
+            let currentBraille = null;
+
+            lines.forEach(line => {
+                line = line.trim();
+                if (!line) return;
+
+                if (line.startsWith('#')) {
+                    const match = line.match(/^#\s*([^\s]+)\s+([⠀-⣿]+)/);
+                    if (match) {
+                        currentPhrase = match[1];
+                        currentBraille = match[2];
+                        contextRules.set(currentPhrase, {
+                            braille: currentBraille,
+                            pattern: null
+                        });
+                    }
+                }
+                else if (line.startsWith('letter') || line.startsWith('punctuation')) {
+                    const match = line.match(/^(letter|punctuation)\s+(\S+)\s+([⠀-⣿]+)/);
+                    if (match) {
+                        brailleMap.set(match[2], match[3]);
+                    }
+                }
+            });
+        }
+
+        function parseDigits(rulesText) {
+            const lines = rulesText.split('\n');
+            lines.forEach(line => {
+                const digitMatch = line.match(/^digit\s+(\d)\s+([⠀-⣿]+)/);
+                if (digitMatch) {
+                    brailleMap.set(digitMatch[1], digitMatch[2]);
+                }
+            });
+        }
+
+        function findSpecialPhrases(text) {
+            let result = [];
+            let processedIndexes = new Set();
+
+            const phrases = Array.from(contextRules.keys()).sort((a, b) => b.length - a.length);
+
+            for (const phrase of phrases) {
+                let startIndex = 0;
+                while (true) {
+                    const index = text.indexOf(phrase, startIndex);
+                    if (index === -1) break;
+
+                    let overlap = false;
+                    for (let i = index; i < index + phrase.length; i++) {
+                        if (processedIndexes.has(i)) {
+                            overlap = true;
+                            break;
+                        }
+                    }
+
+                    if (!overlap) {
+                        result.push({
+                            start: index,
+                            end: index + phrase.length,
+                            phrase: phrase,
+                            braille: contextRules.get(phrase).braille
+                        });
+                        for (let i = index; i < index + phrase.length; i++) {
+                            processedIndexes.add(i);
+                        }
+                    }
+                    startIndex = index + 1;
+                }
+            }
+
+            result.sort((a, b) => a.start - b.start);
+            return result;
+        }
+
+        const convertText = debounce(() => {
+            if (!isRulesLoaded) return;
+
+            const inputText = document.getElementById('input-text').value;
+            const specialPhrases = findSpecialPhrases(inputText);
+            let outputText = '';
+            let lastIndex = 0;
+
+            for (const {start, end, braille} of specialPhrases) {
+                for (let i = lastIndex; i < start; i++) {
+                    const char = inputText[i];
+                    outputText += brailleMap.has(char) ? brailleMap.get(char) : char;
+                }
+                outputText += braille;
+                lastIndex = end;
+            }
+
+            for (let i = lastIndex; i < inputText.length; i++) {
+                const char = inputText[i];
+                outputText += brailleMap.has(char) ? brailleMap.get(char) : char;
+            }
+
+            document.getElementById('output-text').value = outputText;
+            updateStatus(inputText.length, outputText.length);
+        }, 100);
+
+        function updateStatus(inputLength, outputLength) {
+            document.getElementById('input-status').textContent = 
+                `已輸入: ${inputLength} 字元`;
+            document.getElementById('output-status').textContent = 
+                `已轉換: ${outputLength} 字元`;
+        }
+
+        function updateRulesStatus() {
+            document.getElementById('rules-status').textContent = 
+                isRulesLoaded ? '規則載入完成' : '載入規則中...';
+        }
+
+        function updateDebugInfo() {
+            const debugInfo = document.getElementById('debug-info');
+            let info = '規則載入狀態：\n';
+            info += `基本轉換規則：${brailleMap.size} 個 `;
+            info += `特殊片段規則：${contextRules.size} 個`;
+            
+            debugInfo.textContent = info;
+        }
+
+        // 監聽輸入事件
+        document.getElementById('input-text').addEventListener('input', convertText);
+
+        // 載入規則
+        loadAllRules();
+    </script>
+</body>
+</html>
