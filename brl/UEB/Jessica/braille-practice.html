@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UEB 點字學習測驗</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .settings {
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .checkbox-wrapper {
+            margin: 10px 0;
+        }
+        .slider-container {
+            margin: 10px 0;
+        }
+        .slider-container label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .slider-container input[type="range"] {
+            width: 200px;
+            margin-right: 10px;
+        }
+        .voice-select {
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        .stats {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #e8e8e8;
+            border-radius: 5px;
+            display: none;
+        }
+        .stats.active {
+            display: block;
+        }
+        .question-container {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        .answer-input {
+            width: 100%;
+            padding: 0.5rem;
+            margin: 1rem 0;
+            font-size: 1.1rem;
+            border: 2px solid #ccc;
+            border-radius: 4px;
+        }
+        .feedback {
+            text-align: center;
+            font-size: 20px;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .feedback.correct {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .feedback.incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        button {
+            padding: 5px 10px;
+            margin: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            cursor: pointer;
+        }
+        .shortcut-hint {
+            font-size: 12px;
+            color: #666;
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>UEB 點字學習測驗</h1>
+        
+        <div class="settings">
+            <div class="checkbox-wrapper">
+                <label>
+                    <input type="checkbox" id="voice-mode" checked> 使用語音提示
+                </label>
+                <label>
+                    <input type="checkbox" id="speakChinese" checked> 唸中文
+                </label>
+                <label>
+                    <input type="checkbox" id="spell-mode" checked> 拼字模式
+                </label>
+                <label>
+                    <input type="checkbox" id="exam-mode"> 測驗模式
+                </label>
+
+            </div>
+
+            <div class="checkbox-wrapper">
+                <label for="voice-select">選擇語音：</label>
+                <select id="voice-select" class="voice-select">
+                    <option value="">載入中...</option>
+                </select>
+            </div>
+
+            <div class="slider-container">
+                <label>語音速度：
+                    <input type="range" id="speech-rate" min="0.5" max="2" step="0.1" value="1">
+                    <span id="speech-rate-value">1.0</span>
+                </label>
+
+                <label>題目字體大小：
+                    <input type="range" id="fontSize" min="16" max="48" step="2" value="24">
+                    <span id="fontSizeValue">24px</span>
+                </label>
+            </div>
+            <div class="checkbox-wrapper">
+                <label for="level-select">選擇題庫：</label>
+                <select id="level-select" class="voice-select">
+                    <option value="2000">國中小2000字</option>
+                    <option value="level1">Level 1</option>
+                    <option value="level1s">Level 1(g2 only)</option>
+                    <option value="level2">Level 2</option>
+                    <option value="level2s">Level 2(g2 only)</option>
+                    <option value="level3">Level 3</option>
+                    <option value="level3s">Level 3(g2 only)</option>
+                    <option value="level4">Level 4</option>
+                    <option value="level4s">Level 4(g2 only)</option>
+                    <option value="level5">Level 5</option>
+                    <option value="level5s">Level 5(g2 only)</option>
+                    <option value="level6">Level 6</option>
+                    <option value="level6s">Level 6(g2 only)</option>
+                    <option value="toefl">TOEFL</option>
+                    <option value="toefls">TOEFL(g2 only)</option>
+                    <option value="contractions">UEB 縮寫</option>
+                    <option value="custom">自訂題庫[格式：單字(tab)中文(tab)點字]</option>
+                </select>
+                <div id="custom-file" style="display: none; margin-top: 10px;">
+                    <input type="file" id="vocabulary-file" accept=".txt">
+                </div>
+            </div>
+
+            <div id="stats" class="stats">
+                <div>已答題數：<span id="question-count">0</span></div>
+                <div>答對題數：<span id="correct-count">0</span></div>
+                <div>測驗時間：<span id="time-elapsed">00:00</span></div>
+            </div>
+        </div>
+
+        <div id="quiz-container"></div>
+    </div>
+
+    <script>
+		// 初始化音效系統
+		const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+		// 播放單一音效
+		function playSound(frequency, duration, type = 'sine', delay = 0) {
+			const oscillator = audioCtx.createOscillator();
+			const gainNode = audioCtx.createGain();
+			
+			// 調整音量至 20%
+			gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+			
+			oscillator.type = type;
+			oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime + delay);
+			oscillator.connect(gainNode);
+			gainNode.connect(audioCtx.destination);
+			oscillator.start(audioCtx.currentTime + delay);
+			oscillator.stop(audioCtx.currentTime + delay + duration);
+		}
+
+		// 答對音效
+		function playCorrectSound() {
+			playSound(440, 0.1, 'sine', 0);
+			playSound(550, 0.1, 'sine', 0.1);
+			playSound(660, 0.1, 'sine', 0.2);
+		}
+
+		// 答錯音效
+		function playWrongSound() {
+			playSound(200, 0.3, 'triangle', 0);
+			playSound(200, 0.3, 'triangle', 0.4);
+		}
+
+    function updateFontSize() {
+        const size = document.getElementById('fontSize').value;
+        document.querySelector('.question-text').style.fontSize = size + 'px';
+        document.getElementById('fontSizeValue').textContent = size + 'px';
+    }
+
+		// 點字輸入相關變數
+		let dots = [0, 0, 0, 0, 0, 0];
+		let brailleCode = 0;
+
+		// 測驗模式相關變數
+		let questions = [];
+		let currentQuestion = null;
+		let examMode = false;
+		let startTime = null;
+		let timerInterval = null;
+		let questionCount = 0;
+		let correctCount = 0;
+
+		// 語音合成相關設定
+		const synth = window.speechSynthesis;
+		let selectedVoice = null;
+		let zhVoice = null;
+
+		// 載入語音選項
+		function loadVoices() {
+			const voiceSelect = document.getElementById('voice-select');
+			const voices = synth.getVoices();
+			
+			voiceSelect.innerHTML = '';
+			
+			// 尋找中文語音
+			zhVoice = voices.find(voice => voice.lang.startsWith('zh'));
+			
+			// 加入英文語音選項
+			const englishVoices = voices.filter(voice => voice.lang.startsWith('en'));
+			englishVoices.forEach(voice => {
+				const option = document.createElement('option');
+				option.value = voice.name;
+				option.textContent = `${voice.name} (${voice.lang})`;
+				voiceSelect.appendChild(option);
+			});
+
+			// 設定預設語音
+			const savedVoice = localStorage.getItem('selectedVoice');
+			if (savedVoice) {
+				const savedVoiceObj = voices.find(voice => voice.name === savedVoice);
+				if (savedVoiceObj && savedVoiceObj.lang.startsWith('en')) {
+					voiceSelect.value = savedVoice;
+					selectedVoice = savedVoiceObj;
+				} else if (englishVoices.length > 0) {
+					voiceSelect.value = englishVoices[0].name;
+					selectedVoice = englishVoices[0];
+				}
+			} else if (englishVoices.length > 0) {
+				voiceSelect.value = englishVoices[0].name;
+				selectedVoice = englishVoices[0];
+			}
+		}
+
+		// 監聽語音列表變更
+		if (speechSynthesis.onvoiceschanged !== undefined) {
+			speechSynthesis.onvoiceschanged = loadVoices;
+		}
+
+		// 語音播放功能
+		async function speakWord(word, chinese) {
+			if (!document.getElementById('voice-mode').checked) return;
+			
+			synth.cancel();
+			
+			try {
+				// 如果勾選唸中文且有中文語音，先唸中文
+				if (document.getElementById('speakChinese').checked && zhVoice && chinese) {
+					await new Promise((resolve) => {
+						const chineseUtterance = new SpeechSynthesisUtterance(chinese);
+						chineseUtterance.voice = zhVoice;
+						chineseUtterance.onend = resolve;
+						synth.speak(chineseUtterance);
+					});
+				}
+
+				// 播放英文單字
+				await new Promise((resolve) => {
+					const wordUtterance = new SpeechSynthesisUtterance(word);
+					if (selectedVoice) {
+						wordUtterance.voice = selectedVoice;
+					}
+					wordUtterance.rate = parseFloat(document.getElementById('speech-rate').value);
+					wordUtterance.onend = resolve;
+					synth.speak(wordUtterance);
+				});
+
+				// 如果拼字模式開啟，拼出單字
+				if (document.getElementById('spell-mode').checked) {
+					const letters = word.split('');
+					for (const letter of letters) {
+						await new Promise((resolve) => {
+							const letterUtterance = new SpeechSynthesisUtterance(letter);
+							if (selectedVoice) {
+								letterUtterance.voice = selectedVoice;
+							}
+							letterUtterance.rate = parseFloat(document.getElementById('speech-rate').value);
+							letterUtterance.onend = resolve;
+							synth.speak(letterUtterance);
+						});
+						
+						await new Promise(resolve => setTimeout(resolve, 300));
+					}
+				}
+			} catch (error) {
+				console.error('Speech synthesis error:', error);
+			}
+		}
+
+		// Fisher-Yates 洗牌算法
+		function shuffleArray(array) {
+			for (let i = array.length - 1; i > 0; i--) {
+				const j = Math.floor(Math.random() * (i + 1));
+				[array[i], array[j]] = [array[j], array[i]];
+			}
+			return array;
+		}
+
+		// 載入題庫
+    async function loadVocabulary(level) {
+        try {
+            document.getElementById('quiz-container').innerHTML = '<div class="loading">載入題庫中...</div>';
+            
+            let text;
+            if (level === 'custom') {
+                const fileInput = document.getElementById('vocabulary-file');
+                if (!fileInput.files.length) {
+                    throw new Error('請選擇檔案');
+                }
+                text = await fileInput.files[0].text();
+            } else {
+                const response = await fetch(`${level}.txt`);
+                if (!response.ok) {
+                    throw new Error('找不到題庫檔案');
+                }
+                text = await response.text();
+            }
+    
+            const lines = text.split('\n').filter(line => line.trim());
+            if (lines.length === 0) {
+                throw new Error('題庫是空的');
+            }
+    
+            questions = lines.map(line => {
+                // 移除多餘空白，並用 tab 分割
+                const parts = line.split('\t').map(item => item.trim()).filter(item => item);
+                
+                if (level === 'contractions') {
+                    // contractions.txt 格式：確保至少有兩個非空值
+                    if (parts.length >= 2) {
+                        const word = parts[0];
+                        const answer = parts[parts.length - 1]; // 取最後一個非空值作為答案
+                        return { word, chinese: '', answer };
+                    }
+                } else {
+                    // 一般格式：單字 tab 中文 tab 點字
+                    if (parts.length >= 3) {
+                        const [word, chinese, answer] = parts;
+                        return { word, chinese, answer };
+                    }
+                }
+                throw new Error('題庫格式錯誤');
+            });
+    
+            questions = shuffleArray(questions);
+            showRandomQuestion();
+        } catch (error) {
+            console.error('Error loading vocabulary:', error);
+            document.getElementById('quiz-container').innerHTML = 
+                '<div class="feedback incorrect">載入題目失敗，請確認題目檔案是否存在。</div>';
+        }
+    }
+
+		// 測驗模式相關函數
+		function updateStats() {
+			if (!examMode) return;
+			
+			document.getElementById('question-count').textContent = questionCount;
+			document.getElementById('correct-count').textContent = correctCount;
+			
+			if (startTime) {
+				const elapsed = Math.floor((Date.now() - startTime) / 1000);
+				const minutes = Math.floor(elapsed / 60).toString().padStart(2, '0');
+				const seconds = (elapsed % 60).toString().padStart(2, '0');
+				document.getElementById('time-elapsed').textContent = `${minutes}:${seconds}`;
+			}
+		}
+
+		function initExamMode() {
+			examMode = document.getElementById('exam-mode').checked;
+			const statsElement = document.getElementById('stats');
+			
+			if (examMode) {
+				statsElement.style.display = 'block';
+				startTime = Date.now();
+				questionCount = 0;
+				correctCount = 0;
+				
+				if (timerInterval) clearInterval(timerInterval);
+				timerInterval = setInterval(updateStats, 1000);
+			} else {
+				statsElement.style.display = 'none';
+				if (timerInterval) {
+					clearInterval(timerInterval);
+					timerInterval = null;
+				}
+				startTime = null;
+			}
+			
+			updateStats();
+		}
+
+		// 點字輸入相關函數
+		function keypressFunction(event) {
+			if ((event.keyCode == 37) || (event.keyCode == 39) || (event.keyCode == 8) || 
+				(event.keyCode == 9) || (event.keyCode == 46) || (event.keyCode == 13) ||
+				(event.keyCode == 59)) {
+				if (event.keyCode == 13 || event.keyCode == 59) {
+					event.preventDefault();
+					handleSubmit();
+					return false;
+				}
+				return true;
+			}
+			event.preventDefault();
+			return false;
+		}
+
+		function keydownFunction(event) {
+			if (event.keyCode == 65) {
+				var element = document.getElementById('answer-input');
+				var pos = element.selectionStart;
+				if (pos > 0) {
+					var text = element.value;
+					element.value = text.slice(0, pos-1) + text.slice(pos);
+					setCaretPosition(element, pos-1);
+				}
+				return false;
+			}
+			
+			if (event.keyCode == 186) {
+				var element = document.getElementById('answer-input');
+				var pos = element.selectionStart;
+				var text = element.value;
+				element.value = text.slice(0, pos) + '\n' + text.slice(pos);
+				setCaretPosition(element, pos+1);
+				handleSubmit();
+				return false;
+			}
+
+			if ((event.keyCode != 37) && (event.keyCode != 39) && (event.keyCode != 8) && 
+				(event.keyCode != 9) && (event.keyCode != 46) && (event.keyCode != 13)) {
+				if (event.keyCode == 83) {
+					dots[0] = 1;
+					brailleCode = brailleCode | 4;
+				} else if (event.keyCode == 68) {
+					dots[1] = 1;
+					brailleCode = brailleCode | 2;
+				} else if (event.keyCode == 70) {
+					dots[2] = 1;
+					brailleCode = brailleCode | 1;
+				} else if (event.keyCode == 74) {
+					dots[3] = 1;
+					brailleCode = brailleCode | 8;
+				} else if (event.keyCode == 75) {
+					dots[4] = 1;
+					brailleCode = brailleCode | 16;
+				} else if (event.keyCode == 76) {
+					dots[5] = 1;
+					brailleCode = brailleCode | 32;
+				} else if (event.keyCode == 32) {
+					brailleCode = 65;
+					return true;
+				}
+				return false;
+			}
+		}
+
+		function keyupFunction(event) {
+			for (let i = 0; i < 6; i++) {
+				dots[i] = 0;
+			}
+			if (brailleCode == 0) {
+				return false;
+			} else {
+				if (brailleCode == 65) {
+					brailleCode = 0;
+				}
+				var element = document.getElementById('answer-input');
+				var sPos = element.selectionStart;
+				var ePos = element.selectionEnd;
+				var brl = String.fromCharCode(0x2800 + brailleCode);
+				var a = element.value;
+				var output = a.slice(0, sPos) + brl + a.slice(ePos);
+				element.value = output;
+				setCaretPosition(element, sPos + 1);
+			}
+			brailleCode = 0;
+			return false;
+		}
+
+		function setCaretPosition(ctrl, pos) {
+			if (ctrl.setSelectionRange) {
+				ctrl.focus();
+				ctrl.setSelectionRange(pos, pos);
+			} else if (ctrl.createTextRange) {
+				var range = ctrl.createTextRange();
+				range.collapse(true);
+				range.moveEnd('character', pos);
+				range.moveStart('character', pos);
+				range.select();
+			}
+		}
+
+		// 答題處理
+    function handleSubmit() {
+        synth.cancel();
+    
+        const answerInput = document.getElementById('answer-input');
+        const userAnswer = answerInput.value.trim();
+        const correctAnswer = currentQuestion.answer.trim(); // 改用第三欄的答案
+        const feedbackElement = document.querySelector('.feedback');
+        
+        if (feedbackElement) {
+            feedbackElement.remove();
+        }
+    
+        const feedback = document.createElement('div');
+        feedback.className = 'feedback';
+    
+        if (userAnswer === correctAnswer) { // 完全相符
+            feedback.classList.add('correct');
+            feedback.textContent = '答對了！';
+            playCorrectSound();
+    
+            if (examMode) {
+                correctCount++;
+                updateStats();
+            }
+            
+            setTimeout(() => {
+                showRandomQuestion();
+            }, 1500);
+        } else {
+            feedback.classList.add('incorrect');
+            feedback.textContent = '答錯了，請再試一次。';
+            playWrongSound();
+        }
+        
+        document.querySelector('.question-container').appendChild(feedback);
+        answerInput.value = '';
+        answerInput.focus();
+    }
+
+		// 顯示題目
+		function showRandomQuestion() {
+			if (!questions.length) return;
+
+			currentQuestion = questions[Math.floor(Math.random() * questions.length)];
+			const container = document.getElementById('quiz-container');
+			
+			// 建立題目容器
+			const questionContainer = document.createElement('div');
+			questionContainer.className = 'question-container';
+			
+			// 題目文字
+			const questionText = document.createElement('div');
+			questionText.className = 'question-text';
+			questionText.textContent = `${currentQuestion.word} ${currentQuestion.chinese}`;
+			questionText.style.fontSize = document.getElementById('fontSize').value + 'px';
+			
+			// 重播按鈕
+			const playButton = document.createElement('button');
+			playButton.textContent = '重複發音';
+			playButton.className = 'btn play-btn';
+			playButton.onclick = () => speakWord(currentQuestion.word, currentQuestion.chinese);
+			
+			// 輸入區塊
+			const inputSection = document.createElement('div');
+			inputSection.className = 'answer-section';
+			
+			const inputHelp = document.createElement('div');
+			inputHelp.className = 'input-help';
+			inputHelp.textContent = '請用六點輸入，按 Enter 或分號送出答案，Ctrl+Q 重聽題目，Ctrl 停止發音';
+			
+			const answerInput = document.createElement('input');
+			answerInput.type = 'text';
+			answerInput.id = 'answer-input';
+			answerInput.className = 'answer-input';
+			answerInput.onkeydown = keydownFunction;
+			answerInput.onkeyup = keyupFunction;
+			answerInput.onkeypress = keypressFunction;
+			
+			// 查看答案按鈕
+      const showAnswerButton = document.createElement('button');
+      showAnswerButton.textContent = '查看答案';
+      showAnswerButton.className = 'btn';
+      showAnswerButton.onclick = () => {
+          const feedback = document.createElement('div');
+          feedback.className = 'feedback';
+          feedback.textContent = `答案：${currentQuestion.answer}`; // 改用第三欄的答案
+          questionContainer.appendChild(feedback);
+          showAnswerButton.disabled = true;
+      };
+			
+			// 組裝所有元素
+			questionContainer.appendChild(questionText);
+			questionContainer.appendChild(playButton);
+			questionContainer.appendChild(inputSection);
+			inputSection.appendChild(inputHelp);
+			inputSection.appendChild(answerInput);
+			questionContainer.appendChild(showAnswerButton);
+			
+			// 清空並加入新的題目容器
+			container.innerHTML = '';
+			container.appendChild(questionContainer);
+			
+			// 播放語音並聚焦輸入框
+			speakWord(currentQuestion.word, currentQuestion.chinese);
+			answerInput.focus();
+			
+			if (examMode) {
+				questionCount++;
+				updateStats();
+			}
+		}
+
+		// 全域快捷鍵處理
+		document.addEventListener('keydown', (e) => {
+			if (e.ctrlKey) {
+				if (e.code === 'KeyQ') {
+					e.preventDefault();
+					if (currentQuestion) {
+						speakWord(currentQuestion.word, currentQuestion.chinese);
+					}
+				} else {
+					// 按下 Ctrl 時終止所有語音
+					synth.cancel();
+				}
+			}
+		});
+
+		// 監聽語音選擇變更
+		document.getElementById('voice-select').addEventListener('change', (e) => {
+			const voices = synth.getVoices();
+			selectedVoice = voices.find(voice => voice.name === e.target.value);
+			if (selectedVoice) {
+				localStorage.setItem('selectedVoice', selectedVoice.name);
+			}
+		});
+
+		// 語音速度滑桿更新
+		document.getElementById('speech-rate').addEventListener('input', (e) => {
+			document.getElementById('speech-rate-value').textContent = e.target.value;
+		});
+
+		// 題庫選擇變更處理
+		document.getElementById('level-select').addEventListener('change', (e) => {
+			const customFileDiv = document.getElementById('custom-file');
+			if (e.target.value === 'custom') {
+				customFileDiv.style.display = 'block';
+			} else {
+				customFileDiv.style.display = 'none';
+				loadVocabulary(e.target.value);
+			}
+		});
+
+		// 自訂檔案上傳處理
+		document.getElementById('vocabulary-file').addEventListener('change', () => {
+			loadVocabulary('custom');
+		});
+
+		// 初始化
+		window.onload = () => {
+			loadVoices();
+			loadVocabulary('2000');  // 載入預設題庫
+			
+			// 監聽測驗模式變更
+			document.getElementById('exam-mode').addEventListener('change', initExamMode);
+			
+			document.getElementById('fontSize').addEventListener('input', updateFontSize);
+			
+			// 初始化測驗模式狀態
+			initExamMode();
+		};
+    </script>
+</body>
+</html>
