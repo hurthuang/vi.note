@@ -1,0 +1,50 @@
+apartment	公寓	⠁⠐⠏⠰⠞
+glad	高興的	⠛⠇⠁⠙
+town	城鎮	⠞⠪⠝
+polite	有禮貌的	⠏⠕⠇⠊⠞⠑
+seat	座位	⠎⠂⠞
+beside	在	⠆⠎
+except	除了	⠑⠭⠉⠑⠏⠞
+blank	空白	⠃⠇⠁⠝⠅
+present	禮物	⠏⠗⠑⠎⠢⠞
+invite	邀請	⠔⠧⠊⠞⠑
+perhaps	或許	⠏⠻⠓
+kiss	吻	⠅⠊⠎⠎
+side	側面；邊	⠎⠊⠙⠑
+sidewalk	人行道	⠎⠊⠙⠑⠺⠁⠇⠅
+used to	過去時常	⠥⠎⠫⠀⠞⠕
+appear	似乎	⠁⠏⠏⠑⠜
+serious	認真的	⠎⠻⠊⠳⠎
+blind	盲的	⠃⠇
+April Fools' Day	愚人節	⠠⠁⠏⠗⠊⠇⠀⠠⠋⠕⠕⠇⠎⠄⠀⠠⠐⠙
+tape	用膠帶黏貼；膠帶	⠞⠁⠏⠑
+paper	紙	⠏⠁⠏⠻
+joke	玩笑；笑話	⠚⠕⠅⠑
+visitor	遊客；參觀者	⠧⠊⠎⠊⠞⠕⠗
+somewhere	在某處	⠐⠎⠐⠱
+mud	泥土	⠍⠥⠙
+ahead	在前方	⠁⠓⠂⠙
+heat	高溫；加熱	⠓⠂⠞
+rise	升起；起身	⠗⠊⠎⠑
+rich	富有的	⠗⠊⠡
+lazy	懶惰的；慵懶的	⠇⠁⠵⠽
+have bigger fish to fry	有更重要的事要做	⠓⠀⠃⠊⠶⠻⠀⠋⠊⠩⠀⠞⠕⠀⠋⠗⠽
+smoke	煙霧；抽菸	⠎⠍⠕⠅⠑
+cover	覆蓋；遮蓋	⠉⠕⠧⠻
+lie	躺；臥	⠇⠊⠑
+draw	提取	⠙⠗⠁⠺
+spell	咒語	⠎⠏⠑⠇⠇
+mark	標記	⠍⠜⠅
+foreign	外國的	⠿⠑⠊⠛⠝
+air	空中；空氣	⠁⠊⠗
+cheer	歡呼	⠡⠑⠻
+noisy	嘈雜的	⠝⠕⠊⠎⠽
+bakery	麵包店	⠃⠁⠅⠻⠽
+god	神	⠛⠕⠙
+clap	拍	⠉⠇⠁⠏
+pack	塞進；打包	⠏⠁⠉⠅
+square	廣場	⠎⠟⠥⠜⠑
+rest	其餘	⠗⠑⠌
+all year round	全年	⠁⠇⠇⠀⠽⠑⠜⠀⠗⠨⠙
+ring	敲	⠗⠬
+bow	鞠躬	⠃⠪

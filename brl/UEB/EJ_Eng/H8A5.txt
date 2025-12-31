@@ -1,0 +1,42 @@
+metro	捷運	⠍⠑⠞⠗⠕
+lost	迷路的	⠇⠕⠌
+map	地圖	⠍⠁⠏
+ask	請求；詢問	⠁⠎⠅
+straight	直地；直的	⠌⠗⠁⠊⠣⠞
+turn left	向左轉	⠞⠥⠗⠝⠀⠇⠑⠋⠞
+along	沿著	⠁⠇⠰⠛
+block	街區	⠃⠇⠕⠉⠅
+supermarket	超市	⠎⠥⠏⠻⠍⠜⠅⠑⠞
+corner	轉角；角落	⠉⠕⠗⠝⠻
+across from	在…的對面	⠁⠉⠗⠀⠋
+ground	地面	⠛⠗⠨⠙
+on foot	步行	⠕⠝⠀⠋⠕⠕⠞
+take	搭乘	⠞⠁⠅⠑
+by	搭乘；藉由…方式	⠃⠽
+get off	下	⠛⠑⠞⠀⠷⠋
+get	到達	⠛⠑⠞
+right	右邊	⠐⠗
+ship	輪船	⠩⠊⠏
+taxi	計程車	⠞⠁⠭⠊
+motorcycle	機車；摩托車	⠍⠕⠞⠕⠗⠉⠽⠉⠇⠑
+scooter	機車	⠎⠉⠕⠕⠞⠻
+city	城市	⠉⠰⠽
+bank	銀行；河岸	⠃⠁⠝⠅
+toy	玩具	⠞⠕⠽
+post office	郵局	⠏⠕⠌⠀⠷⠋⠊⠉⠑
+hospital	醫院	⠓⠕⠎⠏⠊⠞⠁⠇
+pool	水池	⠏⠕⠕⠇
+go jogging	慢跑	⠛⠀⠚⠕⠶⠬
+go sailing	玩帆船；航行	⠛⠀⠎⠁⠊⠇⠬
+go surfing	衝浪	⠛⠀⠎⠥⠗⠋⠬
+fly	飛行；駕駛	⠋⠇⠽
+bus stop	公車站	⠃⠥⠎⠀⠌⠕⠏
+go biking	騎單車	⠛⠀⠃⠊⠅⠬
+go shopping	購物	⠛⠀⠩⠕⠏⠏⠬
+hit	碰撞；打擊	⠓⠊⠞
+sound	聲音	⠎⠨⠙
+bell	鐘；鈴	⠃⠑⠇⠇
+experience	經歷；經驗	⠑⠭⠏⠻⠊⠰⠑
+wonderful	美好的	⠺⠕⠝⠙⠻⠰⠇
+play	戲劇	⠏⠇⠁⠽
+around	大約	⠜⠨⠙

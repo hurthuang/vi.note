@@ -1,0 +1,36 @@
+house	房子	⠓⠳⠎⠑
+parents	父母親	⠏⠜⠢⠞⠎
+living room	客廳	⠇⠊⠧⠬⠀⠗⠕⠕⠍
+wall	牆壁	⠺⠁⠇⠇
+purple	紫色	⠏⠥⠗⠏⠇⠑
+favorite	最喜愛	⠋⠁⠧⠕⠗⠊⠞⠑
+color	顏色	⠉⠕⠇⠕⠗
+kitchen	廚房	⠅⠊⠞⠡⠢
+dining room	飯廳	⠙⠔⠬⠀⠗⠕⠕⠍
+but	但是	⠃
+gray	灰色	⠛⠗⠁⠽
+brown	棕色	⠃⠗⠪⠝
+cookie	餅乾	⠉⠕⠕⠅⠊⠑
+mice	老鼠	⠍⠊⠉⠑
+maybe	可能	⠍⠁⠽⠃⠑
+sofa	沙發	⠎⠷⠁
+hungry	餓的	⠓⠥⠝⠛⠗⠽
+notebook	筆記本	⠝⠕⠞⠑⠃⠕⠕⠅
+marker	記號筆；彩色筆	⠍⠜⠅⠻
+brush	毛筆；筆刷	⠃⠗⠥⠩
+gift	禮物	⠛⠊⠋⠞
+pencil case	鉛筆盒	⠏⠢⠉⠊⠇⠀⠉⠁⠎⠑
+bathroom	浴室；廁所	⠃⠁⠹⠗⠕⠕⠍
+table	桌子	⠞⠁⠃⠇⠑
+bedroom	臥室	⠃⠫⠗⠕⠕⠍
+near	在…附近	⠝⠑⠜
+between	在…之間	⠆⠞
+behind	在…後面	⠆⠓
+in front of	在…前面	⠔⠀⠋⠗⠕⠝⠞⠀⠷
+special	特別的	⠎⠏⠑⠉⠊⠁⠇
+inside	在…裡面	⠔⠎⠊⠙⠑
+right	就	⠐⠗
+each other	彼此；互相	⠑⠁⠡⠀⠕⠮⠗
+above	在…上方；在上方	⠁⠃⠧
+enough	足夠	⠢
+person	人	⠏⠻⠎⠕⠝

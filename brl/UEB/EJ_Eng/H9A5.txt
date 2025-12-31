@@ -1,0 +1,37 @@
+arrive	抵達	⠜⠗⠊⠧⠑
+planet	行星	⠏⠇⠁⠝⠑⠞
+line	隊伍；直線	⠇⠔⠑
+appear	出現	⠁⠏⠏⠑⠜
+restroom	洗手間	⠗⠑⠌⠗⠕⠕⠍
+bath	沐浴	⠃⠁⠹
+uniform	制服	⠥⠝⠊⠿⠍
+tail	尾巴	⠞⠁⠊⠇
+bottom	臀部；底部	⠃⠕⠞⠞⠕⠍
+main	主要的	⠍⠁⠔
+notice	注意到；告示	⠝⠕⠞⠊⠉⠑
+belong	屬於	⠆⠇⠰⠛
+go on	發生	⠛⠀⠕⠝
+lead	通往	⠇⠂⠙
+play	扮演	⠏⠇⠁⠽
+square	正方形的；正方形	⠎⠟⠥⠜⠑
+string	串；線	⠌⠗⠬
+round	圓形的	⠗⠨⠙
+dot	圓點	⠙⠕⠞
+bow	蝴蝶結	⠃⠪
+pin	飾針；胸針	⠏⠔
+neighbor	鄰居	⠝⠑⠊⠣⠃⠕⠗
+foreigner	外國人	⠿⠑⠊⠛⠝⠻
+hobby	嗜好	⠓⠕⠆⠽
+businessman	商人	⠃⠥⠎⠊⠰⠎⠍⠁⠝
+business	生意；事業	⠃⠥⠎⠊⠰⠎
+dictionary	字典	⠙⠊⠉⠰⠝⠜⠽
+workbook	作業本	⠐⠺⠃⠕⠕⠅
+light	輕的	⠇⠊⠣⠞
+exercise	習題；練習	⠑⠭⠻⠉⠊⠎⠑
+born	出生的	⠃⠕⠗⠝
+prize	獎	⠏⠗⠊⠵⠑
+topic	主題	⠞⠕⠏⠊⠉
+knowledge	知識	⠅
+public	公眾	⠏⠥⠃⠇⠊⠉
+be no stranger to	對...不陌生	⠆⠀⠝⠕⠀⠌⠗⠁⠝⠛⠻⠀⠞⠕
+key	關鍵	⠅⠑⠽

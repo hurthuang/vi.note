@@ -1,0 +1,36 @@
+date	日期	⠙⠁⠞⠑
+November	十一月	⠠⠝⠕⠧⠑⠍⠃⠻
+first	第一	⠋⠌
+Thanksgiving	感恩節	⠠⠹⠁⠝⠅⠎⠛⠊⠧⠬
+important	重要的	⠊⠍⠏⠕⠗⠞⠁⠝⠞
+holiday	節日；假日	⠓⠕⠇⠊⠐⠙
+when	何時	⠱⠢
+fourth	第四	⠋⠳⠗⠹
+birthday	生日	⠃⠊⠗⠹⠐⠙
+also	也；此外	⠁⠇
+before	在…之前	⠆⠋
+around	圍繞；在…附近	⠜⠨⠙
+How about...?	那…呢	⠠⠓⠪⠀⠁⠃⠲⠲⠲⠦
+second	第二	⠎⠑⠉⠕⠝⠙
+next	下一個的	⠝⠑⠭⠞
+month	月份	⠍⠕⠝⠹
+January	一月	⠠⠚⠁⠝⠥⠜⠽
+February	二月	⠠⠋⠑⠃⠗⠥⠜⠽
+March	三月	⠠⠍⠜⠡
+April	四月	⠠⠁⠏⠗⠊⠇
+May	五月	⠠⠍⠁⠽
+June	六月	⠠⠚⠥⠝⠑
+July	七月	⠠⠚⠥⠇⠽
+August	八月	⠠⠁⠥⠛⠥⠌
+September	九月	⠠⠎⠑⠏⠞⠑⠍⠃⠻
+October	十月	⠠⠕⠉⠞⠕⠃⠻
+December	十二月	⠠⠙⠑⠉⠑⠍⠃⠻
+New Year's Eve	元旦前夕	⠠⠝⠑⠺⠀⠠⠽⠑⠜⠄⠎⠀⠠⠑⠧⠑
+Christmas	聖誕節	⠠⠡⠗⠊⠌⠍⠁⠎
+third	第三	⠹⠊⠗⠙
+animal	動物	⠁⠝⠊⠍⠁⠇
+cow	牛；乳牛	⠉⠪
+think	想；認為	⠹⠔⠅
+lucky	幸運的	⠇⠥⠉⠅⠽
+only	只是；唯一的	⠕⠝⠇⠽
+dinner	晚餐	⠙⠔⠝⠻

@@ -1,0 +1,40 @@
+grass	草地	⠛⠗⠁⠎⠎
+red fire ant	紅火蟻	⠗⠫⠀⠋⠊⠗⠑⠀⠁⠝⠞
+dangerous	危險的	⠙⠁⠝⠛⠻⠳⠎
+bite	咬；咬	⠃⠊⠞⠑
+death	死亡	⠙⠂⠹
+kick	踢	⠅⠊⠉⠅
+themselves	他們自己	⠮⠍⠧⠎
+kill	殺死	⠅⠊⠇⠇
+stay away from	遠離…	⠌⠁⠽⠀⠁⠺⠁⠽⠀⠋
+agree	同意	⠁⠛⠗⠑⠑
+rock	岩石	⠗⠕⠉⠅
+myself	我自己	⠍⠽⠋
+snake	蛇	⠎⠝⠁⠅⠑
+wet	潮濕的	⠺⠑⠞
+scary	令人害怕的	⠎⠉⠜⠽
+deep	深的	⠙⠑⠑⠏
+true	真實的	⠞⠗⠥⠑
+most	最…；最多的	⠍⠕⠌
+give... a hand	幫助…	⠛⠊⠧⠑⠲⠲⠲⠀⠁⠀⠓⠯
+spider	蜘蛛	⠎⠏⠊⠙⠻
+gram	公克	⠛⠗⠁⠍
+insect	昆蟲	⠔⠎⠑⠉⠞
+bee	蜜蜂	⠃⠑⠑
+inch	吋	⠔⠡
+wide	寬的	⠺⠊⠙⠑
+kilogram	公斤	⠅⠊⠇⠕⠛⠗⠁⠍
+below	在…之下；在下面	⠆⠇
+sea level	海平面	⠎⠑⠁⠀⠇⠑⠧⠑⠇
+mile	英里	⠍⠊⠇⠑
+feet	英尺	⠋⠑⠑⠞
+until	直到	⠥⠝⠞⠊⠇
+scared	害怕的	⠎⠉⠜⠫
+wave	浪	⠺⠁⠧⠑
+far	遠	⠋⠜
+worried	擔心的	⠺⠕⠗⠗⠊⠫
+shout	喊叫	⠩⠳⠞
+nothing	沒什麼；無事；無物	⠝⠕⠹⠬
+forget	忘記	⠿⠛⠑⠞
+few	很少	⠋⠑⠺
+stay	停留	⠌⠁⠽

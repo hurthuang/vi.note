@@ -1,0 +1,34 @@
+guy	人；傢伙	⠛⠥⠽
+magic	神奇的；魔法	⠍⠁⠛⠊⠉
+with	用；和	⠾
+can	可以；會	⠉
+many	許多	⠸⠍
+place	地方	⠏⠇⠁⠉⠑
+use	使用	⠥⠎⠑
+sure	當然；確定的	⠎⠥⠗⠑
+let's	讓我們一起…	⠇⠑⠞⠄⠎
+careful	小心的	⠉⠜⠑⠰⠇
+museum	博物館	⠍⠥⠎⠑⠥⠍
+hurry	快點	⠓⠥⠗⠗⠽
+please	請；拜託	⠏⠇⠂⠎⠑
+wait	等待	⠺⠁⠊⠞
+man	男人	⠍⠁⠝
+now	現在	⠝⠪
+or	或者	⠕⠗
+time	次；時間	⠐⠞
+wake up	醒來；叫醒…	⠺⠁⠅⠑⠀⠥⠏
+class	課；班級	⠉⠇⠁⠎⠎
+Oh my!	天哪	⠠⠕⠓⠀⠍⠽⠖
+see	看見	⠎⠑⠑
+quiet	安靜的	⠟⠥⠊⠑⠞
+turn off	關掉	⠞⠥⠗⠝⠀⠷⠋
+sign	標誌	⠎⠊⠛⠝
+talk	說話	⠞⠁⠇⠅
+fight	吵架；打架	⠋⠊⠣⠞
+turn	依次輪到的	⠞⠥⠗⠝
+follow	遵守；跟隨	⠋⠕⠇⠇⠪
+rule	規則	⠗⠥⠇⠑
+safe	安全的	⠎⠁⠋⠑
+wash	清洗	⠺⠁⠩
+hand	手	⠓⠯
+after class	下課後	⠁⠋⠀⠉⠇⠁⠎⠎

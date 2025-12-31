@@ -1,0 +1,38 @@
+typhoon	颱風	⠞⠽⠏⠓⠕⠕⠝
+blow	吹	⠃⠇⠪
+rose	玫瑰花	⠗⠕⠎⠑
+balcony	陽台	⠃⠁⠇⠉⠕⠝⠽
+must	必須；一定	⠍⠌
+prepare	準備	⠏⠗⠑⠏⠜⠑
+should	應該	⠩⠙
+candle	蠟燭	⠉⠯⠇⠑
+light	燈；光；點亮	⠇⠊⠣⠞
+radio	收音機；廣播	⠗⠁⠙⠊⠕
+news	新聞；消息	⠝⠑⠺⠎
+if	如果	⠊⠋
+or	否則	⠕⠗
+have to	必須	⠓⠀⠞⠕
+go out	熄滅	⠛⠀⠳
+train	訓練	⠞⠗⠁⠔
+face	面對	⠋⠁⠉⠑
+try one's best	盡力而為	⠞⠗⠽⠀⠐⠕⠄⠎⠀⠃⠑⠌
+turn on	打開（電源）	⠞⠥⠗⠝⠀⠕⠝
+latest	最新的	⠇⠁⠞⠑⠌
+star	星星	⠌⠜
+shine	閃耀；照耀	⠩⠔⠑
+giant	巨大的	⠛⠊⠁⠝⠞
+rainbow	彩虹	⠗⠁⠔⠃⠪
+pretty	漂亮的	⠏⠗⠑⠞⠞⠽
+garden	花園	⠛⠜⠙⠢
+frog	青蛙	⠋⠗⠕⠛
+noise	聲響；噪音	⠝⠕⠊⠎⠑
+pond	池塘	⠏⠕⠝⠙
+earthquake	地震	⠑⠜⠹⠟⠥⠁⠅⠑
+bravely	勇敢地	⠃⠗⠁⠧⠑⠇⠽
+through	穿越	⠐⠹
+sharp	尖銳的	⠩⠜⠏
+reach	到達	⠗⠂⠡
+space	空間	⠎⠏⠁⠉⠑
+size	大小；尺寸	⠎⠊⠵⠑
+as	作為；如同	⠵
+times	倍	⠐⠞⠎

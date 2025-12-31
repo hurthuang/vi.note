@@ -1,0 +1,38 @@
+painting	畫作	⠏⠁⠔⠞⠬
+flower	花	⠋⠇⠪⠻
+which	哪一個	⠱
+thirsty	口渴的	⠹⠊⠗⠌⠽
+coffee	咖啡	⠉⠷⠋⠑⠑
+shop	商店	⠩⠕⠏
+later	稍後；晚點	⠇⠁⠞⠻
+Of course	當然	⠠⠷⠀⠉⠳⠗⠎⠑
+clerk	店員	⠉⠇⠻⠅
+may	可以；可能	⠍⠁⠽
+juice	果汁	⠚⠥⠊⠉⠑
+want	想要	⠺⠁⠝⠞
+anything	任何事物	⠁⠝⠽⠹⠬
+else	其他	⠑⠇⠎⠑
+treat	請客；款待	⠞⠗⠂⠞
+sweet	甜美的；甜的	⠎⠺⠑⠑⠞
+hot	熱的	⠓⠕⠞
+chocolate	巧克力	⠡⠕⠉⠕⠇⠁⠞⠑
+dollar	元	⠙⠕⠇⠇⠜
+for here	內用	⠿⠀⠐⠓
+to go	外帶	⠞⠕⠀⠛
+Here you are.	給你	⠠⠐⠓⠀⠽⠀⠜⠑⠲
+bright	鮮豔的；明亮的	⠃⠐⠗
+dark	黑的；暗的	⠙⠜⠅
+art	美術；藝術	⠜⠞
+milk	牛奶	⠍⠊⠇⠅
+hamburger	漢堡	⠓⠁⠍⠃⠥⠗⠛⠻
+chicken rice	雞肉飯	⠡⠊⠉⠅⠢⠀⠗⠊⠉⠑
+tea	茶	⠞⠑⠁
+ice cream	冰淇淋	⠊⠉⠑⠀⠉⠗⠂⠍
+soup	湯	⠎⠳⠏
+sandwich	三明治	⠎⠯⠺⠊⠡
+work	作品	⠐⠺
+show	表現；秀出	⠩⠪
+part	部分	⠐⠏
+sky	天空	⠎⠅⠽
+street	街道	⠌⠗⠑⠑⠞
+by	被；由	⠃⠽

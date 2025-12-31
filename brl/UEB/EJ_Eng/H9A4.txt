@@ -1,0 +1,38 @@
+gate	大門	⠛⠁⠞⠑
+file	檔案	⠋⠊⠇⠑
+quiz	小考	⠟⠥⠊⠵
+blackboard	黑板	⠃⠇⠁⠉⠅⠃⠕⠜⠙
+chalk	粉筆	⠡⠁⠇⠅
+screen	螢幕	⠎⠉⠗⠑⠢
+error	錯誤	⠻⠗⠕⠗
+button	按鈕；鈕扣	⠃⠥⠞⠞⠕⠝
+enter	輸入；進入	⠢⠞⠻
+wake word	喚醒字詞	⠺⠁⠅⠑⠀⠘⠺
+whether	是否	⠱⠑⠮⠗
+list	清單；列出	⠇⠊⠌
+honey	親愛的	⠓⠐⠕⠽
+save	儲存	⠎⠁⠧⠑
+through	透過；憑藉	⠐⠹
+if	是否	⠊⠋
+not... anymore	不再	⠝⠲⠲⠲⠀⠁⠝⠽⠍⠕⠗⠑
+voice assistant	語音助理	⠧⠕⠊⠉⠑⠀⠁⠎⠎⠊⠌⠁⠝⠞
+machine	機器	⠍⠁⠡⠔⠑
+refrigerator	冰箱	⠗⠑⠋⠗⠊⠛⠻⠁⠞⠕⠗
+upload	上傳	⠥⠏⠇⠕⠁⠙
+e-mail	電子郵件	⠰⠑⠤⠍⠁⠊⠇
+key	鑰匙	⠅⠑⠽
+the cloud	雲端	⠮⠀⠉⠇⠳⠙
+type	打字	⠞⠽⠏⠑
+shopkeeper	店主	⠩⠕⠏⠅⠑⠑⠏⠻
+cellphone	手機	⠉⠑⠇⠇⠏⠓⠐⠕
+collect	收集	⠉⠕⠇⠇⠑⠉⠞
+outside	在外面；外面	⠳⠞⠎⠊⠙⠑
+wallet	錢包	⠺⠁⠇⠇⠑⠞
+couch	沙發	⠉⠳⠡
+lamp	檯燈	⠇⠁⠍⠏
+program	節目	⠏⠗⠕⠛⠗⠁⠍
+modern	現代的	⠍⠕⠙⠻⠝
+cross that bridge when one comes to it	船到橋頭自然直；到時候再說	⠉⠗⠕⠎⠎⠀⠞⠀⠃⠗⠊⠙⠛⠑⠀⠱⠢⠀⠐⠕⠀⠉⠕⠍⠑⠎⠀⠞⠕⠀⠭
+stand for	代表	⠌⠯⠀⠿
+set	設定	⠎⠑⠞
+shape	塑造	⠩⠁⠏⠑

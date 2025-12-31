@@ -1,0 +1,45 @@
+airport	機場	⠁⠊⠗⠏⠕⠗⠞
+travel	旅行；行進	⠞⠗⠁⠧⠑⠇
+rest	休息	⠗⠑⠌
+hotel	飯店	⠓⠕⠞⠑⠇
+plane	飛機	⠏⠇⠁⠝⠑
+airplane	飛機	⠁⠊⠗⠏⠇⠁⠝⠑
+the sights	風景；名勝	⠮⠀⠎⠊⠣⠞⠎
+bookstore	書店	⠃⠕⠕⠅⠌⠕⠗⠑
+buy	購買	⠃⠥⠽
+just	剛才；就；只	⠚
+learn	學習	⠇⠑⠜⠝
+story	故事	⠌⠕⠗⠽
+cool	酷的	⠉⠕⠕⠇
+train	火車	⠞⠗⠁⠔
+cold	冷的	⠉⠕⠇⠙
+try	嘗試	⠞⠗⠽
+way	距離；路線	⠺⠁⠽
+take	帶；拿；取	⠞⠁⠅⠑
+the other day	前幾天	⠮⠀⠕⠮⠗⠀⠐⠙
+station	車站；局	⠌⠁⠰⠝
+department store	百貨公司	⠙⠑⠐⠏⠰⠞⠀⠌⠕⠗⠑
+restaurant	餐廳	⠗⠑⠌⠁⠥⠗⠁⠝⠞
+theater	電影院	⠮⠁⠞⠻
+market	市場	⠍⠜⠅⠑⠞
+temple	寺廟	⠞⠑⠍⠏⠇⠑
+famous	有名的	⠋⠁⠍⠳⠎
+during	在…期間	⠙⠥⠗⠬
+besides	除…之外	⠆⠎⠎
+fall in love	墜入情網	⠋⠁⠇⠇⠀⠔⠀⠇⠕⠧⠑
+age	年紀	⠁⠛⠑
+lose	失去	⠇⠕⠎⠑
+cry	哭泣	⠉⠗⠽
+hide	躲藏	⠓⠊⠙⠑
+build	建造	⠃⠥⠊⠇⠙
+trip	旅行；行程	⠞⠗⠊⠏
+sadly	令人傷心地	⠎⠁⠙⠇⠽
+last	持續	⠇⠁⠌
+Easter	復活節	⠠⠑⠁⠌⠻
+moon	月亮	⠍⠕⠕⠝
+church	教堂	⠡⠥⠗⠡
+roll	滾動	⠗⠕⠇⠇
+hunt	搜尋；狩獵	⠓⠥⠝⠞
+fall	降臨；發生	⠋⠁⠇⠇
+check out	查看	⠡⠑⠉⠅⠀⠳
+get together	團聚	⠛⠑⠞⠀⠞⠛⠗

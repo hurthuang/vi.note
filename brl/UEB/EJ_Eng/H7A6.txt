@@ -1,0 +1,24 @@
+lion	獅子	⠇⠊⠕⠝
+over there	在那裡	⠕⠧⠻⠀⠐⠮
+king	國王	⠅⠬
+some	一些	⠐⠎
+elephant	大象	⠑⠇⠑⠏⠓⠁⠝⠞
+so	如此地	⠎
+any	任何	⠁⠝⠽
+tiger	老虎	⠞⠊⠛⠻
+zebra	斑馬	⠵⠑⠃⠗⠁
+help	幫助；幫忙	⠓⠑⠇⠏
+right	正確的	⠐⠗
+monkey	猴子	⠍⠕⠝⠅⠑⠽
+fox	狐狸	⠋⠕⠭
+horse	馬	⠓⠕⠗⠎⠑
+rat	老鼠	⠗⠁⠞
+bear	熊	⠃⠑⠜
+world	世界	⠸⠺
+example	實例	⠑⠭⠁⠍⠏⠇⠑
+bug	蟲子	⠃⠥⠛
+food	食物	⠋⠕⠕⠙
+clean up	清理；打掃	⠉⠇⠂⠝⠀⠥⠏
+full	飽的；滿的	⠋⠥⠇⠇
+thanks to	虧……；由於	⠹⠁⠝⠅⠎⠀⠞⠕
+clean	乾淨的	⠉⠇⠂⠝
