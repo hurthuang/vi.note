@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注音點字練習器</title>
+    <!-- The style.css file allows you to change the look of your web pages.
+         If you include the next line in all your web pages, they will all share the same look.
+         This makes it easier to make new pages for your site. -->
+    <link href="/style.css" rel="stylesheet" type="text/css" media="all">
+  </head>
+  <body>
+    <h1>
+    	注音點字練習器</h1>
+    <p id="output" style="font-size: 72px; text-align: center; color:#0000ff;">
+    	請用六點輸入</p>
+    <p>
+    	&nbsp;</p>
+    <p>
+    	選擇語音角色：</p>
+    <p>
+    	<select id="voice-select"> </select></p>
+    <h1>
+    	鍵盤對應</h1>
+    <p>
+    	使用前請先進行&nbsp;<a href="https://class.kh.edu.tw/19061/bulletin/msg_view/752">鍵盤支援六點輸入測試</a></p>
+    <table border="1">
+    	<tbody>
+    		<tr>
+    			<td colspan="3" rowspan="1" style="text-align: center;">
+    				左手</td>
+    			<td colspan="3" rowspan="1" style="text-align: center;">
+    				右手</td>
+    		</tr>
+    		<tr>
+    			<td style="text-align: center;">
+    				無名指</td>
+    			<td style="text-align: center;">
+    				中指</td>
+    			<td style="text-align: center;">
+    				食指</td>
+    			<td style="text-align: center;">
+    				食指</td>
+    			<td style="text-align: center;">
+    				中指</td>
+    			<td style="text-align: center;">
+    				無名指</td>
+    		</tr>
+    		<tr>
+    			<td style="text-align: center;">
+    				S</td>
+    			<td style="text-align: center;">
+    				D</td>
+    			<td style="text-align: center;">
+    				F</td>
+    			<td style="text-align: center;">
+    				J</td>
+    			<td style="text-align: center;">
+    				K</td>
+    			<td style="text-align: center;">
+    				L</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				第 3 點</td>
+    			<td>
+    				第 2 點</td>
+    			<td>
+    				第 1 點</td>
+    			<td>
+    				第 4 點</td>
+    			<td>
+    				第 5 點</td>
+    			<td>
+    				第 6 點</td>
+    		</tr>
+    	</tbody>
+    </table>
+    <h1>
+    	聲母</h1>
+    <h2>
+    	ㄅㄆㄇㄈ</h2>
+    <div style="margin-left: 40px;">
+    	ㄅ ⠕ (第 1 3 5 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄆ ⠏ (第 1 2 3 4 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄇ ⠍ (第 1 3 4 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄈ ⠟ (第 1 2 3 4 5 點)</div>
+    <div>
+    	&nbsp;</div>
+    <h2>
+    	ㄉㄊㄋㄌ</h2>
+    <div style="margin-left: 40px;">
+    	ㄉ ⠙ (第 1 4 5 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄊ ⠋ (第 1 2 4 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄋ ⠝ (第 1 3 4 5 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄌ ⠉ (第 1 4 點)</div>
+    <div>
+    	&nbsp;</div>
+    <h2>
+    	ㄍㄎㄏ</h2>
+    <div style="margin-left: 40px;">
+    	ㄍ ⠅ (第 1 3 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄎ ⠇ (第 1 2 3 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄏ ⠗ (第 1 2 3 5 點)</div>
+    <div>
+    	&nbsp;</div>
+    <h2>
+    	ㄐㄑㄒ</h2>
+    <div style="margin-left: 40px;">
+    	ㄐ ⠅ (第 1 3 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄑ ⠚ (第 2 4 5 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄒ ⠑ (第 1 5 點)</div>
+    <div>
+    	&nbsp;</div>
+    <h2>
+    	ㄓㄔㄕㄖ</h2>
+    <div style="margin-left: 40px;">
+    	ㄓ ⠁ (第 1 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄔ ⠃ (第 1 2 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄕ ⠊ (第 2 4 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄖ ⠛ (第 1 2 4 5 點)</div>
+    <div>
+    	&nbsp;</div>
+    <h2>
+    	ㄗㄘㄙ</h2>
+    <div style="margin-left: 40px;">
+    	ㄗ ⠓ (第 1 2 5 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄘ ⠚ (第 2 4 5 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄙ ⠑ (第 1 5 點)</div>
+    <div>
+    	&nbsp;</div>
+    <h1>
+    	介母</h1>
+    <h2>
+    	ㄧㄨㄩ</h2>
+    <div style="margin-left: 40px;">
+    	ㄧ ⠡ (第 1 6 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄨ ⠌ (第 3 4 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄩ ⠳ (第 1 2 5 6 點)</div>
+    <div>
+    	&nbsp;</div>
+    <h1>
+    	韻母</h1>
+    <h2>
+    	ㄚㄛㄜㄝ</h2>
+    <div style="margin-left: 40px;">
+    	ㄚ ⠜ (第 3 4 5 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄛ ⠣ (第 1 2 6 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄜ ⠮ (第 2 3 4 6 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄝ ⠢ (第 2 6 點)</div>
+    <div>
+    	&nbsp;</div>
+    <h2>
+    	ㄞㄟㄠㄡ</h2>
+    <div style="margin-left: 40px;">
+    	ㄞ ⠺ (第 2 4 5 6 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄟ ⠴ (第 3 5 6 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄠ ⠩ (第 1 4 6 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄡ ⠷ (第 1 2 3 5 6 點)</div>
+    <div>
+    	&nbsp;</div>
+    <h2>
+    	ㄢㄣㄤㄥㄦ</h2>
+    <div style="margin-left: 40px;">
+    	ㄢ ⠧ (第 1 2 3 6 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄣ ⠥ (第 1 3 6 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄤ ⠭ (第 1 3 4 6 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄥ ⠵ (第 1 3 5 6 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄦ ⠱ (第 1 5 6 點)</div>
+    <div>
+    	&nbsp;</div>
+    <h1>
+    	結合韻</h1>
+    <h2>
+    	ㄧ 結合韻</h2>
+    <div style="margin-left: 40px;">
+    	ㄧㄚ ⠾ (第 2 3 4 5 6 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄧㄛ ⠴ (第 3 5 6 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄧㄝ ⠬ (第 3 4 6 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄧㄞ ⠢ (第 2 6 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄧㄠ ⠪ (第 2 4 6 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄧㄡ ⠎ (第 2 3 4 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄧㄢ ⠞ (第 2 3 4 5 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄧㄣ ⠹ (第 1 4 5 6 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄧㄤ ⠨ (第 4 6 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄧㄥ ⠽ (第 1 3 4 5 6 點)</div>
+    <div>
+    	&nbsp;</div>
+    <h2>
+    	ㄨ 結合韻</h2>
+    <div style="margin-left: 40px;">
+    	ㄨㄚ ⠔ (第 3 5 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄨㄛ ⠒ (第 2 5 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄨㄞ ⠶ (第 2 3 5 6 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄨㄟ ⠫ (第 1 2 4 6 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄨㄢ ⠻ (第 1 2 4 5 6 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄨㄣ ⠿ (第 1 2 3 4 5 6 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄨㄤ ⠸ (第 4 5 6 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄨㄥ ⠯ (第 1 2 3 4 6 點)</div>
+    <div>
+    	&nbsp;</div>
+    <h2>
+    	ㄩ 結合韻</h2>
+    <div style="margin-left: 40px;">
+    	ㄩㄝ ⠦ (第 2 3 6 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄩㄢ ⠘ (第 4 5 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄩㄣ ⠲ (第 2 5 6 點)</div>
+    <div style="margin-left: 40px;">
+    	ㄩㄥ ⠖ (第 2 3 5 點)</div>
+    <div>
+    	&nbsp;</div>
+    <h1>
+    	調號</h1>
+    <div style="margin-left: 40px;">
+    	一聲 ⠄ (第 3 點)</div>
+    <div style="margin-left: 40px;">
+    	二聲 ˊ ⠂ (第 2 點)</div>
+    <div style="margin-left: 40px;">
+    	三聲 ˇ ⠈ (第 4 點)</div>
+    <div style="margin-left: 40px;">
+    	四聲 ˋ ⠐ (第 5 點)</div>
+    <div style="margin-left: 40px;">
+    	輕聲 ˙ ⠁ (第 1 點)</div>
+    <p>
+    	&nbsp;</p>
+    <p>
+    	感謝 ChatGPT 與 詹博丞 技術指導</p>
+    <script>
+    	       const mapping = {
+    	           'f': 1,
+    	           'd': 2,
+    	           's': 3,
+    	           'j': 4,
+    	           'k': 5,
+    	           'l': 6
+    	       };
+    
+    	       const rules = {
+    	           '135': 'ㄅ ⠕',
+    	           '1234': 'ㄆ⠀⠏',
+    	           '134': 'ㄇ⠀⠍',
+    	           '12345': 'ㄈ⠀⠟',
+    	           '145': 'ㄉ⠀⠙',
+    	           '124': 'ㄊ⠀⠋',
+    	           '1345': 'ㄋ⠀⠝',
+    	           '14': 'ㄌ⠀⠉',
+    	           '13': 'ㄍ或ㄐ⠀⠅',
+    	           '123': 'ㄎ⠀⠇',
+    	           '1235': 'ㄏ⠀⠗',
+    	           '245': 'ㄑ或ㄘ⠀⠚',
+    	           '15': 'ㄒ或ㄙ⠀⠑',
+    	           '1': 'ㄓ或清聲⠀⠁',
+    	           '12': 'ㄔ⠀⠃',
+    	           '24': 'ㄕ⠀⠊',
+    	           '1245': 'ㄖ⠀⠛',
+    	           '125': 'ㄗ⠀⠓',
+    	           '16': 'ㄧ⠡',
+    	           '34': 'ㄨ⠀⠌',
+    	           '1256': 'ㄩ⠀⠳',
+    	           '345': 'ㄚ⠀⠜',
+    	           '126': 'ㄛ⠀⠣',
+    	           '2346': 'ㄜ⠀⠮',
+    	           '26': 'ㄝ或ㄧㄞ⠀⠢',
+    	           '2456': 'ㄞ⠀⠺',
+    	           '356': 'ㄟ或ㄧㄛ⠀⠴',
+    	           '146': 'ㄠ⠀⠩',
+    	           '12356': 'ㄡ⠀⠷',
+    	           '1236': 'ㄢ⠀⠧',
+    	           '136': 'ㄣ⠀⠥',
+    	           '1346': 'ㄤ⠀⠭',
+    	           '1356': 'ㄥ⠀⠵',
+    	           '156': 'ㄦ⠀⠱',
+    	           '23456': 'ㄧㄚ⠀⠾',
+    	           '346': 'ㄧㄝ⠀⠬',
+    	           '246': 'ㄧㄠ⠀⠪',
+    	           '234': 'ㄧㄡ⠀⠎',
+    	           '2345': 'ㄧㄢ⠀⠞',
+    	           '1456': 'ㄧㄣ⠀⠹',
+    	           '46': 'ㄧㄤ⠀⠨',
+    	           '13456': 'ㄧㄥ⠀⠽',
+    	           '35': 'ㄨㄚ⠀⠔',
+    	           '25': 'ㄨㄛ⠀⠒',
+    	           '2356': 'ㄨㄞ⠀⠶',
+    	           '1246': 'ㄨㄟ⠀⠫',
+    	           '12456': 'ㄨㄢ⠀⠻',
+    	           '123456': 'ㄨㄣ⠀⠿',
+    	           '456': 'ㄨㄤ⠀⠸',
+    	           '12346': 'ㄨㄥ⠀⠯',
+    	           '236': 'ㄩㄝ⠀⠦',
+    	           '45': 'ㄩㄢ⠀⠘',
+    	           '256': 'ㄩㄣ⠀⠲',
+    	           '235': 'ㄩㄥ⠀⠖',
+    	           '3': '一聲⠀⠄',
+    	           '2': '二聲⠀⠂',
+    	           '4': '三聲⠀⠈',
+    	           '5': '四聲⠀⠐',
+    	           '23': '，逗號⠀⠆',
+    	           '6': '、頓號⠀⠠',
+    	           '36': '。句號⠀⠤',
+    	           '56': '；分號⠀⠰'
+    	       };
+    
+    	 const output = document.getElementById('output');
+    	 let keyboardState = [false, false, false, false, false, false];
+    	 let keyboardTouched = [false, false, false, false, false, false];
+    	 let lastOutput = '';
+    
+    	 // 語音合成器
+    	 const synth = window.speechSynthesis;
+    
+    	 // 語音角色列表
+    	 const voiceSelect = document.getElementById('voice-select');
+    	 let voices = [];
+    
+    	 // 當語音合成器加載完成時，填充語音角色下拉選單
+    	 synth.onvoiceschanged = function() {
+    	   voices = synth.getVoices();
+    	   voices.forEach(function(voice, index) {
+    	     const option = document.createElement('option');
+    	     option.value = index;
+    	     option.text = `${voice.name} (${voice.lang})`;
+    	     voiceSelect.appendChild(option);
+    	   });
+    	 };
+    
+    	 // 語音合成
+    	 function speak(text) {
+    	   const selectedVoiceIndex = voiceSelect.value;
+    	   const selectedVoice = voices[selectedVoiceIndex];
+    	   const utterance = new SpeechSynthesisUtterance(text);
+    	   utterance.voice = selectedVoice;
+    	   synth.speak(utterance);
+    	 }
+    
+    	 function updateOutput() {
+    	   const bufferKeyString = keyboardTouched.map((state, index) => state ? String(index + 1) : '').join('');
+    	   const character = rules[bufferKeyString];
+    	   if (character) {
+    	     lastOutput = character;
+    	     output.innerText = lastOutput;
+    	     speak(lastOutput);
+    	   }
+    	 }
+    
+    	 document.addEventListener('keydown', event => {
+    	   const key = event.key.toLowerCase();
+    	   if (mapping[key] !== undefined) {
+    	     keyboardState[mapping[key] - 1] = true;
+    	     keyboardTouched[mapping[key] - 1] = true;
+    	   }
+    	 });
+    
+    	 document.addEventListener('keyup', event => {
+    	   const key = event.key.toLowerCase();
+    	   if (mapping[key] !== undefined) {
+    	     keyboardState[mapping[key] - 1] = false;
+    	     if (keyboardState.every(elem => elem === false) && keyboardTouched.some(elem => elem === true)) {
+    	       updateOutput();
+    	       keyboardTouched.fill(false);
+    	     }
+    	   }
+    	 });
+    	</script>
+  </body>
+</html>

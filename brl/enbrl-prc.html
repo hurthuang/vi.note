@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英數點字練習器</title>
+    <!-- The style.css file allows you to change the look of your web pages.
+         If you include the next line in all your web pages, they will all share the same look.
+         This makes it easier to make new pages for your site. -->
+    <link href="/style.css" rel="stylesheet" type="text/css" media="all">
+  </head>
+  <body>
+    <h1>
+    	英數點字練習器</h1>
+    <p id="output" style="font-size: 72px; text-align: center; color:#0000ff;">
+    	請用六點輸入</p>
+    <p>
+    	&nbsp;</p>
+    <p>
+    	選擇語音角色：</p>
+    <p>
+    	<select id="voice-select"> </select></p>
+    <h1>
+    	鍵盤對應</h1>
+    <p>
+    	使用前請先進行&nbsp;<a href="https://class.kh.edu.tw/19061/bulletin/msg_view/752">鍵盤支援六點輸入測試</a></p>
+    <table border="1">
+    	<tbody>
+    		<tr>
+    			<td colspan="3" rowspan="1" style="text-align: center;">
+    				左手</td>
+    			<td colspan="3" rowspan="1" style="text-align: center;">
+    				右手</td>
+    		</tr>
+    		<tr>
+    			<td style="text-align: center;">
+    				無名指</td>
+    			<td style="text-align: center;">
+    				中指</td>
+    			<td style="text-align: center;">
+    				食指</td>
+    			<td style="text-align: center;">
+    				食指</td>
+    			<td style="text-align: center;">
+    				中指</td>
+    			<td style="text-align: center;">
+    				無名指</td>
+    		</tr>
+    		<tr>
+    			<td style="text-align: center;">
+    				S</td>
+    			<td style="text-align: center;">
+    				D</td>
+    			<td style="text-align: center;">
+    				F</td>
+    			<td style="text-align: center;">
+    				J</td>
+    			<td style="text-align: center;">
+    				K</td>
+    			<td style="text-align: center;">
+    				L</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				第 3 點</td>
+    			<td>
+    				第 2 點</td>
+    			<td>
+    				第 1 點</td>
+    			<td>
+    				第 4 點</td>
+    			<td>
+    				第 5 點</td>
+    			<td>
+    				第 6 點</td>
+    		</tr>
+    	</tbody>
+    </table>
+    <h1>
+    	英數點字</h1>
+    <table border="1" cellpadding="1" cellspacing="1">
+    	<tbody>
+    		<tr>
+    			<th scope="row">
+    				字母</th>
+    			<td>
+    				a</td>
+    			<td>
+    				b</td>
+    			<td>
+    				c</td>
+    			<td>
+    				d</td>
+    			<td>
+    				e</td>
+    			<td>
+    				f</td>
+    			<td>
+    				g</td>
+    			<td>
+    				h</td>
+    			<td>
+    				i</td>
+    			<td>
+    				j</td>
+    		</tr>
+    		<tr>
+    			<th scope="row">
+    				點字</th>
+    			<td>
+    				⠁</td>
+    			<td>
+    				⠃</td>
+    			<td>
+    				⠉</td>
+    			<td>
+    				⠙</td>
+    			<td>
+    				⠑</td>
+    			<td>
+    				⠋</td>
+    			<td>
+    				⠛</td>
+    			<td>
+    				⠓</td>
+    			<td>
+    				⠊</td>
+    			<td>
+    				⠚</td>
+    		</tr>
+    		<tr>
+    			<th scope="row">
+    				字母</th>
+    			<td>
+    				k</td>
+    			<td>
+    				l</td>
+    			<td>
+    				m</td>
+    			<td>
+    				n</td>
+    			<td>
+    				o</td>
+    			<td>
+    				p</td>
+    			<td>
+    				q</td>
+    			<td>
+    				r</td>
+    			<td>
+    				s</td>
+    			<td>
+    				t</td>
+    		</tr>
+    		<tr>
+    			<th scope="row">
+    				點字</th>
+    			<td>
+    				⠅</td>
+    			<td>
+    				⠇</td>
+    			<td>
+    				⠍</td>
+    			<td>
+    				⠝</td>
+    			<td>
+    				⠕</td>
+    			<td>
+    				⠏</td>
+    			<td>
+    				⠟</td>
+    			<td>
+    				⠗</td>
+    			<td>
+    				⠎</td>
+    			<td>
+    				⠞</td>
+    		</tr>
+    		<tr>
+    			<th scope="row">
+    				字母</th>
+    			<td>
+    				u</td>
+    			<td>
+    				v</td>
+    			<td>
+    				w</td>
+    			<td>
+    				x</td>
+    			<td>
+    				y</td>
+    			<td>
+    				z</td>
+    			<td>
+    				&nbsp;</td>
+    			<td>
+    				&nbsp;</td>
+    			<td>
+    				&nbsp;</td>
+    			<td>
+    				&nbsp;</td>
+    		</tr>
+    		<tr>
+    			<th scope="row">
+    				點字</th>
+    			<td>
+    				⠥</td>
+    			<td>
+    				⠧</td>
+    			<td>
+    				⠺</td>
+    			<td>
+    				⠭</td>
+    			<td>
+    				⠽</td>
+    			<td>
+    				⠵</td>
+    			<td>
+    				&nbsp;</td>
+    			<td>
+    				&nbsp;</td>
+    			<td>
+    				&nbsp;</td>
+    			<td>
+    				&nbsp;</td>
+    		</tr>
+    		<tr>
+    			<th scope="row">
+    				數字</th>
+    			<td>
+    				1</td>
+    			<td>
+    				2</td>
+    			<td>
+    				3</td>
+    			<td>
+    				4</td>
+    			<td>
+    				5</td>
+    			<td>
+    				6</td>
+    			<td>
+    				7</td>
+    			<td>
+    				8</td>
+    			<td>
+    				9</td>
+    			<td>
+    				0</td>
+    		</tr>
+    		<tr>
+    			<th scope="row">
+    				點字</th>
+    			<td>
+    				⠂</td>
+    			<td>
+    				⠆</td>
+    			<td>
+    				⠒</td>
+    			<td>
+    				⠲</td>
+    			<td>
+    				⠢</td>
+    			<td>
+    				⠖</td>
+    			<td>
+    				⠶</td>
+    			<td>
+    				⠦</td>
+    			<td>
+    				⠔</td>
+    			<td>
+    				⠴</td>
+    		</tr>
+    	</tbody>
+    </table>
+    <p>
+    	數字記號 ⠼</p>
+    <p>
+    	&nbsp;</p>
+    <p>
+    	感謝 ChatGPT 與 詹博丞 技術指導</p>
+    <script>
+    	       const mapping = {
+    	           'f': 1,
+    	           'd': 2,
+    	           's': 3,
+    	           'j': 4,
+    	           'k': 5,
+    	           'l': 6
+    	       };
+    
+    	       const rules = {
+    	           '1': 'a⠀⠁',
+    	           '12': 'b⠀⠃',
+    	           '14': 'c⠀⠉',
+    	           '145': 'd⠀⠙',
+    	           '15': 'e⠀⠑',
+    	           '124': 'f⠀⠋',
+    	           '1245': 'g⠀⠛',
+    	           '125': 'h⠀⠓',
+    	           '24': 'i⠀⠊',
+    	           '245': 'j⠀⠚',
+    	           '13': 'k⠀⠅',
+    	           '123': 'l⠀⠇',
+    	           '134': 'm⠀⠍',
+    	           '1345': 'n⠀⠝',
+    	           '135': 'o⠀⠕',
+    	           '1234': 'p⠀⠏',
+    	           '12345': 'q⠀⠟',
+    	           '1235': 'r⠀⠗',
+    	           '234': 's⠀⠎',
+    	           '2345': 't⠀⠞',
+    	           '136': 'u⠀⠥',
+    	           '1236': 'v⠀⠧',
+    	           '2456': 'w⠀⠺',
+    	           '1346': 'x⠀⠭',
+    	           '13456': 'y⠀⠽',
+    	           '1356': 'z⠀⠵',
+    	           '2': '1⠀⠂',
+    	           '23': '2⠀⠆',
+    	           '25': '3⠀⠒',
+    	           '256': '4⠀⠲',
+    	           '26': '5⠀⠢',
+    	           '235': '6⠀⠖',
+    	           '2356': '7⠀⠶',
+    	           '236': '8⠀⠴',
+    	           '35': '9⠀⠔',
+    	           '356': '0⠀⠴',
+    	           '3456': '數字記號⠀⠼'
+    	       };
+    
+    	 const output = document.getElementById('output');
+    	 let keyboardState = [false, false, false, false, false, false];
+    	 let keyboardTouched = [false, false, false, false, false, false];
+    	 let lastOutput = '';
+    
+    	 // 語音合成器
+    	 const synth = window.speechSynthesis;
+    
+    	 // 語音角色列表
+    	 const voiceSelect = document.getElementById('voice-select');
+    	 let voices = [];
+    
+    	 // 當語音合成器加載完成時，填充語音角色下拉選單
+    	 synth.onvoiceschanged = function() {
+    	   voices = synth.getVoices();
+    	   voices.forEach(function(voice, index) {
+    	     const option = document.createElement('option');
+    	     option.value = index;
+    	     option.text = `${voice.name} (${voice.lang})`;
+    	     voiceSelect.appendChild(option);
+    	   });
+    	 };
+    
+    	 // 語音合成
+    	 function speak(text) {
+    	   const selectedVoiceIndex = voiceSelect.value;
+    	   const selectedVoice = voices[selectedVoiceIndex];
+    	   const utterance = new SpeechSynthesisUtterance(text);
+    	   utterance.voice = selectedVoice;
+    	   synth.speak(utterance);
+    	 }
+    
+    	 function updateOutput() {
+    	   const bufferKeyString = keyboardTouched.map((state, index) => state ? String(index + 1) : '').join('');
+    	   const character = rules[bufferKeyString];
+    	   if (character) {
+    	     lastOutput = character;
+    	     output.innerText = lastOutput;
+    	     speak(lastOutput);
+    	   }
+    	 }
+    
+    	 document.addEventListener('keydown', event => {
+    	   const key = event.key.toLowerCase();
+    	   if (mapping[key] !== undefined) {
+    	     keyboardState[mapping[key] - 1] = true;
+    	     keyboardTouched[mapping[key] - 1] = true;
+    	   }
+    	 });
+    
+    	 document.addEventListener('keyup', event => {
+    	   const key = event.key.toLowerCase();
+    	   if (mapping[key] !== undefined) {
+    	     keyboardState[mapping[key] - 1] = false;
+    	     if (keyboardState.every(elem => elem === false) && keyboardTouched.some(elem => elem === true)) {
+    	       updateOutput();
+    	       keyboardTouched.fill(false);
+    	     }
+    	   }
+    	 });
+    	</script>
+  </body>
+</html>

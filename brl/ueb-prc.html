@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UEB 一方縮寫點字練習器</title>
+    <!-- The style.css file allows you to change the look of your web pages.
+         If you include the next line in all your web pages, they will all share the same look.
+         This makes it easier to make new pages for your site. -->
+    <link href="/style.css" rel="stylesheet" type="text/css" media="all">
+  </head>
+  <body>
+    <h1>
+    	UEB 一方縮寫點字練習器</h1>
+    <p id="output" style="font-size: 72px; text-align: center; color:#0000ff;">
+    	請用六點輸入</p>
+    <p>
+    	&nbsp;</p>
+    <p>
+    	選擇語音角色：</p>
+    <p>
+    	<select id="voice-select"> </select></p>
+    <h1>
+    	鍵盤對應</h1>
+    <p>
+    	使用前請先進行&nbsp;<a href="https://class.kh.edu.tw/19061/bulletin/msg_view/752">鍵盤支援六點輸入測試</a></p>
+    <table border="1">
+    	<tbody>
+    		<tr>
+    			<td colspan="3" rowspan="1" style="text-align: center;">
+    				左手</td>
+    			<td colspan="3" rowspan="1" style="text-align: center;">
+    				右手</td>
+    		</tr>
+    		<tr>
+    			<td style="text-align: center;">
+    				無名指</td>
+    			<td style="text-align: center;">
+    				中指</td>
+    			<td style="text-align: center;">
+    				食指</td>
+    			<td style="text-align: center;">
+    				食指</td>
+    			<td style="text-align: center;">
+    				中指</td>
+    			<td style="text-align: center;">
+    				無名指</td>
+    		</tr>
+    		<tr>
+    			<td style="text-align: center;">
+    				S</td>
+    			<td style="text-align: center;">
+    				D</td>
+    			<td style="text-align: center;">
+    				F</td>
+    			<td style="text-align: center;">
+    				J</td>
+    			<td style="text-align: center;">
+    				K</td>
+    			<td style="text-align: center;">
+    				L</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				第 3 點</td>
+    			<td>
+    				第 2 點</td>
+    			<td>
+    				第 1 點</td>
+    			<td>
+    				第 4 點</td>
+    			<td>
+    				第 5 點</td>
+    			<td>
+    				第 6 點</td>
+    		</tr>
+    	</tbody>
+    </table>
+    <h1>
+    	UEB 一方縮寫符號表</h1>
+    <h2>
+    	10.1 Alphabetic wordsigns 字母單字縮寫</h2>
+    <table border="1">
+    	<tbody>
+    		<tr>
+    			<td>
+    				點字</td>
+    			<td>
+    				ASCII</td>
+    			<td>
+    				縮寫字</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠃</td>
+    			<td>
+    				b</td>
+    			<td>
+    				but</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠉</td>
+    			<td>
+    				c</td>
+    			<td>
+    				can</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠙</td>
+    			<td>
+    				d</td>
+    			<td>
+    				do</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠑</td>
+    			<td>
+    				e</td>
+    			<td>
+    				every</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠋</td>
+    			<td>
+    				f</td>
+    			<td>
+    				from</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠛</td>
+    			<td>
+    				g</td>
+    			<td>
+    				go</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠓</td>
+    			<td>
+    				h</td>
+    			<td>
+    				have</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠚</td>
+    			<td>
+    				j</td>
+    			<td>
+    				just</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠅</td>
+    			<td>
+    				k</td>
+    			<td>
+    				knowledge</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠇</td>
+    			<td>
+    				l</td>
+    			<td>
+    				like</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠍</td>
+    			<td>
+    				m</td>
+    			<td>
+    				more</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠝</td>
+    			<td>
+    				n</td>
+    			<td>
+    				not</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠏</td>
+    			<td>
+    				p</td>
+    			<td>
+    				people</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠟</td>
+    			<td>
+    				q</td>
+    			<td>
+    				quite</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠗</td>
+    			<td>
+    				r</td>
+    			<td>
+    				rather</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠎</td>
+    			<td>
+    				s</td>
+    			<td>
+    				so</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠞</td>
+    			<td>
+    				t</td>
+    			<td>
+    				that</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠥</td>
+    			<td>
+    				u</td>
+    			<td>
+    				us</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠧</td>
+    			<td>
+    				v</td>
+    			<td>
+    				very</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠭</td>
+    			<td>
+    				x</td>
+    			<td>
+    				it</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠽</td>
+    			<td>
+    				y</td>
+    			<td>
+    				you</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠵</td>
+    			<td>
+    				z</td>
+    			<td>
+    				as</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠺</td>
+    			<td>
+    				w</td>
+    			<td>
+    				will</td>
+    		</tr>
+    	</tbody>
+    </table>
+    <p>
+    	&nbsp;</p>
+    <h2>
+    	10.2 Strong wordsigns 特定單字縮寫</h2>
+    <table border="1">
+    	<tbody>
+    		<tr>
+    			<td>
+    				點字</td>
+    			<td>
+    				ASCII</td>
+    			<td>
+    				縮寫字</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠡</td>
+    			<td>
+    				*</td>
+    			<td>
+    				child</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠩</td>
+    			<td>
+    				%</td>
+    			<td>
+    				shall</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠹</td>
+    			<td>
+    				?</td>
+    			<td>
+    				this</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠱</td>
+    			<td>
+    				:</td>
+    			<td>
+    				which</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠳</td>
+    			<td>
+    				|</td>
+    			<td>
+    				out</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠌</td>
+    			<td>
+    				/</td>
+    			<td>
+    				still</td>
+    		</tr>
+    	</tbody>
+    </table>
+    <p>
+    	&nbsp;</p>
+    <h2>
+    	10.3 Strong contractions 特定縮寫</h2>
+    <table border="1">
+    	<tbody>
+    		<tr>
+    			<td>
+    				點字</td>
+    			<td>
+    				ASCII</td>
+    			<td>
+    				縮寫字</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠯</td>
+    			<td>
+    				&amp;</td>
+    			<td>
+    				and</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠿</td>
+    			<td>
+    				=</td>
+    			<td>
+    				for</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠷</td>
+    			<td>
+    				(</td>
+    			<td>
+    				of</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠮</td>
+    			<td>
+    				!</td>
+    			<td>
+    				the</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠾</td>
+    			<td>
+    				)</td>
+    			<td>
+    				with</td>
+    		</tr>
+    	</tbody>
+    </table>
+    <p>
+    	&nbsp;</p>
+    <h2>
+    	10.4&nbsp;Strong groupsigns 特定字群​縮寫</h2>
+    <table border="1">
+    	<tbody>
+    		<tr>
+    			<td>
+    				點字</td>
+    			<td>
+    				ASCII</td>
+    			<td>
+    				縮寫字</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠡</td>
+    			<td>
+    				*</td>
+    			<td>
+    				ch</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠣</td>
+    			<td>
+    				&lt;&nbsp;</td>
+    			<td>
+    				gh</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠩</td>
+    			<td>
+    				%</td>
+    			<td>
+    				sh</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠹</td>
+    			<td>
+    				?</td>
+    			<td>
+    				th</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠱</td>
+    			<td>
+    				:</td>
+    			<td>
+    				wh</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠫</td>
+    			<td>
+    				$</td>
+    			<td>
+    				ed</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠻</td>
+    			<td>
+    				]</td>
+    			<td>
+    				er</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠳</td>
+    			<td>
+    				\</td>
+    			<td>
+    				ou</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠪</td>
+    			<td>
+    				{</td>
+    			<td>
+    				ow</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠌</td>
+    			<td>
+    				/</td>
+    			<td>
+    				st</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠬</td>
+    			<td>
+    				+</td>
+    			<td>
+    				ing</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠜</td>
+    			<td>
+    				&gt;&nbsp;</td>
+    			<td>
+    				ar</td>
+    		</tr>
+    	</tbody>
+    </table>
+    <p>
+    	&nbsp;</p>
+    <h2>
+    	10.5&nbsp;Lower wordsigns 下位單​字縮寫</h2>
+    <table border="1">
+    	<tbody>
+    		<tr>
+    			<td>
+    				點字</td>
+    			<td>
+    				ASCII</td>
+    			<td>
+    				縮寫字</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠆</td>
+    			<td>
+    				2</td>
+    			<td>
+    				be</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠢</td>
+    			<td>
+    				5</td>
+    			<td>
+    				enough</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠶</td>
+    			<td>
+    				7</td>
+    			<td>
+    				were</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠦</td>
+    			<td>
+    				8</td>
+    			<td>
+    				his</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠔</td>
+    			<td>
+    				9</td>
+    			<td>
+    				in</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠴</td>
+    			<td>
+    				0</td>
+    			<td>
+    				was</td>
+    		</tr>
+    	</tbody>
+    </table>
+    <p>
+    	&nbsp;</p>
+    <h2>
+    	10.6&nbsp;Lower groupsigns 下位​字群縮寫</h2>
+    <p>
+    	&nbsp;</p>
+    <table border="1">
+    	<tbody>
+    		<tr>
+    			<td>
+    				點字</td>
+    			<td>
+    				ASCII</td>
+    			<td>
+    				縮寫字</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠂</td>
+    			<td>
+    				1</td>
+    			<td>
+    				ea</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠆</td>
+    			<td>
+    				2</td>
+    			<td>
+    				be</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠆</td>
+    			<td>
+    				2</td>
+    			<td>
+    				bb</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠒</td>
+    			<td>
+    				3</td>
+    			<td>
+    				con</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠒</td>
+    			<td>
+    				3</td>
+    			<td>
+    				cc</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠲</td>
+    			<td>
+    				4</td>
+    			<td>
+    				dis</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠢</td>
+    			<td>
+    				5</td>
+    			<td>
+    				en</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠖</td>
+    			<td>
+    				6</td>
+    			<td>
+    				ff</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠶</td>
+    			<td>
+    				7</td>
+    			<td>
+    				gg</td>
+    		</tr>
+    		<tr>
+    			<td>
+    				⠔</td>
+    			<td>
+    				9</td>
+    			<td>
+    				in</td>
+    		</tr>
+    	</tbody>
+    </table>
+    <p>
+    	&nbsp;</p>
+    <p>
+    	感謝 ChatGPT 與 詹博丞 技術指導</p>
+    <script>
+    	       const mapping = {
+    	           'f': 1,
+    	           'd': 2,
+    	           's': 3,
+    	           'j': 4,
+    	           'k': 5,
+    	           'l': 6
+    	       };
+    
+    	       const rules = {
+    	           '12': '⠃ but',
+    	           '14': '⠉ can',
+    	           '145': '⠙ do',
+    	           '15': '⠑ every',
+    	           '124': '⠋ from',
+    	           '1245': '⠛ go',
+    	           '125': '⠓ have',
+    	           '245': '⠚ just',
+    	           '13': '⠅ knowledge',
+    	           '123': '⠇ like',
+    	           '134': '⠍ more',
+    	           '1345': '⠝ not',
+    	           '1234': '⠏ people',
+    	           '12345': '⠟ quite',
+    	           '1235': '⠗ rather',
+    	           '234': '⠎ so',
+    	           '2345': '⠞ that',
+    	           '136': '⠥ us',
+    	           '1236': '⠧ very',
+    	           '1346': '⠭ it',
+    	           '13456': '⠽ you',
+    	           '1356': '⠵ as',
+    	           '2456': '⠺ will',
+    	           '16': '⠡ child 或 ch',
+    	           '146': '⠩ shall 或 sh',
+    	           '1456': '⠹ this 或 th',
+    	           '156': '⠱ which 或 wh',
+    	           '1256': '⠳ out 或 ou',
+    	           '34': '⠌ still 或 st',
+    	           '12346': '⠯ and',
+    	           '123456': '⠿ for',
+    	           '12356': '⠷ of',
+    	           '2346': '⠮ the',
+    	           '23456': '⠾ with',
+    	           '126': '⠣ gh',
+    	           '1246': '⠫ ed',
+    	           '12456': '⠻ er',
+    	           '246': '⠪ow',
+    	           '346': '⠬ ing',
+    	           '345': '⠜ ar',
+    	           '23': '⠆ be 或 bb',
+    	           '26': '⠢ enough 或 en',
+    	           '2356': '⠶ were 或 gg',
+    	           '236': '⠦ his',
+    	           '356': '⠴ was',
+    	           '2': '⠂ ea',
+    	           '25': '⠒ con 或 cc',
+    	           '256': '⠲ dis',
+    	           '235': '⠖ ff',
+    	           '35': '⠔ in'
+    	       };
+    
+    	 const output = document.getElementById('output');
+    	 let keyboardState = [false, false, false, false, false, false];
+    	 let keyboardTouched = [false, false, false, false, false, false];
+    	 let lastOutput = '';
+    
+    	 // 語音合成器
+    	 const synth = window.speechSynthesis;
+    
+    	 // 語音角色列表
+    	 const voiceSelect = document.getElementById('voice-select');
+    	 let voices = [];
+    
+    	 // 當語音合成器加載完成時，填充語音角色下拉選單
+    	 synth.onvoiceschanged = function() {
+    	   voices = synth.getVoices();
+    	   voices.forEach(function(voice, index) {
+    	     const option = document.createElement('option');
+    	     option.value = index;
+    	     option.text = `${voice.name} (${voice.lang})`;
+    	     voiceSelect.appendChild(option);
+    	   });
+    	 };
+    
+    	 // 語音合成
+    	 function speak(text) {
+    	   const selectedVoiceIndex = voiceSelect.value;
+    	   const selectedVoice = voices[selectedVoiceIndex];
+    	   const utterance = new SpeechSynthesisUtterance(text);
+    	   utterance.voice = selectedVoice;
+    	   synth.speak(utterance);
+    	 }
+    
+    	 function updateOutput() {
+    	   const bufferKeyString = keyboardTouched.map((state, index) => state ? String(index + 1) : '').join('');
+    	   const character = rules[bufferKeyString];
+    	   if (character) {
+    	     lastOutput = character;
+    	     output.innerText = lastOutput;
+    	     speak(lastOutput);
+    	   }
+    	 }
+    
+    	 document.addEventListener('keydown', event => {
+    	   const key = event.key.toLowerCase();
+    	   if (mapping[key] !== undefined) {
+    	     keyboardState[mapping[key] - 1] = true;
+    	     keyboardTouched[mapping[key] - 1] = true;
+    	   }
+    	 });
+    
+    	 document.addEventListener('keyup', event => {
+    	   const key = event.key.toLowerCase();
+    	   if (mapping[key] !== undefined) {
+    	     keyboardState[mapping[key] - 1] = false;
+    	     if (keyboardState.every(elem => elem === false) && keyboardTouched.some(elem => elem === true)) {
+    	       updateOutput();
+    	       keyboardTouched.fill(false);
+    	     }
+    	   }
+    	 });
+    	</script>
+  </body>
+</html>

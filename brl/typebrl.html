@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>點字生成器</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .braille-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .braille-cell {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 5px;
+        }
+        button {
+            width: 40px;
+            height: 40px;
+            font-size: 12px;
+            border: none;
+            border-radius: 50%;
+            background-color: #f0f0f0;
+            cursor: pointer;
+        }
+        button.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        #output {
+            font-size: 48px;
+            margin-top: 20px;
+            letter-spacing: 10px;
+        }
+        .control-buttons {
+            margin-top: 20px;
+        }
+        .control-buttons button {
+            width: auto;
+            height: auto;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            margin: 0 10px;
+        }
+        .hidden-textarea {
+            position: absolute;
+            left: -9999px;
+        }
+    </style>
+</head>
+<body>
+    <h1>點字生成器</h1>
+    <div class="braille-container" id="braille-container"></div>
+    <div id="output"></div>
+    <div class="control-buttons">
+        <button id="copyButton">複製</button>
+        <button id="clearButton">清除</button>
+    </div>
+    <textarea id="hiddenTextarea" class="hidden-textarea"></textarea>
+
+    <script>
+        const container = document.getElementById('braille-container');
+        const output = document.getElementById('output');
+        const copyButton = document.getElementById('copyButton');
+        const clearButton = document.getElementById('clearButton');
+        const cells = [];
+
+        for (let cell = 0; cell < 6; cell++) {
+            const cellDiv = document.createElement('div');
+            cellDiv.className = 'braille-cell';
+            const cellDots = new Set();
+            cells.push(cellDots);
+
+            const dotOrder = [1, 4, 2, 5, 3, 6, 7, 8];
+            for (let i = 0; i < 8; i++) {
+                const dot = dotOrder[i];
+                const button = document.createElement('button');
+                button.textContent = dot;
+                button.addEventListener('click', () => {
+                    if (cellDots.has(dot)) {
+                        cellDots.delete(dot);
+                        button.classList.remove('active');
+                    } else {
+                        cellDots.add(dot);
+                        button.classList.add('active');
+                    }
+                    updateBrailleCharacters();
+                });
+                cellDiv.appendChild(button);
+            }
+            container.appendChild(cellDiv);
+        }
+
+        function updateBrailleCharacters() {
+            const dotMapping = [0x1, 0x2, 0x4, 0x8, 0x10, 0x20, 0x40, 0x80];
+            let brailleString = '';
+
+            cells.forEach(cell => {
+                let brailleCode = 0x2800;
+                cell.forEach(dot => {
+                    brailleCode |= dotMapping[dot - 1];
+                });
+                brailleString += String.fromCodePoint(brailleCode);
+            });
+
+            output.textContent = brailleString;
+        }
+
+        copyButton.addEventListener('click', () => {
+            const hiddenTextarea = document.getElementById('hiddenTextarea');
+            hiddenTextarea.value = output.textContent;
+            hiddenTextarea.select();
+            
+            try {
+                document.execCommand('copy');
+                alert('已複製點字 Unicode');
+            } catch (err) {
+                console.error('複製失敗: ', err);
+                alert('複製失敗，請手動複製');
+            }
+            
+            // 取消選取
+            window.getSelection().removeAllRanges();
+        });
+
+        clearButton.addEventListener('click', () => {
+            cells.forEach(cell => cell.clear());
+            document.querySelectorAll('.braille-cell button').forEach(button => {
+                button.classList.remove('active');
+            });
+            updateBrailleCharacters();
+        });
+    </script>
+</body>
+</html>

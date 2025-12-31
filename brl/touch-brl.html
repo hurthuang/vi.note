@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>觸控點字機</title>
+  <style>
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+      overflow-x: hidden;
+    }
+    
+    .container {
+      width: 100%;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .header {
+      text-align: center;
+      padding: 10px;
+      background-color: #2196F3;
+      color: white;
+    }
+    
+    .output-area {
+      flex: 1;
+      padding: 10px;
+      background-color: white;
+      border-bottom: 1px solid #ccc;
+      position: relative;
+    }
+    
+    .output-content {
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+      padding: 12px;
+      font-size: 20px;
+      border: 1px solid #ddd;
+      background-color: white;
+      word-break: break-all;
+      white-space: pre-wrap;
+    }
+    
+    /* 複製按鈕 */
+    .copy-btn {
+      position: absolute;
+      right: 15px;
+      bottom: 15px;
+      background-color: #2196F3;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      z-index: 5;
+      cursor: pointer;
+    }
+    
+    .keyboard-area {
+      height: 40vh;
+      min-height: 250px;
+      background-color: #333;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      touch-action: manipulation;
+    }
+    
+    .braille-preview {
+      height: 60px;
+      background-color: #222;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+    }
+    
+    @media screen and (orientation: portrait) {
+      .braille-preview {
+        height: 40px;
+      }
+      
+      .keyboard-area {
+        height: 35vh;
+        min-height: 220px;
+      }
+    }
+    
+    .keyboard {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      padding: 10px;
+    }
+    
+    .key-row {
+      display: flex;
+      width: 100%;
+      justify-content: space-around;
+      height: 70px;
+    }
+    
+    .key {
+      background-color: #444;
+      color: white;
+      border-radius: 10px;
+      border: 2px solid #555;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      user-select: none;
+      width: 10%;
+      height: 100%;
+      min-width: 60px;
+      position: relative;
+      box-shadow: 0 4px 0 #222;
+      transition: transform 0.05s, box-shadow 0.05s;
+      margin: 0 5px;
+    }
+    
+    .key.pressed {
+      background-color: #555;
+      transform: translateY(4px);
+      box-shadow: 0 0 0 #222;
+    }
+    
+    .key .dot-position {
+      position: absolute;
+      bottom: 5px;
+      right: 5px;
+      font-size: 14px;
+      color: #aaa;
+    }
+    
+    .key-semicolon {
+      background-color: #4CAF50;
+    }
+    
+    .control-buttons {
+      display: flex;
+      height: 60px;
+      background-color: #222;
+      width: 100%;
+    }
+    
+    .control-btn {
+      flex: 1;
+      border: none;
+      background-color: #333;
+      color: white;
+      font-size: 18px;
+      border-right: 1px solid #444;
+    }
+    
+    .control-btn:last-child {
+      border-right: none;
+    }
+    
+    .control-btn.space {
+      flex: 2;
+      background-color: #555;
+    }
+    
+    .instructions {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: rgba(0,0,0,0.7);
+      color: white;
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 14px;
+      z-index: 100;
+      opacity: 0.8;
+      max-width: 250px;
+    }
+    
+    .instructions h3 {
+      margin-top: 0;
+    }
+    
+    .instructions p {
+      margin: 5px 0;
+    }
+    
+    .instructions-toggle {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background-color: rgba(0,0,0,0.5);
+      color: white;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 101;
+    }
+
+    @media screen and (max-width: 768px) {
+      .key {
+        min-width: 30px;
+        font-size: 18px;
+        margin: 0 2px;
+      }
+      
+      .key-row {
+        height: 60px;
+      }
+      
+      .braille-preview {
+        height: 50px;
+      }
+      
+      .control-buttons {
+        height: 50px;
+      }
+      
+      .control-btn {
+        font-size: 16px;
+      }
+      
+      .header h2 {
+        font-size: 20px;
+        margin: 5px 0;
+      }
+    }
+    
+    @media screen and (max-width: 480px) {
+      .key {
+        min-width: 20px;
+        font-size: 16px;
+        margin: 0 1px;
+      }
+      
+      .key .dot-position {
+        font-size: 10px;
+      }
+      
+      .key-row {
+        height: 50px;
+      }
+      
+      .braille-preview {
+        height: 40px;
+      }
+      
+      .control-buttons {
+        height: 40px;
+      }
+      
+      .control-btn {
+        font-size: 14px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>觸控點字機</h2>
+    </div>
+    
+    <div class="output-area">
+      <div id="output-text" class="output-content" contenteditable="false"></div>
+      <button class="copy-btn" id="copy-btn" title="複製到剪貼簿">📋</button>
+    </div>
+    
+    <div class="keyboard-area">
+      <div class="braille-preview" id="braille-preview"></div>
+      
+      <div class="keyboard">
+        <div class="key-row">
+          <div class="key" id="key-a" data-index="6">
+            A
+            <span class="dot-position">退格</span>
+          </div>
+          <div class="key" id="key-s" data-index="2">
+            S
+            <span class="dot-position">3</span>
+          </div>
+          <div class="key" id="key-d" data-index="1">
+            D
+            <span class="dot-position">2</span>
+          </div>
+          <div class="key" id="key-f" data-index="0">
+            F
+            <span class="dot-position">1</span>
+          </div>
+          <div class="key" id="key-j" data-index="3">
+            J
+            <span class="dot-position">4</span>
+          </div>
+          <div class="key" id="key-k" data-index="4">
+            K
+            <span class="dot-position">5</span>
+          </div>
+          <div class="key" id="key-l" data-index="5">
+            L
+            <span class="dot-position">6</span>
+          </div>
+          <div class="key key-semicolon" id="key-semicolon" data-index="7">
+            ;
+            <span class="dot-position">換行</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="control-buttons">
+        <button class="control-btn" id="clear-btn">清除</button>
+        <button class="control-btn space" id="space-btn">空格</button>
+        <button class="control-btn" id="enter-btn">換行</button>
+      </div>
+    </div>
+    
+    <div class="instructions-toggle" id="instructions-toggle">?</div>
+    <div class="instructions" id="instructions" style="display: none;">
+      <h3>使用說明：</h3>
+      <p>1. 同時按下不同按鍵組合輸入點字</p>
+      <p>2. F=點1, D=點2, S=點3</p>
+      <p>3. J=點4, K=點5, L=點6</p>
+      <p>4. A=退格, ;=換行</p>
+      <p>5. 示例: FSK組合輸入⠕</p>
+      <p>6. 也可使用鍵盤輸入</p>
+    </div>
+  </div>
+
+  <script>
+    // 點字記錄變數
+    let dots = [0, 0, 0, 0, 0, 0];
+    let brailleCode = 0;
+    let activeKeys = new Set();
+    let touches = {};
+    
+    // DOM 元素參考
+    const keys = document.querySelectorAll('.key');
+    const outputText = document.getElementById('output-text');
+    const braillePreview = document.getElementById('braille-preview');
+    const clearBtn = document.getElementById('clear-btn');
+    const spaceBtn = document.getElementById('space-btn');
+    const enterBtn = document.getElementById('enter-btn');
+    const instructionsToggle = document.getElementById('instructions-toggle');
+    const instructions = document.getElementById('instructions');
+    
+    // 顯示/隱藏說明
+    instructionsToggle.addEventListener('click', function() {
+      if (instructions.style.display === 'none') {
+        instructions.style.display = 'block';
+      } else {
+        instructions.style.display = 'none';
+      }
+    });
+    
+    // 只對鍵盤區域監聽觸控事件
+    const keyboardArea = document.querySelector('.keyboard-area');
+    keyboardArea.addEventListener('touchstart', handleTouchStart, { passive: false });
+    keyboardArea.addEventListener('touchmove', handleTouchMove, { passive: false });
+    keyboardArea.addEventListener('touchend', handleTouchEnd, { passive: false });
+    
+    // 處理觸控取消
+    keyboardArea.addEventListener('touchcancel', function(e) {
+      // 釋放所有按鍵
+      for (const touchId in touches) {
+        const touchInfo = touches[touchId];
+        if (touchInfo && touchInfo.element) {
+          handleKeyRelease(touchInfo.element);
+        }
+      }
+      
+      // 清空觸控記錄
+      touches = {};
+      
+      // 如果有活動點字，考慮提交
+      if (brailleCode !== 0) {
+        commitBraille();
+      }
+    }, { passive: false });
+    
+    // 也支援滑鼠事件（用於開發測試）
+    keys.forEach(key => {
+      key.addEventListener('mousedown', function(e) {
+        handleKeyPress(this);
+      });
+      
+      key.addEventListener('mouseup', function(e) {
+        handleKeyRelease(this);
+      });
+      
+      // 防止滑鼠離開按鍵時沒有觸發 mouseup
+      key.addEventListener('mouseleave', function(e) {
+        if (this.classList.contains('pressed')) {
+          handleKeyRelease(this);
+        }
+      });
+    });
+    
+    // 全域監聽空格鍵，防止頁面滾動
+    document.addEventListener('keydown', function(e) {
+      // 如果是空格鍵
+      if (e.key === ' ' || e.keyCode === 32) {
+        // 阻止默認行為（頁面滾動）
+        e.preventDefault();
+        
+        // 如果焦點不在輸出區域，則添加空格到輸出文本
+        outputText.textContent += ' ';
+        outputText.scrollTop = outputText.scrollHeight;
+        return false;
+      }
+    }, false);
+    
+    // 處理按鍵按下
+    document.addEventListener('keydown', function(e) {
+      // 防止重複觸發
+      if (e.repeat) return;
+      
+      let keyElement;
+      switch(e.key.toLowerCase()) {
+        case 'a':
+          keyElement = document.getElementById('key-a');
+          break;
+        case 's':
+          keyElement = document.getElementById('key-s');
+          break;
+        case 'd':
+          keyElement = document.getElementById('key-d');
+          break;
+        case 'f':
+          keyElement = document.getElementById('key-f');
+          break;
+        case 'j':
+          keyElement = document.getElementById('key-j');
+          break;
+        case 'k':
+          keyElement = document.getElementById('key-k');
+          break;
+        case 'l':
+          keyElement = document.getElementById('key-l');
+          break;
+        case ';':
+          keyElement = document.getElementById('key-semicolon');
+          break;
+        case 'backspace':
+          const text = outputText.textContent;
+          if (text.length > 0) {
+            outputText.textContent = text.slice(0, -1);
+          }
+          e.preventDefault();
+          return;
+        case 'enter':
+          outputText.textContent += '\n';
+          outputText.scrollTop = outputText.scrollHeight;
+          e.preventDefault();
+          return;
+      }
+      
+      if (keyElement) {
+        handleKeyPress(keyElement);
+        e.preventDefault();
+      }
+    });
+    
+    document.addEventListener('keyup', function(e) {
+      let keyElement;
+      switch(e.key.toLowerCase()) {
+        case 'a':
+          keyElement = document.getElementById('key-a');
+          break;
+        case 's':
+          keyElement = document.getElementById('key-s');
+          break;
+        case 'd':
+          keyElement = document.getElementById('key-d');
+          break;
+        case 'f':
+          keyElement = document.getElementById('key-f');
+          break;
+        case 'j':
+          keyElement = document.getElementById('key-j');
+          break;
+        case 'k':
+          keyElement = document.getElementById('key-k');
+          break;
+        case 'l':
+          keyElement = document.getElementById('key-l');
+          break;
+        case ';':
+          keyElement = document.getElementById('key-semicolon');
+          break;
+      }
+      
+      if (keyElement) {
+        handleKeyRelease(keyElement);
+        e.preventDefault();
+      }
+    });
+    
+    // 控制按鈕事件
+    clearBtn.addEventListener('click', function() {
+      outputText.textContent = '';
+    });
+    
+    spaceBtn.addEventListener('click', function() {
+      outputText.textContent += ' ';
+      // 自動滾動到底部
+      outputText.scrollTop = outputText.scrollHeight;
+    });
+    
+    enterBtn.addEventListener('click', function() {
+      outputText.textContent += '\n';
+      // 自動滾動到底部
+      outputText.scrollTop = outputText.scrollHeight;
+    });
+    
+    // 複製按鈕功能
+    document.getElementById('copy-btn').addEventListener('click', function() {
+      const text = outputText.textContent;
+      if (text.length > 0) {
+        navigator.clipboard.writeText(text).then(function() {
+          alert('已複製到剪貼簿！');
+        }).catch(function(err) {
+          console.error('無法複製文字: ', err);
+        });
+      }
+    });
+    
+    // 處理觸控開始
+    function handleTouchStart(e) {
+      // 記錄觸控點
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const touch = e.changedTouches[i];
+        const element = document.elementFromPoint(touch.clientX, touch.clientY);
+        
+        if (element && element.classList.contains('key')) {
+          // 記錄這個觸控點對應的元素
+          touches[touch.identifier] = {
+            element: element,
+            x: touch.clientX,
+            y: touch.clientY
+          };
+          
+          // 處理按鍵按下
+          handleKeyPress(element);
+        }
+      }
+      
+      // 防止默認行為（如果有按鍵被按下）
+      if (Object.keys(touches).length > 0) {
+        e.preventDefault();
+      }
+    }
+    
+    // 處理觸控移動
+    function handleTouchMove(e) {
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const touch = e.changedTouches[i];
+        const touchInfo = touches[touch.identifier];
+        
+        // 如果這個觸控點之前在按鍵上
+        if (touchInfo && touchInfo.element) {
+          const newElement = document.elementFromPoint(touch.clientX, touch.clientY);
+          
+          // 如果移動到了不同元素
+          if (newElement !== touchInfo.element) {
+            // 釋放舊按鍵
+            handleKeyRelease(touchInfo.element);
+            
+            // 如果移動到了新按鍵，按下它
+            if (newElement && newElement.classList.contains('key')) {
+              handleKeyPress(newElement);
+              touches[touch.identifier] = {
+                element: newElement,
+                x: touch.clientX,
+                y: touch.clientY
+              };
+            } else {
+              // 不再是按鍵，移除此觸控點記錄
+              delete touches[touch.identifier];
+            }
+          } else {
+            // 更新觸控點位置
+            touchInfo.x = touch.clientX;
+            touchInfo.y = touch.clientY;
+          }
+        }
+      }
+      
+      // 防止默認行為（如果有按鍵被按下）
+      if (Object.keys(touches).length > 0) {
+        e.preventDefault();
+      }
+    }
+    
+    // 處理觸控結束
+    function handleTouchEnd(e) {
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        const touch = e.changedTouches[i];
+        const touchInfo = touches[touch.identifier];
+        
+        // 如果這個觸控點有對應的元素，釋放它
+        if (touchInfo && touchInfo.element) {
+          handleKeyRelease(touchInfo.element);
+        }
+        
+        // 移除此觸控點記錄
+        delete touches[touch.identifier];
+      }
+      
+      // 如果沒有更多的觸控點且有活動點字，可以考慮提交
+      if (Object.keys(touches).length === 0 && brailleCode !== 0) {
+        // 檢查是否有功能鍵被按下
+        let anyFunctionKeyPressed = false;
+        if (activeKeys.has(6) || activeKeys.has(7)) {
+          anyFunctionKeyPressed = true;
+        }
+        
+        if (!anyFunctionKeyPressed) {
+          commitBraille();
+        }
+      }
+      
+      // 防止觸控結束的默認行為
+      e.preventDefault();
+    }
+    
+    // 處理按鍵按下
+    function handleKeyPress(keyElement) {
+      if (keyElement.classList.contains('pressed')) {
+        return;
+      }
+      
+      keyElement.classList.add('pressed');
+      const index = parseInt(keyElement.dataset.index);
+      activeKeys.add(index);
+      
+      // 處理點位
+      if (index >= 0 && index <= 5) {
+        dots[index] = 1;
+        
+        // 根據點位設置 brailleCode
+        if (index === 0) brailleCode |= 1; // F 點1
+        else if (index === 1) brailleCode |= 2; // D 點2
+        else if (index === 2) brailleCode |= 4; // S 點3
+        else if (index === 3) brailleCode |= 8; // J 點4
+        else if (index === 4) brailleCode |= 16; // K 點5
+        else if (index === 5) brailleCode |= 32; // L 點6
+        
+        updateBraillePreview();
+      }
+    }
+    
+    // 處理按鍵釋放
+    function handleKeyRelease(keyElement) {
+      keyElement.classList.remove('pressed');
+      const index = parseInt(keyElement.dataset.index);
+      activeKeys.delete(index);
+      
+      // 特殊功能鍵
+      if (index === 6) { // A 鍵 - 退格
+        const text = outputText.textContent;
+        if (text.length > 0) {
+          outputText.textContent = text.slice(0, -1);
+        }
+        resetDots();
+        return;
+      } else if (index === 7) { // 分號鍵 - Enter
+        outputText.textContent += '\n';
+        // 自動滾動到底部
+        outputText.scrollTop = outputText.scrollHeight;
+        resetDots();
+        return;
+      }
+      
+      // 檢查是否所有點字鍵都已釋放
+      let anyPointKeyActive = false;
+      for (let i = 0; i <= 5; i++) {
+        if (activeKeys.has(i)) {
+          anyPointKeyActive = true;
+          break;
+        }
+      }
+      
+      // 如果沒有點字鍵被按下，且有點字代碼，則輸入點字
+      if (!anyPointKeyActive && brailleCode !== 0) {
+        commitBraille();
+      }
+    }
+    
+    // 添加調試顯示
+    function updateBraillePreview() {
+      if (brailleCode === 0) {
+        braillePreview.textContent = '';
+      } else {
+        const brailleChar = String.fromCharCode(0x2800 + brailleCode);
+        let activeDots = [];
+        for (let i = 0; i < 6; i++) {
+          if (dots[i] === 1) {
+            activeDots.push(i+1);
+          }
+        }
+        braillePreview.textContent = brailleChar + ' (' + activeDots.join(',') + ')';
+      }
+    }
+    
+    // 輸入點字
+    function commitBraille() {
+      if (brailleCode !== 0) {
+        const brailleChar = String.fromCharCode(0x2800 + brailleCode);
+        outputText.textContent += brailleChar;
+        resetDots();
+        
+        // 自動滾動到底部
+        outputText.scrollTop = outputText.scrollHeight;
+      }
+    }
+    
+    // 重置點位狀態
+    function resetDots() {
+      dots = [0, 0, 0, 0, 0, 0];
+      brailleCode = 0;
+      updateBraillePreview();
+    }
+    
+    // 顯示初始說明
+    window.addEventListener('load', function() {
+      setTimeout(function() {
+        instructions.style.display = 'block';
+        setTimeout(function() {
+          instructions.style.display = 'none';
+        }, 5000);
+      }, 1000);
+    });
+  </script>
+</body>
+</html>

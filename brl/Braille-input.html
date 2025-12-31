@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>網頁點字機</title>
+	<style>
+	        #fontSizeControl {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+<h1>
+	網頁點字機</h1>
+<p>
+	當前模式：<span id="mode">一般輸入法</span></p>
+<p>
+	按 Ctrl + B 切換輸入模式</p>
+<div id="fontSizeControl">
+	<label for="fontSizeSlider">文字大小：</label>
+	<input type="range" id="fontSizeSlider" min="12" max="72" value="16" step="1">
+	<span id="fontSizeDisplay">16px</span>
+</div>
+<p>
+	<textarea id="textarea1" placeholder="在此輸入..." style="width: 100%; height: 300px;"></textarea></p>
+<div>
+	<button onclick="copyToClipboard()">複製到剪貼簿</button><button onclick="saveTextAsFile()">存檔</button></div>
+<script>
+        let isBrailleMode = false;
+        const textarea = document.getElementById('textarea1');
+        const modeSpan = document.getElementById('mode');
+		const fontSizeSlider = document.getElementById('fontSizeSlider');
+        const fontSizeDisplay = document.getElementById('fontSizeDisplay');
+
+        var dots = [0, 0, 0, 0, 0, 0];
+        var brailleCode = 0;
+
+        // 文字大小調整功能
+        fontSizeSlider.addEventListener('input', function() {
+            const fontSize = this.value;
+            textarea.style.fontSize = `${fontSize}px`;
+            fontSizeDisplay.textContent = `${fontSize}px`;
+        });
+
+        function keypressFunction(event) {
+            if (!isBrailleMode) return true;
+            if ((event.keyCode == 37) || (event.keyCode == 39) || (event.keyCode == 8) || (event.keyCode == 9) || (event.keyCode == 46) || (event.keyCode == 13)) {
+                return true;
+            }
+            event.preventDefault();
+            return false;
+        }
+
+        function keydownFunction(event) {
+            if (!isBrailleMode) return true;
+            if ((event.keyCode != 37) && (event.keyCode != 39) && (event.keyCode != 8) && (event.keyCode != 9) && (event.keyCode != 46) && (event.keyCode != 13)) {
+                if (event.keyCode == 83) {
+                    dots[0] = 1;
+                    brailleCode = brailleCode | 4;
+                } else if (event.keyCode == 68) {
+                    dots[1] = 1;
+                    brailleCode = brailleCode | 2;
+                } else if (event.keyCode == 70) {
+                    dots[2] = 1;
+                    brailleCode = brailleCode | 1;
+                } else if (event.keyCode == 74) {
+                    dots[3] = 1;
+                    brailleCode = brailleCode | 8;
+                } else if (event.keyCode == 75) {
+                    dots[4] = 1;
+                    brailleCode = brailleCode | 16;
+                } else if (event.keyCode == 76) {
+                    dots[5] = 1;
+                    brailleCode = brailleCode | 32;
+                } else if (event.keyCode == 32) {
+                    brailleCode = 65;
+                    return true;
+                }
+                return false;
+            }
+        }
+
+        function keyupFunction(event) {
+            if (!isBrailleMode) return true;
+            for (i = 0; i < 6; i++) {
+                dots[i] = 0;
+            }
+            if (brailleCode == 0) {
+                return false;
+            } else {
+                if (brailleCode == 65) {
+                    brailleCode = 0;
+                }
+                var sPos = textarea.selectionStart;
+                var ePos = textarea.selectionEnd;
+                var brl = String.fromCharCode(0x2800 + brailleCode);
+                var a = textarea.value;
+                var output = a.slice(0, sPos) + brl + a.slice(ePos);
+                textarea.value = output;
+                setCaretPosition(textarea, sPos + 1);
+            }
+            brailleCode = 0;
+            return false;
+        }
+
+        function setCaretPosition(ctrl, pos) {
+            if (ctrl.setSelectionRange) {
+                ctrl.focus();
+                ctrl.setSelectionRange(pos, pos);
+            } else if (ctrl.createTextRange) {
+                var range = ctrl.createTextRange();
+                range.collapse(true);
+                range.moveEnd('character', pos);
+                range.moveStart('character', pos);
+                range.select();
+            }
+        }
+
+        function saveTextAsFile() {
+            var textToSave = textarea.value;
+            var textToSaveAsBlob = new Blob([textToSave], {type:"text/plain"});
+            var textToSaveAsURL = window.URL.createObjectURL(textToSaveAsBlob);
+            var fileNameToSaveAs = "braille.txt";
+
+            var downloadLink = document.createElement("a");
+            downloadLink.download = fileNameToSaveAs;
+            downloadLink.innerHTML = "Download File";
+            downloadLink.href = textToSaveAsURL;
+            downloadLink.onclick = destroyClickedElement;
+            downloadLink.style.display = "none";
+            document.body.appendChild(downloadLink);
+
+            downloadLink.click();
+        }
+
+        function destroyClickedElement(event) {
+            document.body.removeChild(event.target);
+        }
+
+        function copyToClipboard() {
+            textarea.select();
+            document.execCommand("copy");
+            alert("已經複製到剪貼簿!");
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.ctrlKey && event.key.toLowerCase() === 'b') {
+                event.preventDefault();
+                isBrailleMode = !isBrailleMode;
+                modeSpan.textContent = isBrailleMode ? "點字輸入法" : "一般輸入法";
+            }
+        });
+
+        textarea.addEventListener('keypress', keypressFunction);
+        textarea.addEventListener('keydown', keydownFunction);
+        textarea.addEventListener('keyup', keyupFunction);
+    </script>
+</body>
+</html>
