@@ -64,7 +64,10 @@
 
         const BR_TO_ASCII_MAP = {'⠁':'a','⠂':'1','⠃':'b','⠄':'\'','⠅':'k','⠆':'2','⠇':'l','⠈':'`','⠉':'c','⠊':'i','⠋':'f','⠌':'/','⠍':'m','⠎':'s','⠏':'p','⠐':'"','⠑':'e','⠒':'3','⠓':'h','⠔':'9','⠕':'o','⠖':'6','⠗':'r','⠘':'~','⠙':'d','⠚':'j','⠛':'g','⠜':'>','⠝':'n','⠞':'t','⠟':'q','⠠':',','⠡':'*','⠢':'5','⠣':'<','⠤':'-','⠥':'u','⠦':'8','⠧':'v','⠨':'.','⠩':'%','⠪':'{','⠫':'$','⠬':'+','⠭':'x','⠮':'!','⠯':'&','⠰':';','⠱':':','⠲':'4','⠳':'|','⠴':'0','⠵':'z','⠶':'7','⠷':'(','⠸':'_','⠹':'?','⠺':'w','⠻':'}','⠼':'#','⠽':'y','⠾':')','⠿':'=','⠀':' '};
 
-        // --- 核心修正 1：在載入規則時徹底清洗 ---
+        // --- 1. 強化規則載入：清洗定義，並建立字母表 ---
+        let englishMap = new Map(); // 專門處理 A-Z
+        const DIGIT_MAP = {'1':'⠂','2':'⠆','3':'⠒','4':'⠲','5':'⠢','6':'⠖','7':'⠶','8':'⠦','9':'⠔','0':'⠴'};
+        
         async function loadRules() {
             try {
                 const files = ['zh-tw.txt', 'latinLetterDef6Dots.txt', 'loweredDigits6Dots.txt', 'en-ueb-chardefs.txt'];
@@ -72,82 +75,117 @@
                 
                 texts.forEach((t) => {
                     t.split('\n').forEach(line => {
-                        // 處理特殊詞組規則 (# 字頭)
+                        // 清洗定義末尾的點字空格
                         const ctx = line.match(/^#\s*([^\s]+)\s+([⠀-⣿\s]+)/);
-                        if (ctx) {
-                            // 使用 replace(/[⠀\s]+$/, '') 清除定義末尾的所有點字空格與 ASCII 空格
-                            contextRules.set(ctx[1], ctx[2].replace(/[⠀\s]+$/, ''));
-                        }
-                        
-                        // 處理基本字元規則
+                        if (ctx) contextRules.set(ctx[1], ctx[2].replace(/[⠀\s]+$/, ''));
+        
                         const basic = line.match(/^(letter|punctuation|lowercase|digit|sign)\s+(\S+)\s+([⠀-⣿\s]+)/);
                         if (basic) {
-                            brailleMap.set(basic[2], basic[3].replace(/[⠀\s]+$/, ''));
+                            const char = basic[2];
+                            const dots = basic[3].replace(/[⠀\s]+$/, '');
+                            brailleMap.set(char, dots);
+                            // 如果是英文字母，建立不分大小寫的映射
+                            if (/^[a-z]$/i.test(char)) englishMap.set(char.toLowerCase(), dots);
                         }
                     });
                 });
                 isRulesLoaded = true;
-                document.getElementById('rules-status').textContent = '規則載入完成 (已自動清洗定義空格)';
-            } catch (e) { 
-                console.error(e);
-                document.getElementById('rules-status').textContent = '載入失敗'; 
-            }
+                document.getElementById('rules-status').textContent = '規則載入完成';
+            } catch (e) { document.getElementById('rules-status').textContent = '載入失敗'; }
         }
         
-        // --- 核心修正 2：精準的空間補寫邏輯 ---
+        // --- 2. 強化 Tokenize：處理數字、英文與標點空間 ---
         function tokenize(text) {
             let tokens = [], i = 0;
-            // 句末標點：後面要補一個空格
             const terminal = new Set(['。', '？', '！', '?', '!']);
-            // 非句末標點：後面不要空格
             const nonTerminal = new Set(['，', '、', '；', '：', '．', '……', '──']);
             const sortedPhrases = Array.from(contextRules.keys()).sort((a,b) => b.length - a.length);
         
             while (i < text.length) {
-                // 1. 先匹配長詞組 (如 …… ──)
-                let match = null;
-                for (let p of sortedPhrases) { 
-                    if (text.startsWith(p, i)) { match = p; break; } 
-                }
-                
-                if (match) {
-                    let b = contextRules.get(match); // 這裡拿到的 b 已經在 loadRules 裡被清洗過了
-                    i += match.length;
+                let char = text[i];
+        
+                // 1. 處理英數混合區塊 (例如 3D, iPhone, iOS17, FDM)
+                // 只要是字母或數字，就視為一個「不可斷行」的單位
+                if (/[a-zA-Z0-9]/.test(char)) {
+                    let clusterText = "";
+                    let clusterBraille = "";
                     
-                    if (terminal.has(match)) {
-                        tokens.push({ text: match, braille: b + '⠀' }); // 強制補一個點字空格
-                    } else {
-                        tokens.push({ text: match, braille: b }); // 不補空格
+                    // 先抓出整個連續的英數字串
+                    while (i < text.length && /[a-zA-Z0-9]/.test(text[i])) {
+                        clusterText += text[i];
+                        i++;
                     }
-                    // 無論如何，吃掉輸入端原本就有的空格 (防止重複)
-                    while(i < text.length && (text[i] === ' ' || text[i] === '⠀')) i++;
+        
+                    // A. 判斷是否為「全大寫單詞」 (例如 FDM)
+                    const isAllAlpha = /^[a-zA-Z]+$/.test(clusterText);
+                    const isAllCaps = isAllAlpha && clusterText.length > 1 && clusterText === clusterText.toUpperCase();
+        
+                    if (isAllCaps) {
+                        clusterBraille = "⠠⠠"; // 全大寫詞符號
+                        for (let c of clusterText) {
+                            clusterBraille += englishMap.get(c.toLowerCase()) || c;
+                        }
+                    } else {
+                        // B. 混合模式 (處理 3D, iPhone 等)
+                        let inNumericMode = false;
+                        for (let c of clusterText) {
+                            if (/\d/.test(c)) {
+                                // 進入數字模式
+                                if (!inNumericMode) {
+                                    clusterBraille += "⠼"; // 數字號
+                                    inNumericMode = true;
+                                }
+                                clusterBraille += DIGIT_MAP[c] || c;
+                            } else {
+                                // 字母會中斷數字模式
+                                inNumericMode = false; 
+                                if (c === c.toUpperCase() && c !== c.toLowerCase()) {
+                                    clusterBraille += "⠠" + (englishMap.get(c.toLowerCase()) || c);
+                                } else {
+                                    clusterBraille += englishMap.get(c.toLowerCase()) || c;
+                                }
+                            }
+                        }
+                    }
+                    // 存入同一個 Token，確保 render 時不會被拆散
+                    tokens.push({ text: clusterText, braille: clusterBraille });
                     continue;
                 }
         
-                let char = text[i];
+                // 2. 處理長詞組 (中文標點或詞組)
+                let match = null;
+                for (let p of sortedPhrases) { if (text.startsWith(p, i)) { match = p; break; } }
+                if (match) {
+                    let b = contextRules.get(match);
+                    i += match.length;
+                    if (terminal.has(match)) {
+                        tokens.push({ text: match, braille: b + '⠀' });
+                        while(i < text.length && (text[i] === ' ' || text[i] === '⠀')) i++;
+                    } else if (nonTerminal.has(match)) {
+                        tokens.push({ text: match, braille: b });
+                        while(i < text.length && (text[i] === ' ' || text[i] === '⠀')) i++;
+                    } else { tokens.push({ text: match, braille: b }); }
+                    continue;
+                }
+        
+                // 3. 一般空格
+                if (char === ' ' || char === '⠀') {
+                    tokens.push({ text: '空', braille: '⠀' });
+                    i++;
+                    continue;
+                }
+        
+                // 4. 換行
                 if (char === '\n') {
                     tokens.push({ text: '↵', braille: '\n' });
                     i++;
-                } else if (char === ' ' || char === '⠀') {
-                    // 使用者主動輸入的空格，我們保留它
-                    tokens.push({ text: '空', braille: '⠀' });
-                    i++;
-                } else {
-                    let b = brailleMap.get(char) || char; // 這裡拿到的 b 也是乾淨的
-                    i++;
-                    
-                    if (terminal.has(char)) {
-                        tokens.push({ text: char, braille: b + '⠀' });
-                        // 吃掉輸入端原本的空格
-                        while(i < text.length && (text[i] === ' ' || text[i] === '⠀')) i++;
-                    } else if (nonTerminal.has(char)) {
-                        tokens.push({ text: char, braille: b });
-                        // 吃掉輸入端原本的空格
-                        while(i < text.length && (text[i] === ' ' || text[i] === '⠀')) i++;
-                    } else {
-                        tokens.push({ text: char, braille: b });
-                    }
+                    continue;
                 }
+        
+                // 5. 其他單個字元 (中文字)
+                let b = (brailleMap.get(char) || char).toString().replace(/[⠀\s]+$/, '');
+                i++;
+                tokens.push({ text: char, braille: b });
             }
             return tokens;
         }
