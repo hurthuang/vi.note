@@ -16,176 +16,149 @@
         button.secondary { background-color: #2196f3; }
         .container { display: flex; gap: 20px; margin-bottom: 20px; }
         .input-area, .output-area { flex: 1; }
-        textarea { width: 100%; height: 250px; padding: 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 20px; line-height: 1.6; box-sizing: border-box; }
-        .font-unicode { font-family: "Apple Braille", "Segoe UI Symbol", monospace; letter-spacing: 1px; }
-        .font-ascii { font-family: 'SimBraille', sans-serif; letter-spacing: 0px; }
-        .parallel-container { background: white; padding: 20px; border-radius: 8px; border: 1px solid #e0e0e0; max-height: 450px; overflow-y: auto; }
-        .parallel-title { font-weight: bold; margin-bottom: 15px; border-left: 4px solid #4caf50; padding-left: 10px; position: sticky; top: 0; background: white; }
-        #parallel-view { display: flex; flex-wrap: wrap; gap: 10px; }
-        .token-group { display: flex; flex-direction: column; align-items: center; min-width: 1.8em; }
-        .line-break { flex-basis: 100%; height: 15px; }
-        .token-text { font-size: 14px; color: #666; height: 1.5em; }
-        .token-braille { font-size: 26px; line-height: 1; color: #000; }
+        textarea { width: 100%; height: 280px; padding: 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 22px; line-height: 1.6; box-sizing: border-box; }
+        
+        /* ASCII 模式套用 SimBraille */
+        .font-ascii { font-family: 'SimBraille' !important; letter-spacing: 0px; }
+        .font-unicode { font-family: "Apple Braille", monospace; letter-spacing: 1px; }
+        
+        .parallel-container { background: white; padding: 20px; border-radius: 8px; border: 1px solid #e0e0e0; max-height: 500px; overflow-y: auto; }
+        .parallel-title { font-weight: bold; margin-bottom: 15px; border-left: 4px solid #4caf50; padding-left: 10px; position: sticky; top: 0; background: white; z-index: 5; }
+        #parallel-view { display: flex; flex-wrap: wrap; gap: 4px; row-gap: 12px; }
+        
+        .token-group { display: flex; flex-direction: column; align-items: center; min-width: 1.2em; padding: 2px; }
+        .token-text { font-size: 13px; color: #666; height: 1.5em; border-bottom: 1px solid #eee; width: 100%; text-align: center; margin-bottom: 4px; }
+        .token-braille { font-size: 28px; line-height: 1.2; color: #000; }
+        
+        /* 視覺化空格 */
+        .token-space { background-color: #fff9c4; border-radius: 2px; }
+        .token-space .token-text { color: #fbc02d; }
+
+        .line-break { flex-basis: 100%; height: 20px; border-top: 1px dashed #ddd; margin: 10px 0; }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>點字即時轉換器</h1>
-        <div class="rules-status" id="rules-status">正在載入規則...</div>
+        <div class="rules-status" id="rules-status">正在載入規則檔案...</div>
     </div>
 
     <div class="control-panel">
         <div><strong>每行方數：</strong><input type="number" id="cell-limit" value="40" style="width: 50px;"></div>
         <div>
-            <strong>格式：</strong>
+            <strong>呈現格式：</strong>
             <label><input type="radio" name="output-format" value="unicode" checked> Unicode</label>
-            <label><input type="radio" name="output-format" value="ascii"> ASCII</label>
+            <label><input type="radio" name="output-format" value="ascii"> ASCII (SimBraille)</label>
         </div>
         <div class="btn-group">
-            <button onclick="downloadTxt()">💾 儲存點字</button>
-            <button class="secondary" onclick="downloadParallelHtml()">📄 匯出並陳</button>
+            <button onclick="downloadTxt()">💾 儲存點字檔</button>
+            <button class="secondary" onclick="downloadParallelHtml()">📄 匯出並陳網頁</button>
         </div>
     </div>
 
     <div class="container">
-        <div class="input-area"><label>輸入文字：</label><textarea id="input-text" autofocus></textarea></div>
-        <div class="output-area"><label>點字結果：</label><textarea id="output-text" readonly></textarea></div>
+        <div class="input-area"><label>中英輸入：</label><textarea id="input-text" autofocus placeholder="請輸入文字..."></textarea></div>
+        <div class="output-area"><label>點字輸出：</label><textarea id="output-text" readonly></textarea></div>
     </div>
 
     <div class="parallel-container">
-        <div class="parallel-title">並陳校對檢視</div>
+        <div class="parallel-title">並陳校對區 (對應斷行與空格)</div>
         <div id="parallel-view"></div>
     </div>
 
     <script>
         let brailleMap = new Map();
         let contextRules = new Map();
+        let englishMap = new Map();
+        let sortedPhrases = [];
         let isRulesLoaded = false;
 
         const BR_TO_ASCII_MAP = {'⠁':'a','⠂':'1','⠃':'b','⠄':'\'','⠅':'k','⠆':'2','⠇':'l','⠈':'`','⠉':'c','⠊':'i','⠋':'f','⠌':'/','⠍':'m','⠎':'s','⠏':'p','⠐':'"','⠑':'e','⠒':'3','⠓':'h','⠔':'9','⠕':'o','⠖':'6','⠗':'r','⠘':'~','⠙':'d','⠚':'j','⠛':'g','⠜':'>','⠝':'n','⠞':'t','⠟':'q','⠠':',','⠡':'*','⠢':'5','⠣':'<','⠤':'-','⠥':'u','⠦':'8','⠧':'v','⠨':'.','⠩':'%','⠪':'{','⠫':'$','⠬':'+','⠭':'x','⠮':'!','⠯':'&','⠰':';','⠱':':','⠲':'4','⠳':'|','⠴':'0','⠵':'z','⠶':'7','⠷':'(','⠸':'_','⠹':'?','⠺':'w','⠻':'}','⠼':'#','⠽':'y','⠾':')','⠿':'=','⠀':' '};
-
-        // --- 1. 強化規則載入：清洗定義，並建立字母表 ---
-        let englishMap = new Map(); // 專門處理 A-Z
         const DIGIT_MAP = {'1':'⠂','2':'⠆','3':'⠒','4':'⠲','5':'⠢','6':'⠖','7':'⠶','8':'⠦','9':'⠔','0':'⠴'};
-        
+
         async function loadRules() {
             try {
                 const files = ['zh-tw.txt', 'latinLetterDef6Dots.txt', 'loweredDigits6Dots.txt', 'en-ueb-chardefs.txt'];
-                const texts = await Promise.all(files.map(f => fetch(f).then(r => r.text())));
+                const results = await Promise.allSettled(files.map(f => fetch(f).then(r => r.text())));
                 
-                texts.forEach((t) => {
-                    t.split('\n').forEach(line => {
-                        // 清洗定義末尾的點字空格
-                        const ctx = line.match(/^#\s*([^\s]+)\s+([⠀-⣿\s]+)/);
-                        if (ctx) contextRules.set(ctx[1], ctx[2].replace(/[⠀\s]+$/, ''));
-        
-                        const basic = line.match(/^(letter|punctuation|lowercase|digit|sign)\s+(\S+)\s+([⠀-⣿\s]+)/);
-                        if (basic) {
-                            const char = basic[2];
-                            const dots = basic[3].replace(/[⠀\s]+$/, '');
-                            brailleMap.set(char, dots);
-                            // 如果是英文字母，建立不分大小寫的映射
-                            if (/^[a-z]$/i.test(char)) englishMap.set(char.toLowerCase(), dots);
-                        }
-                    });
+                results.forEach(res => {
+                    if (res.status === 'fulfilled') {
+                        res.value.split('\n').forEach(line => {
+                            line = line.trim();
+                            const ctx = line.match(/^#\s*([^\s]+)\s+([⠀-⣿\s]+)/);
+                            if (ctx) contextRules.set(ctx[1], ctx[2].replace(/[⠀\s]+$/, ''));
+                            
+                            const basic = line.match(/^(letter|punctuation|lowercase|digit|sign)\s+(\S+)\s+([⠀-⣿\s]+)/);
+                            if (basic) {
+                                const char = basic[2], dots = basic[3].replace(/[⠀\s]+$/, '');
+                                brailleMap.set(char, dots);
+                                if (/^[a-z]$/i.test(char)) englishMap.set(char.toLowerCase(), dots);
+                            }
+                        });
+                    }
                 });
+                sortedPhrases = Array.from(contextRules.keys()).sort((a,b) => b.length - a.length);
                 isRulesLoaded = true;
                 document.getElementById('rules-status').textContent = '規則載入完成';
-            } catch (e) { document.getElementById('rules-status').textContent = '載入失敗'; }
+                render();
+            } catch (e) { document.getElementById('rules-status').textContent = '載入錯誤'; }
         }
-        
-        // --- 2. 強化 Tokenize：處理數字、英文與標點空間 ---
+
         function tokenize(text) {
             let tokens = [], i = 0;
             const terminal = new Set(['。', '？', '！', '?', '!']);
-            const nonTerminal = new Set(['，', '、', '；', '：', '．', '……', '──']);
-            const sortedPhrases = Array.from(contextRules.keys()).sort((a,b) => b.length - a.length);
-        
+
             while (i < text.length) {
                 let char = text[i];
-        
-                // 1. 處理英數混合區塊 (例如 3D, iPhone, iOS17, FDM)
-                // 只要是字母或數字，就視為一個「不可斷行」的單位
+                if (char === ' ' || char === '⠀') {
+                    tokens.push({ text: '空', braille: '⠀', isSpace: true });
+                    i++; continue;
+                }
+                if (char === '\n') {
+                    tokens.push({ text: '↵', braille: '\n' });
+                    i++; continue;
+                }
+                // 英數處理
                 if (/[a-zA-Z0-9]/.test(char)) {
-                    let clusterText = "";
-                    let clusterBraille = "";
-                    
-                    // 先抓出整個連續的英數字串
-                    while (i < text.length && /[a-zA-Z0-9]/.test(text[i])) {
-                        clusterText += text[i];
-                        i++;
-                    }
-        
-                    // A. 判斷是否為「全大寫單詞」 (例如 FDM)
-                    const isAllAlpha = /^[a-zA-Z]+$/.test(clusterText);
-                    const isAllCaps = isAllAlpha && clusterText.length > 1 && clusterText === clusterText.toUpperCase();
-        
-                    if (isAllCaps) {
-                        clusterBraille = "⠠⠠"; // 全大寫詞符號
-                        for (let c of clusterText) {
-                            clusterBraille += englishMap.get(c.toLowerCase()) || c;
-                        }
+                    let clusterText = "", clusterBraille = "";
+                    while (i < text.length && /[a-zA-Z0-9]/.test(text[i])) { clusterText += text[i]; i++; }
+                    // (簡化版英數邏輯，保留大寫與數字記號)
+                    if (clusterText === clusterText.toUpperCase() && /^[A-Z]+$/.test(clusterText) && clusterText.length > 1) {
+                        clusterBraille = "⠠⠠";
+                        for (let c of clusterText) clusterBraille += englishMap.get(c.toLowerCase()) || c;
                     } else {
-                        // B. 混合模式 (處理 3D, iPhone 等)
-                        let inNumericMode = false;
+                        let num = false;
                         for (let c of clusterText) {
-                            if (/\d/.test(c)) {
-                                // 進入數字模式
-                                if (!inNumericMode) {
-                                    clusterBraille += "⠼"; // 數字號
-                                    inNumericMode = true;
-                                }
-                                clusterBraille += DIGIT_MAP[c] || c;
-                            } else {
-                                // 字母會中斷數字模式
-                                inNumericMode = false; 
-                                if (c === c.toUpperCase() && c !== c.toLowerCase()) {
-                                    clusterBraille += "⠠" + (englishMap.get(c.toLowerCase()) || c);
-                                } else {
-                                    clusterBraille += englishMap.get(c.toLowerCase()) || c;
-                                }
-                            }
+                            if (/\d/.test(c)) { if(!num){clusterBraille+="⠼"; num=true;} clusterBraille+=DIGIT_MAP[c]; }
+                            else { num=false; if(c===c.toUpperCase()&&c!==c.toLowerCase()) clusterBraille+="⠠"; clusterBraille+=englishMap.get(c.toLowerCase())||c; }
                         }
                     }
-                    // 存入同一個 Token，確保 render 時不會被拆散
                     tokens.push({ text: clusterText, braille: clusterBraille });
                     continue;
                 }
-        
-                // 2. 處理長詞組 (中文標點或詞組)
+
+                // 詞組與標點
                 let match = null;
                 for (let p of sortedPhrases) { if (text.startsWith(p, i)) { match = p; break; } }
+                
                 if (match) {
                     let b = contextRules.get(match);
+                    tokens.push({ text: match, braille: b });
                     i += match.length;
                     if (terminal.has(match)) {
-                        tokens.push({ text: match, braille: b + '⠀' });
-                        while(i < text.length && (text[i] === ' ' || text[i] === '⠀')) i++;
-                    } else if (nonTerminal.has(match)) {
-                        tokens.push({ text: match, braille: b });
-                        while(i < text.length && (text[i] === ' ' || text[i] === '⠀')) i++;
-                    } else { tokens.push({ text: match, braille: b }); }
+                        tokens.push({ text: '空', braille: '⠀', isSpace: true });
+                        if (i < text.length && (text[i] === ' ' || text[i] === '⠀')) i++;
+                    }
                     continue;
                 }
-        
-                // 3. 一般空格
-                if (char === ' ' || char === '⠀') {
-                    tokens.push({ text: '(空)', braille: '⠀' });
-                    i++;
-                    continue;
-                }
-        
-                // 4. 換行
-                if (char === '\n') {
-                    tokens.push({ text: '↵', braille: '\n' });
-                    i++;
-                    continue;
-                }
-        
-                // 5. 其他單個字元 (中文字)
-                let b = (brailleMap.get(char) || char).toString().replace(/[⠀\s]+$/, '');
-                i++;
+
+                let b = brailleMap.get(char) || char;
                 tokens.push({ text: char, braille: b });
+                i++;
+                if (terminal.has(char)) {
+                    tokens.push({ text: '空', braille: '⠀', isSpace: true });
+                    if (i < text.length && (text[i] === ' ' || text[i] === '⠀')) i++;
+                }
             }
             return tokens;
         }
@@ -195,43 +168,61 @@
             const input = document.getElementById('input-text').value;
             const max = parseInt(document.getElementById('cell-limit').value) || 40;
             const isAscii = document.querySelector('input[name="output-format"]:checked').value === 'ascii';
-            const tokens = tokenize(input);
-
-            // 並陳區
+            const outArea = document.getElementById('output-text');
             const view = document.getElementById('parallel-view');
+            
+            const tokens = tokenize(input);
             view.innerHTML = '';
-            tokens.forEach(t => {
-                if (t.braille === '\n') { view.appendChild(Object.assign(document.createElement('div'), {className:'line-break'})); }
-                else {
-                    const g = document.createElement('div'); g.className = 'token-group';
-                    const brTxt = isAscii ? Array.from(t.braille).map(c => BR_TO_ASCII_MAP[c]||c).join('') : t.braille;
-                    g.innerHTML = `<div class="token-text">${t.text}</div><div class="token-braille ${isAscii?'font-ascii':'font-unicode'}">${brTxt}</div>`;
-                    view.appendChild(g);
+            outArea.className = isAscii ? 'font-ascii' : 'font-unicode';
+
+            let resultText = "";
+            let currentLineCells = 0;
+            const noLineBegin = new Set(['，', '、', '；', '：', '。', '？', '！', '」', '』', '）', '〉', '》', '．', '…', '—']);
+
+            tokens.forEach((t, idx) => {
+                if (t.braille === '\n') {
+                    resultText += '\n';
+                    currentLineCells = 0;
+                    const br = document.createElement('div'); br.className = 'line-break'; view.appendChild(br);
+                    return;
                 }
+
+                let bLen = Array.from(t.braille).length;
+                
+                // 檢查避頭點 (預判下一個 token)
+                let extra = 0;
+                if (idx + 1 < tokens.length && noLineBegin.has(tokens[idx+1].text)) {
+                    extra = Array.from(tokens[idx+1].braille).length;
+                }
+
+                // 斷行判斷
+                if (currentLineCells + bLen + extra > max && currentLineCells > 0) {
+                    resultText += '\n';
+                    currentLineCells = 0;
+                    const br = document.createElement('div'); br.className = 'line-break'; view.appendChild(br);
+                }
+
+                // 並陳元件
+                const g = document.createElement('div');
+                g.className = 'token-group' + (t.isSpace ? ' token-space' : '');
+                const dispB = isAscii ? Array.from(t.braille).map(c => BR_TO_ASCII_MAP[c]||c).join('') : t.braille;
+                g.innerHTML = `<div class="token-text">${t.text}</div><div class="token-braille ${isAscii?'font-ascii':'font-unicode'}">${dispB}</div>`;
+                view.appendChild(g);
+
+                resultText += t.braille;
+                currentLineCells += bLen;
             });
 
-            // 文字框
-            let result = "", cur = 0;
-            tokens.forEach(t => {
-                if (t.braille === '\n') { result += '\n'; cur = 0; }
-                else {
-                    let b = t.braille;
-                    if (cur + Array.from(b).length > max) { result += '\n'; cur = 0; }
-                    result += b; cur += Array.from(b).length;
-                }
-            });
-            const out = document.getElementById('output-text');
-            out.value = isAscii ? Array.from(result).map(c => BR_TO_ASCII_MAP[c]||c).join('') : result;
-            out.className = isAscii ? 'font-ascii' : 'font-unicode';
+            outArea.value = isAscii ? Array.from(resultText).map(c => BR_TO_ASCII_MAP[c]||c).join('') : resultText;
         }
 
         function downloadTxt() {
             const blob = new Blob([document.getElementById('output-text').value], { type: 'text/plain' });
-            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "result.txt"; a.click();
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "braille.txt"; a.click();
         }
 
         function downloadParallelHtml() {
-            const html = `<html><head><meta charset="UTF-8"><style>@font-face { font-family: 'SimBraille'; src: url('SIMBRL.TTF') format('truetype'); } .token-group { display: inline-flex; flex-direction: column; align-items: center; padding: 5px; } .token-braille { font-size: 24px; } .font-ascii { font-family: 'SimBraille'; } .line-break { display: block; width: 100%; height: 10px; }</style></head><body>${document.getElementById('parallel-view').innerHTML}</body></html>`;
+            const html = `<html><head><meta charset="UTF-8"><style>@font-face { font-family: 'SimBraille'; src: url('SIMBRL.TTF') format('truetype'); } body { font-family: sans-serif; } .token-group { display: inline-flex; flex-direction: column; align-items: center; padding: 5px; border: 1px solid #eee; margin: 2px; } .token-text { font-size: 12px; color: #666; } .token-braille { font-size: 24px; } .font-ascii { font-family: 'SimBraille'; } .line-break { display: block; width: 100%; height: 10px; border-top: 1px solid #ccc; }</style></head><body>${document.getElementById('parallel-view').innerHTML}</body></html>`;
             const blob = new Blob([html], { type: 'text/html' });
             const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "parallel.html"; a.click();
         }
@@ -243,4 +234,3 @@
     </script>
 </body>
 </html>
-
