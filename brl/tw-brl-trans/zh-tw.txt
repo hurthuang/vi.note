@@ -140,6 +140,52 @@ letter ǚ ⡧⠒
 letter ǜ ⡧⠲
 #end Latin Extended-B
 
+#begin KK phonic
+letter ˈ ⠘
+letter ˌ ⠈
+letter i ⠊
+letter ɪ ⠌
+letter e ⠑
+letter ɛ ⠜
+letter æ ⠩
+letter ʌ ⠬
+letter ɑ ⠡
+letter o ⠕
+letter ɔ ⠣
+letter u ⠥
+letter ᴜ ⠷
+letter ə ⠢
+letter ɚ ⠢⠐⠗
+letter ɝ ⠖⠜⠐⠗
+letter aɪ ⠁⠌
+letter aᴜ ⠁⠷
+letter ɔɪ ⠣⠌
+letter p ⠏
+letter t ⠞
+letter k ⠅
+letter f ⠋
+letter s ⠎
+letter θ ⠹
+letter ʃ ⠱
+letter tʃ ⠞⠱
+letter h ⠓
+letter b ⠃
+letter d ⠙
+letter g ⠛
+letter v ⠧
+letter z ⠵
+letter ð ⠻
+letter ʒ ⠮
+letter dʒ ⠙⠮
+letter m ⠍
+letter n ⠝
+letter ŋ ⠫
+letter l ⠇
+letter r ⠗
+letter j ⠚
+letter w ⠺
+#end KK phonic
+
 # Most characters of the table belong to IPA Extensions section (U+0250-U+02AF).
 include IPA-unicode-range.uti
 
