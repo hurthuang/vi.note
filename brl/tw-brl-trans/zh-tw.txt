@@ -1,13 +1,13 @@
 # Taiwanese bopomofo braille
 #
-#  Copyright (C) ⢂⡃ Coscell Kao <coscell@gmail.com>
-#  Copyright (C) ⡃⠈ nvda-tw <https://groups.io/g/nvda-tw>
+#  Copyright (C) 2008-2017 Coscell Kao <coscell@gmail.com>
+#  Copyright (C) 2017-2023 nvda-tw <https://groups.io/g/nvda-tw>
 #
 #  This file is part of liblouis.
 #
 #  liblouis is free software: you can redistribute it and/or modify it
 #  under the terms of the GNU Lesser General Public License as
-#  published by the Free Software Foundation, either version 2.⠁ of the
+#  published by the Free Software Foundation, either version 2.1 of the
 #  License, or (at your option) any later version.
 #
 #  liblouis is distributed in the hope that it will be useful, but
@@ -30,7 +30,7 @@
 #+direction: forward
 
 # Currently maintained by Sponge Jhan <school510587@yahoo.com.tw>
-# Version: ⠈⠂
+# Version: 2023-02
 #
 # This table mainly conforms to the rules presented in the
 # following references:
@@ -51,98 +51,13 @@
 
 # U.S. English ⢀ dot Computer braille table
 include en-us-comp8.ctb
-lowercase a ⠁
-lowercase b ⠃
-lowercase c ⠉
-lowercase d ⠙
-lowercase e ⠑
-lowercase f ⠋
-lowercase g ⠛
-lowercase h ⠓
-lowercase i ⠊
-lowercase j ⠚
-lowercase k ⠅
-lowercase l ⠇
-lowercase m ⠍
-lowercase n ⠝
-lowercase o ⠕
-lowercase p ⠏
-lowercase q ⠟
-lowercase r ⠗
-lowercase s ⠎
-lowercase t ⠞
-lowercase u ⠥
-lowercase v ⠧
-lowercase w ⠺
-lowercase x ⠭
-lowercase y ⠽
-lowercase z ⠵
-uppercase A ⡁
-uppercase B ⡃
-uppercase C ⡉
-uppercase D ⡙
-uppercase E ⡑
-uppercase F ⡋
-uppercase G ⡛
-uppercase H ⡓
-uppercase I ⡊
-uppercase J ⡚
-uppercase K ⡅
-uppercase L ⡇
-uppercase M ⡍
-uppercase N ⡝
-uppercase O ⡕
-uppercase P ⡏
-uppercase Q ⡟
-uppercase R ⡗
-uppercase S ⡎
-uppercase T ⡞
-uppercase U ⡥
-uppercase V ⡧
-uppercase W ⡺
-uppercase X ⡭
-uppercase Y ⡽
-uppercase Z ⡵
-punctuation , ⠠
-punctuation ; ⠰
-punctuation : ⠱
-punctuation . ⠨
-punctuation ! ⠮
-punctuation " ⠐
-punctuation ' ⠄
-punctuation ( ⠷
-punctuation ) ⠾
-punctuation - ⠤
-sign _ ⠸
-math < ⠣
-math = ⠿
-math > ⠜
-sign % ⠩
-math + ⠬
-math ~ ⠘
-sign ` ⠈
-sign & ⠯
-sign $ ⠫
-punctuation ? ⠹
-punctuation { ⠪
-punctuation [ ⡪
-punctuation } ⠻
-punctuation ] ⡻
-sign ^ ⡘
-sign @ ⡈
-sign # ⠼
-sign \\ ⡳
-sign | ⠳
-math / ⠌
-sign * ⠡
-noback sign ● ⠡ BLACK CIRCLE
 
 #begin Basic Latin (U+0000-U+007F)
-space \t ⠀⠀⠀⠀
+space \t 0-0-0-0
 space  ⡘⠇
 #end Basic Latin
 
-#begin Latin-⠁ Supplement (U+0080-U+00FF)
+#begin Latin-1 Supplement (U+0080-U+00FF)
 punctuation ¡ ⠌⠮
 sign ¢ ⠈⠉
 sign £ ⠈⠇
@@ -202,7 +117,7 @@ noback sign ø ⠳
 letter ù ⡥⠲
 letter ú ⡥⠆
 letter ü ⢳
-#end Latin-⠁ Supplement
+#end Latin-1 Supplement
 
 #begin Latin Extended-A (U+0100-U+017F)
 letter ā ⡁⠂
@@ -343,7 +258,8 @@ sign ․ ⡼⠁
 sign ‥ ⠨⠨
 punctuation … ⠐⠐⠐
 punctuation ‧ ⠤
-space   ⠳
+space 
+ ⠳
 sign ‰ ⠈⠴⠴
 sign ‱ ⠈⠴⠴⠴
 punctuation ′ ⠄
@@ -374,34 +290,6 @@ punctuation ⁘ ⠨⠨⠨⠨
 punctuation ⁙ ⠨⠨⠨⠨⠨
 punctuation ⁚ ⠨⠨
 sign ⁛ ⠨⠨⠨⠨
-punctuation ` ⠈
-punctuation @ ⠈
-punctuation / ⠌
-punctuation " ⠐
-punctuation ~ ⠘
-punctuation ^ ⠘
-punctuation > ⠜
-punctuation , ⠠
-punctuation * ⠡
-punctuation < ⠣
-punctuation - ⠤
-punctuation . ⠨
-punctuation % ⠩
-punctuation { ⠪
-punctuation $ ⠫
-punctuation + ⠬
-punctuation ! ⠮
-punctuation & ⠯
-punctuation ; ⠰
-punctuation : ⠱
-punctuation | ⠳
-punctuation ( ⠷
-punctuation _ ⠸
-punctuation ? ⠹
-punctuation } ⠻
-punctuation # ⠼
-punctuation ) ⠾
-punctuation = ⠿
 #end General Punctuation
 
 #begin Superscripts and Subscripts (U+2070-U+209F)
@@ -466,8 +354,8 @@ math ⃡ ⠣⠫⠪⠒⠒⠕⠻
 #end Combining Diacritical Marks for Symbols
 
 #begin Letterlike Symbols (U+2100-U+214F)
-sign ℃ ⠘⠨⠡⠀⡉
-sign ℉ ⠘⠨⠡⠀⡋
+sign ℃ 45-46-16-0-147
+sign ℉ 45-46-16-0-1247
 letter ℊ ⠈⠰⠛
 letter ℋ ⠈⠰⡓
 math ℏ ⠈⠓
@@ -620,10 +508,10 @@ sign ⇜ ⠫⠪⠢⠤⠔⠒⠢
 sign ⇝ ⠫⠢⠤⠔⠒⠢⠕
 sign ⇞ ⠳⠳⠈⠫⠣⠒⠒⠕⠻
 sign ⇟ ⠳⠳⠈⠫⠩⠒⠒⠕⠻
-sign ⇠ ⠫⠪⠒⠀⠒
-sign ⇡ ⠫⠣⠒⠀⠒⠕
-sign ⇢ ⠫⠒⠀⠒⠕
-sign ⇣ ⠫⠩⠒⠀⠒⠕
+sign ⇠ 1246-246-25-0-25
+sign ⇡ 1246-126-25-0-25-135
+sign ⇢ 1246-25-0-25-135
+sign ⇣ 1246-146-25-0-25-135
 sign ⇤ ⠫⠳⠪⠒⠒
 sign ⇥ ⠫⠒⠒⠕⠳
 sign ⇦ ⠫⠨⠪⠒⠒
@@ -995,13 +883,13 @@ sign ⓪ ⠪⠴⠕
 
 #begin Box Drawing (U+2500-U+257F)
 sign ─ ⠤⠤⠤
-sign │ ⠀⠳⠀
-sign ┌ ⠀⡬⠤
-sign ┐ ⠤⡬⠀
-sign └ ⠀⢬⠤
-sign ┘ ⠤⢬⠀
-sign ├ ⠀⣬⠤
-sign ┤ ⠤⣬⠀
+sign │ 0-1256-0
+sign ┌ 0-3467-36
+sign ┐ 36-3467-0
+sign └ 0-3468-36
+sign ┘ 36-3468-0
+sign ├ 0-34678-36
+sign ┤ 36-34678-0
 sign ┬ ⠤⡬⠤
 sign ┴ ⠤⢬⠤
 sign ┼ ⠤⣬⠤
@@ -1063,7 +951,7 @@ sign ✓ ⠈⠜
 sign ✔ ⠸⠈⠜
 sign ✕ ⠈⠡
 sign ✖ ⠸⠈⠡
-sign ❈ ⠡⠀
+sign ❈ 16-0
 sign ❚ ⠸⠳
 sign ➔ ⠤⠤⠜
 sign ➕ ⠸⠬
@@ -1127,14 +1015,14 @@ sign ⤧ ⠫⠘⠪⠒⠒⠈⠫⠘⠒⠒⠕⠻
 sign ⤨ ⠫⠘⠒⠒⠕⠈⠫⠰⠒⠒⠕⠻
 sign ⤩ ⠫⠰⠒⠒⠕⠈⠫⠰⠪⠒⠒⠻
 sign ⤪ ⠫⠰⠪⠒⠒⠈⠫⠘⠪⠒⠒⠻
-sign ⤫ ⠫⠰⠒⠒⠒⠈⠫⠘⠒⠀⠒⠻
-sign ⤬ ⠫⠘⠒⠒⠒⠈⠫⠰⠒⠀⠒⠻
-sign ⤭ ⠫⠘⠒⠀⠒⠕⠈⠫⠰⠒⠒⠕⠻
-sign ⤮ ⠫⠘⠒⠒⠕⠈⠫⠰⠒⠀⠒⠕⠻
-sign ⤯ ⠫⠘⠒⠒⠒⠈⠫⠘⠒⠀⠒⠕⠻
-sign ⤰ ⠫⠰⠒⠒⠒⠈⠫⠰⠒⠀⠒⠕⠻
-sign ⤱ ⠫⠘⠪⠒⠀⠒⠈⠫⠘⠒⠒⠕⠻
-sign ⤲ ⠫⠘⠪⠒⠒⠈⠫⠘⠒⠀⠒⠕⠻
+sign ⤫ 1246-56-25-25-25-4-1246-45-25-0-25-12456
+sign ⤬ 1246-45-25-25-25-4-1246-56-25-0-25-12456
+sign ⤭ 1246-45-25-0-25-135-4-1246-56-25-25-135-12456
+sign ⤮ 1246-45-25-25-135-4-1246-56-25-0-25-135-12456
+sign ⤯ 1246-45-25-25-25-4-1246-45-25-0-25-135-12456
+sign ⤰ 1246-56-25-25-25-4-1246-56-25-0-25-135-12456
+sign ⤱ 1246-45-246-25-0-25-4-1246-45-25-25-135-12456
+sign ⤲ 1246-45-246-25-25-4-1246-45-25-0-25-135-12456
 sign ⥂ ⠫⠒⠒⠒⠕⠫⠪⠒
 sign ⥃ ⠫⠪⠒⠒⠒⠫⠒⠕
 sign ⥄ ⠫⠒⠕⠫⠪⠒⠒⠒
@@ -1768,21 +1656,21 @@ sign ⿕ ⠦⠐
 #end Kangxi Radicals
 
 #begin CJK Symbols and Punctuation (U+3000-U+303F)
-space 　 ⠀⠀
-punctuation 、 ⠠⠀
-punctuation 。 ⠤⠀
+space 　 0-0
+punctuation 、 6-0
+punctuation 。 36-0
 punctuation 〃 ⠠⠄
 letter 〇 ⠉⠽⠂
-punctuation 〈 ⠣⠀
-punctuation 〉 ⠜⠀
+punctuation 〈 126-0
+punctuation 〉 345-0
 punctuation 《 ⠣⠣
 punctuation 》 ⠜⠜
 punctuation 「 ⠰⠤
 punctuation 」 ⠤⠆
 punctuation 『 ⠦⠦
 punctuation 』 ⠴⠴
-punctuation 【 ⠯⠀
-punctuation 】 ⠽⠀
+punctuation 【 12346-0
+punctuation 】 13456-0
 sign 〒 ⡏⡕
 sign 〓 ⡫⡩
 punctuation 〔 ⠈⠈⠷
@@ -1900,8 +1788,8 @@ letter ゕ ⠡
 letter ゖ ⠫
 sign ゙ ⠐⠕⠩⠟⠴
 sign ゚ ⠥⠴⠐⠕⠩⠟⠴
-sign ゛ ⠀⠐⠕⠩⠟⠴
-sign ゜ ⠀⠥⠴⠐⠕⠩⠟⠴
+sign ゛ 0-5-135-146-12345-356
+sign ゜ 0-136-356-5-135-146-12345-356
 sign ゟ ⠜⠓
 #end Hiragana
 
@@ -1996,7 +1884,7 @@ letter ヷ ⠐⠄
 letter ヸ ⠐⠆
 letter ヹ ⠐⠖
 letter ヺ ⠐⠔
-punctuation ・ ⠐⠀
+punctuation ・ 5-0
 letter ー ⠒
 letter ヽ ⣄⣱
 letter ヾ ⣄⣢
@@ -30588,42 +30476,42 @@ punctuation ︘ ⠽⠽
 
 #begin CJK Compatibility Forms (U+FE30-U+FE4F)
 sign ︰ ⠒⠒
-punctuation ︱ ⠳⠀
+punctuation ︱ 1256-0
 sign ︳ ⠸
 sign ︴ ⠘
-punctuation ︵ ⠪⠀
-punctuation ︶ ⠕⠀
+punctuation ︵ 246-0
+punctuation ︶ 135-0
 punctuation ︷ ⠨⠷
 punctuation ︸ ⠨⠾
 punctuation ︹ ⠈⠈⠷
 punctuation ︺ ⠈⠈⠾
-punctuation ︻ ⠯⠀
-punctuation ︼ ⠽⠀
+punctuation ︻ 12346-0
+punctuation ︼ 13456-0
 punctuation ︽ ⠣⠣
 punctuation ︾ ⠜⠜
-punctuation ︿ ⠣⠀
-punctuation ﹀ ⠜⠀
+punctuation ︿ 126-0
+punctuation ﹀ 345-0
 punctuation ﹁ ⠰⠤
 punctuation ﹂ ⠤⠆
 punctuation ﹃ ⠦⠦
 punctuation ﹄ ⠴⠴
-punctuation ﹇ ⡪⠀
-punctuation ﹈ ⡻⠀
+punctuation ﹇ 2467-0
+punctuation ﹈ 124567-0
 sign ﹏ ⠘
 #end CJK Compatibility Forms
 
 #begin Small Form Variants (U+FE50-U+FE6F)
-punctuation ﹐ ⠆⠀
-punctuation ﹑ ⠠⠀
-punctuation ﹒ ⠤⠀
-punctuation ﹔ ⠰⠀
-punctuation ﹕ ⠱⠀
-punctuation ﹖ ⠹⠀
-punctuation ﹗ ⠮⠀
+punctuation ﹐ 23-0
+punctuation ﹑ 6-0
+punctuation ﹒ 36-0
+punctuation ﹔ 56-0
+punctuation ﹕ 156-0
+punctuation ﹖ 1456-0
+punctuation ﹗ 2346-0
 punctuation ﹙ ⠷
 punctuation ﹚ ⠾
-punctuation ﹛ ⠪⠀
-punctuation ﹜ ⠻⠀
+punctuation ﹛ 246-0
+punctuation ﹜ 12456-0
 punctuation ﹝ ⠈⠈⠷
 punctuation ﹞ ⠈⠈⠾
 punctuation ﹟ ⠼
@@ -30641,107 +30529,107 @@ sign ﹫ ⡈
 #end Small Form Variants
 
 #begin Halfwidth and Fullwidth Forms (U+FF00-U+FFEF)
-punctuation ！ ⠇⠀
-punctuation ＂ ⠐⠀
-sign ＃ ⠼⠀
-sign ＄ ⠫⠀
-sign ％ ⠩⠀
+punctuation ！ 123-0
+punctuation ＂ 5-0
+sign ＃ 3456-0
+sign ＄ 1246-0
+sign ％ 146-0
 sign ＆ ⠸⠯
-punctuation ＇ ⠄⠀
-punctuation （ ⠪⠀
-punctuation ） ⠕⠀
-sign ＊ ⠡⠀
-math ＋ ⠬⠀
-punctuation ， ⠆⠀
-punctuation － ⠤⠀
-punctuation ． ⠨⠀
-sign ／ ⠌⠀
-digit ０ ⠴⠀
-digit １ ⠂⠀
-digit ２ ⠆⠀
-digit ３ ⠒⠀
-digit ４ ⠲⠀
-digit ５ ⠢⠀
-digit ６ ⠖⠀
-digit ７ ⠶⠀
-digit ８ ⠦⠀
-digit ９ ⠔⠀
+punctuation ＇ 3-0
+punctuation （ 246-0
+punctuation ） 135-0
+sign ＊ 16-0
+math ＋ 346-0
+punctuation ， 23-0
+punctuation － 36-0
+punctuation ． 46-0
+sign ／ 34-0
+digit ０ 356-0
+digit １ 2-0
+digit ２ 23-0
+digit ３ 25-0
+digit ４ 256-0
+digit ５ 26-0
+digit ６ 235-0
+digit ７ 2356-0
+digit ８ 236-0
+digit ９ 35-0
 punctuation ： ⠒⠒
-punctuation ； ⠰⠀
-math ＜ ⠣⠀
-math ＝ ⠿⠀
-math ＞ ⠜⠀
-punctuation ？ ⠹⠀
-sign ＠ ⡈⠀
-letter Ａ ⡁⠀
-letter Ｂ ⡃⠀
-letter Ｃ ⡉⠀
-letter Ｄ ⡙⠀
-letter Ｅ ⡑⠀
-letter Ｆ ⡋⠀
-letter Ｇ ⡛⠀
-letter Ｈ ⡓⠀
-letter Ｉ ⡊⠀
-letter Ｊ ⡚⠀
-letter Ｋ ⡅⠀
-letter Ｌ ⡇⠀
-letter Ｍ ⡍⠀
-letter Ｎ ⡝⠀
-letter Ｏ ⡕⠀
-letter Ｐ ⡏⠀
-letter Ｑ ⡟⠀
-letter Ｒ ⡗⠀
-letter Ｓ ⡎⠀
-letter Ｔ ⡞⠀
-letter Ｕ ⡥⠀
-letter Ｖ ⡧⠀
-letter Ｗ ⡺⠀
-letter Ｘ ⡭⠀
-letter Ｙ ⡽⠀
-letter Ｚ ⡵⠀
-punctuation ［ ⡪⠀
-sign ＼ ⡳⠀
-punctuation ］ ⡻⠀
-sign ＾ ⡘⠀
-sign ＿ ⠸⠀
-punctuation ｀ ⠈⠀
-letter ａ ⠁⠀
-letter ｂ ⠃⠀
-letter ｃ ⠉⠀
-letter ｄ ⠙⠀
-letter ｅ ⠑⠀
-letter ｆ ⠋⠀
-letter ｇ ⠛⠀
-letter ｈ ⠓⠀
-letter ｉ ⠊⠀
-letter ｊ ⠚⠀
-letter ｋ ⠅⠀
-letter ｌ ⠇⠀
-letter ｍ ⠍⠀
-letter ｎ ⠝⠀
-letter ｏ ⠕⠀
-letter ｐ ⠏⠀
-letter ｑ ⠟⠀
-letter ｒ ⠗⠀
-letter ｓ ⠎⠀
-letter ｔ ⠞⠀
-letter ｕ ⠥⠀
-letter ｖ ⠧⠀
-letter ｗ ⠺⠀
-letter ｘ ⠭⠀
-letter ｙ ⠽⠀
-letter ｚ ⠵⠀
+punctuation ； 56-0
+math ＜ 126-0
+math ＝ 123456-0
+math ＞ 345-0
+punctuation ？ 1456-0
+sign ＠ 47-0
+letter Ａ 17-0
+letter Ｂ 127-0
+letter Ｃ 147-0
+letter Ｄ 1457-0
+letter Ｅ 157-0
+letter Ｆ 1247-0
+letter Ｇ 12457-0
+letter Ｈ 1257-0
+letter Ｉ 247-0
+letter Ｊ 2457-0
+letter Ｋ 137-0
+letter Ｌ 1237-0
+letter Ｍ 1347-0
+letter Ｎ 13457-0
+letter Ｏ 1357-0
+letter Ｐ 12347-0
+letter Ｑ 123457-0
+letter Ｒ 12357-0
+letter Ｓ 2347-0
+letter Ｔ 23457-0
+letter Ｕ 1367-0
+letter Ｖ 12367-0
+letter Ｗ 24567-0
+letter Ｘ 13467-0
+letter Ｙ 134567-0
+letter Ｚ 13567-0
+punctuation ［ 2467-0
+sign ＼ 12567-0
+punctuation ］ 124567-0
+sign ＾ 457-0
+sign ＿ 456-0
+punctuation ｀ 4-0
+letter ａ 1-0
+letter ｂ 12-0
+letter ｃ 14-0
+letter ｄ 145-0
+letter ｅ 15-0
+letter ｆ 124-0
+letter ｇ 1245-0
+letter ｈ 125-0
+letter ｉ 24-0
+letter ｊ 245-0
+letter ｋ 13-0
+letter ｌ 123-0
+letter ｍ 134-0
+letter ｎ 1345-0
+letter ｏ 135-0
+letter ｐ 1234-0
+letter ｑ 12345-0
+letter ｒ 1235-0
+letter ｓ 234-0
+letter ｔ 2345-0
+letter ｕ 136-0
+letter ｖ 1236-0
+letter ｗ 2456-0
+letter ｘ 1346-0
+letter ｙ 13456-0
+letter ｚ 1356-0
 punctuation ｛ ⠨⠷
-sign ｜ ⠳⠀
+sign ｜ 1256-0
 punctuation ｝ ⠨⠾
-sign ～ ⠘⠀
+sign ～ 45-0
 punctuation ｟ ⠠⠷⠷
 punctuation ｠ ⠠⠾⠾
 punctuation ｡ ⠨
 punctuation ｢ ⠰⠤
 punctuation ｣ ⠤⠆
 punctuation ､ ⠠
-punctuation ･ ⠐⠀
+punctuation ･ 5-0
 letter ｦ ⠔
 letter ｧ ⠁
 letter ｨ ⠃
@@ -44549,7 +44437,7 @@ noback context _1"厭"["惡"] @⠌⠐
 # 厹矛 ⠚⠎⠂⠍⠩⠂
 noback context ["厹"]"矛" @⠚⠎⠂
 
-# 參、 ⠑⠧⠄⠠⠀
+# 參、 15-1236-3-6-0
 noback context ["參"]"、" @⠑⠧⠄
 
 # 參仟 ⠑⠧⠄⠚⠞⠄
@@ -53363,7 +53251,7 @@ noback context _1"陳"["子"] @⠓⠱⠈
 # 陳蕃 ⠃⠥⠂⠟⠧⠂
 noback context _1"陳"["蕃"] @⠟⠧⠂
 
-# 陸、 ⠉⠎⠐⠠⠀
+# 陸、 14-234-5-6-0
 noback context ["陸"]"、" @⠉⠎⠐
 
 # 陸仟 ⠉⠎⠐⠚⠞⠄
