@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KK 音標輸入小工具</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 600px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        /* 顯示區域名式 */
+        .display-area {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            flex-grow: 1;
+            font-family: "Lucida Sans Unicode", "Arial Unicode MS", sans-serif;
+            font-size: 24px;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+
+        /* 功能按鈕樣式 */
+        .action-btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .btn-copy { background-color: #28a745; color: white; }
+        .btn-copy:hover { background-color: #218838; }
+
+        .btn-clear { background-color: #dc3545; color: white; }
+        .btn-clear:hover { background-color: #c82333; }
+        
+        .btn-back { background-color: #ffc107; color: #333; }
+        .btn-back:hover { background-color: #e0a800; }
+
+        /* 鍵盤區域樣式 */
+        .keyboard-section {
+            margin-bottom: 15px;
+        }
+        
+        .section-title {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 3px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(45px, 1fr));
+            gap: 8px;
+        }
+
+        .key {
+            font-family: "Lucida Sans Unicode", "Arial Unicode MS", sans-serif;
+            font-size: 18px;
+            padding: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            background-color: #fff;
+            cursor: pointer;
+            transition: 0.1s;
+            text-align: center;
+        }
+
+        .key:active {
+            transform: scale(0.95);
+            background-color: #eee;
+        }
+
+        /* 顏色分類 */
+        .symbol-key { background-color: #e2e6ea; border-color: #adb5bd; font-weight: bold; }
+        .vowel-key { background-color: #fff0f0; border-color: #ffcccc; color: #d63384; }
+        .consonant-key { background-color: #f0f8ff; border-color: #b8daff; color: #0d6efd; }
+
+        .toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 4px;
+            padding: 10px;
+            position: fixed;
+            z-index: 1;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+        }
+
+        .toast.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>KK 音標輸入工具</h2>
+    
+    <div class="display-area">
+        <input type="text" id="output" placeholder="點擊按鈕輸入音標...">
+    </div>
+    
+    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+        <button class="action-btn btn-back" onclick="backspace()">⌫ 倒退</button>
+        <button class="action-btn btn-clear" onclick="clearText()">清除</button>
+        <button class="action-btn btn-copy" onclick="copyText()">複製結果</button>
+    </div>
+
+    <div class="keyboard-section">
+        <div class="section-title">括號與重音</div>
+        <div class="grid">
+            <button class="key symbol-key" onclick="addChar('[')">[</button>
+            <button class="key symbol-key" onclick="addChar(']')">]</button>
+            <button class="key symbol-key" onclick="addChar('ˈ')">ˈ</button>
+            <button class="key symbol-key" onclick="addChar('ˌ')">ˌ</button>
+            <button class="key symbol-key" onclick="addChar('.')">.</button>
+        </div>
+    </div>
+
+    <div class="keyboard-section">
+        <div class="section-title">母音 (Vowels)</div>
+        <div class="grid">
+            <button class="key vowel-key" onclick="addChar('i')">i</button>
+            <button class="key vowel-key" onclick="addChar('ɪ')">ɪ</button>
+            <button class="key vowel-key" onclick="addChar('e')">e</button>
+            <button class="key vowel-key" onclick="addChar('ɛ')">ɛ</button>
+            <button class="key vowel-key" onclick="addChar('æ')">æ</button>
+            <button class="key vowel-key" onclick="addChar('ɑ')">ɑ</button>
+            <button class="key vowel-key" onclick="addChar('ɔ')">ɔ</button>
+            <button class="key vowel-key" onclick="addChar('o')">o</button>
+            <button class="key vowel-key" onclick="addChar('ʊ')">ʊ</button>
+            <button class="key vowel-key" onclick="addChar('u')">u</button>
+            <button class="key vowel-key" onclick="addChar('ʌ')">ʌ</button>
+            <button class="key vowel-key" onclick="addChar('ə')">ə</button>
+            <button class="key vowel-key" onclick="addChar('ɝ')">ɝ</button>
+            <button class="key vowel-key" onclick="addChar('ɚ')">ɚ</button>
+            <button class="key vowel-key" onclick="addChar('aɪ')">aɪ</button>
+            <button class="key vowel-key" onclick="addChar('aʊ')">aʊ</button>
+            <button class="key vowel-key" onclick="addChar('ɔɪ')">ɔɪ</button>
+        </div>
+    </div>
+
+    <div class="keyboard-section">
+        <div class="section-title">子音 (Consonants)</div>
+        <div class="grid">
+            <button class="key consonant-key" onclick="addChar('p')">p</button>
+            <button class="key consonant-key" onclick="addChar('b')">b</button>
+            <button class="key consonant-key" onclick="addChar('t')">t</button>
+            <button class="key consonant-key" onclick="addChar('d')">d</button>
+            <button class="key consonant-key" onclick="addChar('k')">k</button>
+            <button class="key consonant-key" onclick="addChar('g')">g</button>
+            <button class="key consonant-key" onclick="addChar('f')">f</button>
+            <button class="key consonant-key" onclick="addChar('v')">v</button>
+            <button class="key consonant-key" onclick="addChar('s')">s</button>
+            <button class="key consonant-key" onclick="addChar('z')">z</button>
+            <button class="key consonant-key" onclick="addChar('θ')">θ</button>
+            <button class="key consonant-key" onclick="addChar('ð')">ð</button>
+            <button class="key consonant-key" onclick="addChar('ʃ')">ʃ</button>
+            <button class="key consonant-key" onclick="addChar('ʒ')">ʒ</button>
+            <button class="key consonant-key" onclick="addChar('tʃ')">tʃ</button>
+            <button class="key consonant-key" onclick="addChar('dʒ')">dʒ</button>
+            <button class="key consonant-key" onclick="addChar('m')">m</button>
+            <button class="key consonant-key" onclick="addChar('n')">n</button>
+            <button class="key consonant-key" onclick="addChar('ŋ')">ŋ</button>
+            <button class="key consonant-key" onclick="addChar('l')">l</button>
+            <button class="key consonant-key" onclick="addChar('r')">r</button>
+            <button class="key consonant-key" onclick="addChar('j')">j</button>
+            <button class="key consonant-key" onclick="addChar('w')">w</button>
+            <button class="key consonant-key" onclick="addChar('h')">h</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast" class="toast">已複製到剪貼簿！</div>
+
+<script>
+    const output = document.getElementById('output');
+    const toast = document.getElementById('toast');
+
+    function addChar(char) {
+        // 在游標位置插入，而不僅僅是加在最後
+        const startPos = output.selectionStart;
+        const endPos = output.selectionEnd;
+        output.value = output.value.substring(0, startPos)
+            + char
+            + output.value.substring(endPos, output.value.length);
+        
+        // 重新設定焦點並移動游標
+        output.focus();
+        output.setSelectionRange(startPos + char.length, startPos + char.length);
+    }
+
+    function backspace() {
+        const startPos = output.selectionStart;
+        const endPos = output.selectionEnd;
+
+        if (startPos === endPos) {
+            // 沒有選取範圍，刪除前一個字
+            if (startPos > 0) {
+                output.value = output.value.substring(0, startPos - 1) 
+                    + output.value.substring(endPos, output.value.length);
+                output.focus();
+                output.setSelectionRange(startPos - 1, startPos - 1);
+            }
+        } else {
+            // 有選取範圍，刪除選取內容
+            output.value = output.value.substring(0, startPos) 
+                + output.value.substring(endPos, output.value.length);
+            output.focus();
+            output.setSelectionRange(startPos, startPos);
+        }
+    }
+
+    function clearText() {
+        output.value = '';
+        output.focus();
+    }
+
+    function copyText() {
+        if (!output.value) return;
+        
+        output.select();
+        output.setSelectionRange(0, 99999); // 為了手機版相容
+
+        navigator.clipboard.writeText(output.value).then(() => {
+            showToast();
+        }).catch(err => {
+            console.error('複製失敗: ', err);
+            // 備用方案
+            document.execCommand('copy');
+            showToast();
+        });
+    }
+
+    function showToast() {
+        toast.className = "toast show";
+        setTimeout(function(){ toast.className = toast.className.replace("show", ""); }, 3000);
+    }
+</script>
+
+</body>
+</html>
