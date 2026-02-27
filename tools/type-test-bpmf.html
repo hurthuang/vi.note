@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>打字練習</title>
+    <style type="text/css">
+        /* 載入同資料夾下的注音字體 */
+        @font-face {
+            font-family: 'BpmfZihiSans';
+            src: url('BpmfZihiSans-Medium.ttf') format('truetype');
+        }
+
+        /* 當 body 套用此 class 時，強制讓頁面及輸入框變更字體 */
+        .use-zhuyin-font,
+        .use-zhuyin-font textarea,
+        .use-zhuyin-font input,
+        .use-zhuyin-font .target-text {
+            font-family: 'BpmfZihiSans', sans-serif !important;
+        }
+
+        #text-input, #font-size, #line-width, #start-btn {
+            margin-bottom: 20px;
+        }
+        .practice-line {
+            margin-bottom: 10px;
+        }
+        .target-text {
+            white-space: pre-wrap;
+            margin-bottom: 5px;
+        }
+        .input-field {
+            width: 100%;
+            box-sizing: border-box;
+        }
+        /* 預覽模式下的輸入框外觀微調 */
+        .input-field[readonly] {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        #results {
+            margin-top: 20px;
+            font-weight: bold;
+            line-height: 1.6;
+        }
+        .highlight-error {
+            background-color: #fdd;
+        }
+        .highlight-correct {
+            background-color: #dfd;
+        }
+        .controls-group {
+            margin-bottom: 10px;
+        }
+        #export-btn {
+            margin-top: 10px;
+            padding: 5px 15px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>打字練習</h1>
+    <div>
+        <div class="controls-group">
+            <label for="file-input">📂 開啟文字檔：</label> 
+            <input type="file" id="file-input" accept=".txt" />
+        </div>
+        
+        <textarea cols="50" id="text-input" placeholder="在此輸入練習文章，下方將會即時預覽題目..." rows="5"></textarea><br />
+        
+        <div class="controls-group">
+            <label for="zhuyin-font-checkbox">注音字體：</label> <input id="zhuyin-font-checkbox" type="checkbox" /> 
+            <label for="font-size">字體大小：</label> <input id="font-size" max="72" min="12" type="number" value="18" /> 
+            <label for="line-width">每行字數：</label> <input id="line-width" max="50" min="1" type="number" value="20" />
+        </div>
+        
+        <div class="controls-group">
+            <label for="text-color">文字顏色：</label> <input id="text-color" type="color" value="#000000" /> 
+            <label for="background-color">背景顏色：</label> <input id="background-color" type="color" value="#ffffff" /><br>
+            <label for="highlight-correct-color">正確顏色：</label> <input id="highlight-correct-color" type="color" value="#ddffdd" /> 
+            <label for="highlight-error-color">錯誤顏色：</label> <input id="highlight-error-color" type="color" value="#ffdddd" />
+        </div>
+        
+        <div class="controls-group">
+            <button id="start-btn">開始練習</button>
+            <span style="margin-left: 15px;">
+                <a id="timer">時間：00:00</a> | 
+                <a id="progress">進度：0/0</a> | 
+                <a id="speed">速度：0 字/分鐘</a>
+            </span>
+        </div>
+    </div>
+    
+    <hr>
+
+    <div id="practice-area">&nbsp;</div>
+    <div id="results">&nbsp;</div>
+
+    <script>
+        const fileInput = document.getElementById('file-input');
+        const textInput = document.getElementById('text-input');
+        const fontSize = document.getElementById('font-size');
+        const lineWidth = document.getElementById('line-width');
+        const startBtn = document.getElementById('start-btn');
+        const practiceArea = document.getElementById('practice-area');
+        const results = document.getElementById('results');
+        const timer = document.getElementById('timer');
+        const progress = document.getElementById('progress');
+        const speed = document.getElementById('speed');
+        const textColor = document.getElementById('text-color');
+        const backgroundColor = document.getElementById('background-color');
+        const highlightCorrectColor = document.getElementById('highlight-correct-color');
+        const highlightErrorColor = document.getElementById('highlight-error-color');
+
+        let startTime, endTime, timerInterval;
+        let currentLineIndex = 0;
+        let lines = [];
+        let totalChars = 0;
+        let isPracticing = false;
+
+        // --- 1. 讀取文字檔功能 ---
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                textInput.value = e.target.result;
+                resetPracticeState();
+                updatePreview();
+            };
+            reader.readAsText(file);
+            event.target.value = ''; 
+        });
+
+        // --- 2. 即時預覽功能 ---
+        textInput.addEventListener('input', () => {
+            resetPracticeState();
+            updatePreview();
+        });
+
+        lineWidth.addEventListener('change', () => {
+            resetPracticeState();
+            updatePreview();
+        });
+
+        function updatePreview() {
+            const text = textInput.value.trim();
+            if (text === '') {
+                practiceArea.innerHTML = '';
+                return;
+            }
+            lines = splitTextIntoLines(text, parseInt(lineWidth.value));
+            renderLines(false);
+        }
+
+        // --- 3. 開始練習邏輯 ---
+        startBtn.addEventListener('click', () => {
+            const text = textInput.value.trim();
+            if (text === '') {
+                alert('請先輸入練習文章或載入檔案！');
+                return;
+            }
+
+            isPracticing = true;
+            results.innerHTML = '';
+            lines = splitTextIntoLines(text, parseInt(lineWidth.value));
+            currentLineIndex = 0;
+            renderLines(true);
+
+            startTime = new Date();
+            totalChars = lines.join('').replace(/\n/g, '').length;
+            updateProgress();
+            startTimer();
+        });
+
+        function resetPracticeState() {
+            isPracticing = false;
+            clearInterval(timerInterval);
+            timer.textContent = '時間：00:00';
+            progress.textContent = '進度：0/0';
+            speed.textContent = '速度：0 字/分鐘';
+            results.innerHTML = '';
+        }
+
+        function splitTextIntoLines(text, lineLength) {
+            const lines = [];
+            const paragraphs = text.split('\n').filter(p => p.trim() !== '');
+            
+            for (let paragraph of paragraphs) {
+                let currentLine = '';
+                for (let char of paragraph.trim()) {
+                    if (currentLine.length < lineLength) {
+                        currentLine += char;
+                    } else {
+                        lines.push(currentLine);
+                        currentLine = char;
+                    }
+                }
+                if (currentLine) {
+                    lines.push(currentLine);
+                }
+                if (paragraph !== paragraphs[paragraphs.length - 1]) {
+                    lines.push('');
+                }
+            }
+            return lines;
+        }
+
+        function renderLines(isActivePractice) {
+            practiceArea.innerHTML = '';
+            lines.forEach((line, index) => {
+                const div = document.createElement('div');
+                div.className = 'practice-line';
+                
+                const readOnlyAttr = isActivePractice ? '' : 'readonly placeholder="請點擊上方「開始練習」後作答"';
+
+                if (line === '') {
+                    div.innerHTML = `
+                        <div class="target-text" style="font-size: ${fontSize.value}px; height: ${fontSize.value}px; color: ${textColor.value}; background-color: ${backgroundColor.value};"></div>
+                        <input type="text" class="input-field" style="font-size: ${fontSize.value}px; display: none; color: ${textColor.value}; background-color: ${backgroundColor.value};" data-index="${index}">
+                    `;
+                    div.style.marginBottom = '10px';
+                } else {
+                    div.innerHTML = `
+                        <div class="target-text" style="font-size: ${fontSize.value}px; color: ${textColor.value}; background-color: ${backgroundColor.value};">${line}</div>
+                        <input type="text" class="input-field" style="font-size: ${fontSize.value}px; color: ${textColor.value}; background-color: ${backgroundColor.value};" data-index="${index}" ${readOnlyAttr}>
+                    `;
+                }
+                practiceArea.appendChild(div);
+            });
+
+            const inputs = practiceArea.querySelectorAll('.input-field');
+            inputs.forEach(input => {
+                input.addEventListener('keydown', handleInputKeydown);
+                input.addEventListener('blur', handleInputBlur);
+                input.addEventListener('input', updateLineResult);
+            });
+
+            if (isActivePractice && inputs.length > 0) {
+                inputs[0].focus();
+            }
+        }
+
+        function handleInputKeydown(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                const input = event.target;
+                const lineIndex = parseInt(input.dataset.index);
+                const maxLength = lines[lineIndex].length;
+
+                if (input.value.length >= maxLength) {
+                    moveToNextLine(lineIndex);
+                }
+            }
+        }
+
+        function handleInputBlur(event) {
+            const input = event.target;
+            const lineIndex = parseInt(input.dataset.index);
+            const maxLength = lines[lineIndex].length;
+
+            if (input.value.length === maxLength && isPracticing) {
+                moveToNextLine(lineIndex);
+            }
+        }
+
+        function moveToNextLine(currentIndex) {
+            const inputs = practiceArea.querySelectorAll('.input-field');
+            let nextIndex = currentIndex + 1;
+            while (nextIndex < inputs.length && inputs[nextIndex].style.display === 'none') {
+                nextIndex++;
+            }
+            if (nextIndex < inputs.length) {
+                inputs[nextIndex].focus();
+            } else {
+                endTime = new Date();
+                clearInterval(timerInterval);
+                showResults();
+            }
+            updateProgress();
+        }
+
+        function updateLineResult(event) {
+            if (!isPracticing) return;
+
+            const input = event.target;
+            const lineIndex = parseInt(input.dataset.index);
+            const targetText = lines[lineIndex];
+            const userInput = input.value;
+            let lineResult = '';
+
+            for (let i = 0; i < targetText.length; i++) {
+                if (i < userInput.length) {
+                    if (userInput[i] === targetText[i]) {
+                        lineResult += `<span class="highlight-correct" style="background-color: ${highlightCorrectColor.value || '#dfd'};">${targetText[i]}</span>`;
+                    } else {
+                        lineResult += `<span class="highlight-error" style="background-color: ${highlightErrorColor.value || '#fdd'};">${targetText[i]}</span>`;
+                    }
+                } else {
+                    lineResult += targetText[i];
+                }
+            }
+
+            const targetTextDiv = input.previousElementSibling;
+            targetTextDiv.innerHTML = lineResult;
+            updateProgress();
+        }
+
+        function showResults() {
+            const timeTaken = (endTime - startTime) / 1000 / 60; // 分鐘
+            const speedValue = Math.round(totalChars / timeTaken); // 每分鐘中文字數
+
+            let correctChars = 0;
+            let totalTargetChars = 0;
+            const inputs = practiceArea.querySelectorAll('.input-field');
+            
+            // 建立準備匯出的文字內容
+            let reportContent = `打字練習成果報告\n`;
+            reportContent += `=================\n`;
+            reportContent += `練習時間：${new Date().toLocaleString()}\n`;
+            
+            inputs.forEach((input, index) => {
+                const targetText = lines[index];
+                const userInput = input.value;
+                
+                if (targetText !== '') {
+                    totalTargetChars += targetText.length;
+                    for (let i = 0; i < targetText.length; i++) {
+                        if (i < userInput.length && userInput[i] === targetText[i]) {
+                            correctChars++;
+                        }
+                    }
+                }
+            });
+
+            const accuracy = totalTargetChars > 0 ? Math.round((correctChars / totalTargetChars) * 100) : 100;
+
+            // 顯示在網頁上的結果與按鈕
+            results.innerHTML = `
+                🎉 練習完成！<br>
+                速度：${speedValue} 字/分鐘<br>
+                正確率：${accuracy}% (${correctChars} / ${totalTargetChars})<br>
+                <button id="export-btn">💾 下載練習報告</button>
+            `;
+
+            speed.textContent = `速度：${speedValue} 字/分鐘`;
+            isPracticing = false;
+
+            // 繼續填補報表內容
+            reportContent += `速度：${speedValue} 字/分鐘\n`;
+            reportContent += `正確率：${accuracy}% (${correctChars} / ${totalTargetChars})\n`;
+            reportContent += `\n【詳細對照】\n`;
+            reportContent += `-----------------\n`;
+
+            inputs.forEach((input, index) => {
+                const targetText = lines[index];
+                const userInput = input.value;
+                if (targetText !== '') {
+                    reportContent += `[第 ${index + 1} 行]\n`;
+                    reportContent += `題目：${targetText}\n`;
+                    reportContent += `輸入：${userInput}\n\n`;
+                }
+            });
+
+            // 綁定下載按鈕事件
+            document.getElementById('export-btn').addEventListener('click', () => {
+                exportReport(reportContent);
+            });
+        }
+
+        // --- 4. 輸出練習報告功能 ---
+        function exportReport(content) {
+            // 使用 Blob 產生文字檔
+            const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            
+            // 建立一個隱藏的 <a> 標籤來觸發下載
+            const a = document.createElement('a');
+            a.href = url;
+            
+            // 設定下載檔名 (加上時間戳記避免檔名重複)
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
+            a.download = `打字成果_${timestamp}.txt`;
+            
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url); // 釋放記憶體
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                const now = new Date();
+                const elapsedTime = Math.floor((now - startTime) / 1000);
+                const minutes = String(Math.floor(elapsedTime / 60)).padStart(2, '0');
+                const seconds = String(elapsedTime % 60).padStart(2, '0');
+                timer.textContent = `時間：${minutes}:${seconds}`;
+                updateSpeed(elapsedTime);
+            }, 1000);
+        }
+
+        function updateProgress() {
+            let enteredChars = 0;
+            const inputs = practiceArea.querySelectorAll('.input-field');
+            inputs.forEach((input) => {
+                enteredChars += input.value.length;
+            });
+            progress.textContent = `進度：${enteredChars}/${totalChars}`;
+        }
+
+        function updateSpeed(elapsedTime) {
+            if (elapsedTime > 0) {
+                let enteredChars = 0;
+                const inputs = practiceArea.querySelectorAll('.input-field');
+                inputs.forEach((input) => {
+                    enteredChars += input.value.length;
+                });
+                const speedValue = Math.round((enteredChars / elapsedTime) * 60);
+                speed.textContent = `速度：${speedValue} 字/分鐘`;
+            }
+        }
+
+        // --- 外觀與字體設定 ---
+        fontSize.addEventListener('change', () => {
+            updateFontSize();
+            if(!isPracticing) updatePreview();
+        });
+
+        function updateFontSize() {
+            const targetTexts = practiceArea.querySelectorAll('.target-text');
+            const inputs = practiceArea.querySelectorAll('.input-field');
+            targetTexts.forEach(text => {
+                text.style.fontSize = `${fontSize.value}px`;
+            });
+            inputs.forEach(input => {
+                input.style.fontSize = `${fontSize.value}px`;
+            });
+        }
+
+        function updateColors() {
+            const targetTexts = document.querySelectorAll('.target-text');
+            const inputFields = document.querySelectorAll('.input-field');
+            
+            targetTexts.forEach(text => {
+                text.style.color = textColor.value;
+                text.style.backgroundColor = backgroundColor.value;
+            });
+            
+            inputFields.forEach(input => {
+                input.style.color = textColor.value;
+                input.style.backgroundColor = backgroundColor.value;
+            });
+        }
+
+        textColor.addEventListener('change', updateColors);
+        backgroundColor.addEventListener('change', updateColors);
+
+        // --- 注音字體核取方塊 ---
+        const zhuyinFontCheckbox = document.getElementById('zhuyin-font-checkbox');
+        zhuyinFontCheckbox.addEventListener('change', (event) => {
+            if (event.target.checked) {
+                document.body.classList.add('use-zhuyin-font');
+            } else {
+                document.body.classList.remove('use-zhuyin-font');
+            }
+        });
+
+    </script>
+</body>
+</html>
