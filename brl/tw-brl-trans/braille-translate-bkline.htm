@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>點字即時轉換器</title>
+    <title>點字即時轉換器 (專業校對版)</title>
     <style>
         @font-face { font-family: 'SimBraille'; src: url('SIMBRL.TTF') format('truetype'); }
         
@@ -145,6 +145,28 @@
             document.getElementById('font-size-val').textContent = val + 'px';
         });
 
+        // 將 liblouis 數字點位格式轉為 Unicode 點字
+        function dotsToUnicode(dotsString) {
+            // 如果已經是 Unicode 點字則直接回傳
+            if (/^[⠀-⣿]+$/.test(dotsString)) return dotsString;
+            
+            // 依據「後面空格的規則以 html 為準」的要求，將 liblouis 字尾自帶的 -0 (空格) 移除，全權交給 HTML 判斷
+            let cleaned = dotsString.replace(/(?:-0)+$/, '');
+            if (!cleaned) return '⠀'; 
+
+            return cleaned.split('-').map(cell => {
+                if (cell === '0' || cell === '') return '⠀';
+                let offset = 0;
+                for (let i = 0; i < cell.length; i++) {
+                    let d = parseInt(cell[i]);
+                    if (d >= 1 && d <= 8) {
+                        offset += (1 << (d - 1));
+                    }
+                }
+                return String.fromCharCode(0x2800 + offset);
+            }).join('');
+        }
+
         async function loadRules() {
             try {
                 const files = ['zh-tw.txt', 'latinLetterDef6Dots.txt', 'loweredDigits6Dots.txt', 'en-ueb-chardefs.txt'];
@@ -158,9 +180,11 @@
                             const ctx = line.match(/^#\s*([^\s]+)\s+([⠀-⣿\s]+)/);
                             if (ctx) contextRules.set(ctx[1], ctx[2].replace(/[⠀\s]+$/, ''));
                             
-                            const basic = line.match(/^(letter|punctuation|lowercase|digit|sign)\s+(\S+)\s+([⠀-⣿\s]+)/);
+                            // 【主要修正處】擴充正規表達式，支援 liblouis 的數字減號點位格式 [0-9\-]
+                            const basic = line.match(/^(letter|punctuation|lowercase|digit|sign)\s+(\S+)\s+([⠀-⣿0-9\-]+)/);
                             if (basic) {
-                                const char = basic[2], dots = basic[3].replace(/[⠀\s]+$/, '');
+                                const char = basic[2], dotsStr = basic[3];
+                                const dots = dotsToUnicode(dotsStr); // 呼叫轉換函式
                                 brailleMap.set(char, dots);
                                 if (/^[a-z]$/i.test(char)) englishMap.set(char.toLowerCase(), dots);
                             }
@@ -301,5 +325,3 @@
     </script>
 </body>
 </html>
-
-
