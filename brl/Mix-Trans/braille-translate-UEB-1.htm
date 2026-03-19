@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>點字即時轉換器 (專業校對版)</title>
+    <style>
+        @font-face { font-family: 'SimBraille'; src: url('SIMBRL.TTF') format('truetype'); }
+        :root { --base-font-size: 22px; --braille-scale: 1.3; }
+        body { font-family: "Microsoft JhengHei", sans-serif; max-width: 1400px; margin: 0 auto; padding: 20px; background-color: #f4f7f9; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .rules-status { padding: 6px 12px; border-radius: 4px; font-size: 0.85em; border: 1px solid; }
+        .rules-status.loading { background:#fff8e1; border-color:#ffe082; color:#f57f17; }
+        .rules-status.ok      { background:#e8f5e9; border-color:#c8e6c9; color:#2e7d32; }
+        .rules-status.error   { background:#ffebee; border-color:#ef9a9a; color:#c62828; }
+        .control-panel { background: white; padding: 15px 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px; display: flex; flex-wrap: wrap; gap: 25px; align-items: center; }
+        .control-item { display: flex; align-items: center; gap: 8px; }
+        .btn-group { display: flex; gap: 10px; margin-left: auto; }
+        button { padding: 8px 18px; border: none; border-radius: 4px; background-color: #4caf50; color: white; cursor: pointer; transition: 0.2s; font-weight: bold; }
+        button:hover { background-color: #388e3c; }
+        button.secondary { background-color: #2196f3; }
+        button.secondary:hover { background-color: #1565c0; }
+        select { padding: 4px 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 0.95em; background: white; cursor: pointer; }
+        .container { display: flex; gap: 20px; margin-bottom: 25px; align-items: stretch; }
+        .input-area  { flex: 1; display: flex; flex-direction: column; }
+        .output-area { flex: 3; display: flex; flex-direction: column; }
+        label { font-weight: bold; margin-bottom: 8px; display: block; color: #333; }
+        textarea { width: 100%; height: 300px; padding: 15px; border: 1px solid #ccc; border-radius: 6px; font-size: var(--base-font-size); line-height: 1.5; box-sizing: border-box; background: white; }
+        .font-ascii   { font-family: 'SimBraille', sans-serif !important; letter-spacing: 0px; }
+        .font-unicode { font-family: "Apple Braille", "Segoe UI Symbol", monospace; letter-spacing: 1px; }
+        .parallel-container { background: white; padding: 25px; border-radius: 8px; border: 1px solid #e0e0e0; max-height: 600px; overflow-y: auto; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); }
+        .parallel-title { font-weight: bold; font-size: 1.1em; margin-bottom: 15px; border-left: 5px solid #4caf50; padding-left: 12px; position: sticky; top: 0; background: white; z-index: 10; padding-top: 5px; }
+        #parallel-view { display: flex; flex-wrap: wrap; gap: 8px; row-gap: 18px; align-items: flex-start; }
+        .token-group { display: flex; flex-direction: column; align-items: center; padding: 6px; background-color: #fdfdfd; border: 1px solid #e0e0e0; border-radius: 4px; }
+        .token-text   { font-size: calc(var(--base-font-size) * 0.6); color: #666; border-bottom: 1px solid #eee; width: 100%; text-align: center; margin-bottom: 6px; padding-bottom: 2px; }
+        .token-braille { font-size: calc(var(--base-font-size) * var(--braille-scale)); line-height: 1; color: #1a1a1a; }
+        .token-space { background-color: #fffde7 !important; border-color: #fff176 !important; }
+        .token-space .token-text { color: #f9a825; }
+        .line-break { flex-basis: 100%; height: 25px; border-top: 1px dashed #cfd8dc; margin: 15px 0; position: relative; }
+        .line-break::after { content: " 斷行 "; position: absolute; right: 10px; top: -12px; font-size: 12px; color: #90a4ae; background: #f4f7f9; padding: 0 8px; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>點字即時轉換器</h1>
+    <div class="rules-status loading" id="rules-status">正在載入規則...</div>
+</div>
+
+<div class="control-panel">
+    <div class="control-item">
+        <strong>每行方數：</strong>
+        <input type="number" id="cell-limit" value="40" style="width:50px;">
+    </div>
+    <div class="control-item">
+        <strong>字體大小：</strong>
+        <input type="range" id="font-size-slider" min="16" max="48" value="22">
+        <span id="font-size-val">22px</span>
+    </div>
+    <div class="control-item">
+        <strong>格式：</strong>
+        <label style="display:inline;margin:0;font-weight:normal;"><input type="radio" name="output-format" value="unicode" checked> Unicode</label>
+        <label style="display:inline;margin:0;font-weight:normal;"><input type="radio" name="output-format" value="ascii"> ASCII</label>
+    </div>
+    <div class="control-item">
+        <strong>英文點字：</strong>
+        <select id="en-mode">
+            <option value="comp8">電腦八點（comp8）</option>
+            <option value="ueb-g1">UEB Grade 1（不縮寫）</option>
+            <option value="ueb-g2">UEB Grade 2（縮寫）</option>
+        </select>
+    </div>
+    <div class="btn-group">
+        <button onclick="downloadTxt()">💾 儲存點字</button>
+        <button class="secondary" onclick="downloadParallelHtml()">📄 匯出雙視</button>
+    </div>
+</div>
+
+<div class="container">
+    <div class="input-area">
+        <label>輸入文字：</label>
+        <textarea id="input-text" autofocus placeholder="請在此輸入內容..."></textarea>
+    </div>
+    <div class="output-area">
+        <label>點字輸出：</label>
+        <textarea id="output-text" readonly></textarea>
+    </div>
+</div>
+
+<div class="parallel-container">
+    <div class="parallel-title">雙視校對區</div>
+    <div id="parallel-view"></div>
+</div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+//  內建英文點字對照表（不依賴 include 鏈）
+// ════════════════════════════════════════════════════════════
+
+// UEB / literary 6-dot  a–z  （comp8 小寫與 UEB 相同）
+const UEB_ALPHA = {
+    'a':'\u2801','b':'\u2803','c':'\u2809','d':'\u2819','e':'\u2811',
+    'f':'\u280b','g':'\u281b','h':'\u2813','i':'\u280a','j':'\u281a',
+    'k':'\u2805','l':'\u2807','m':'\u280d','n':'\u281d','o':'\u2815',
+    'p':'\u280f','q':'\u281f','r':'\u2817','s':'\u280e','t':'\u281e',
+    'u':'\u2825','v':'\u2827','w':'\u283a','x':'\u282d','y':'\u283d',
+    'z':'\u2835'
+};
+
+// comp8 大寫 = 小寫點位 + dot 7 (bit 6，+64)
+const COMP8_UPPER = {};
+for (const [c, u] of Object.entries(UEB_ALPHA)) {
+    COMP8_UPPER[c.toUpperCase()] = String.fromCharCode(u.charCodeAt(0) + 64);
+}
+
+// UEB 大寫指示符（capsletter = dots 6 = 0x2820）
+const UEB_CAPS_INDICATOR = '\u2820';   // ⠠
+const UEB_CAPS_WORD      = '\u2820\u2820'; // ⠠⠠
+
+// UEB Grade 2 縮寫資料（內建，從 en-ueb-g2.ctb 解析）
+// always：可在詞中出現的縮寫（如 th, ch, er, ing...）
+const G2_ALWAYS = {"and":"⠯","ar":"⠜","betws":"⠃⠑⠞⠺⠎","cannot":"⠸⠉","cch":"⠉⠡","ch":"⠡","character":"⠐⠡","day":"⠐⠙","ear":"⠑⠜","ed":"⠫","eever":"⠑⠑⠧⠻","encephal":"⠢⠉⠑⠏⠓⠁⠇","enough":"⠢⠳⠣","er":"⠻","ever":"⠐⠑","eversion":"⠑⠧⠻⠨⠝","evertebra":"⠑⠧⠻⠞⠑⠃⠗⠁","evertib":"⠑⠧⠻⠞⠊⠃","father":"⠐⠋","ffor":"⠋⠿","for":"⠿","gh":"⠣","had":"⠸⠓","here":"⠐⠓","hered":"⠓⠻⠫","herence":"⠓⠻⠰⠑","herencies":"⠓⠻⠢⠉⠊⠑⠎","herency":"⠓⠻⠢⠉⠽","herend":"⠓⠻⠢⠙","herent":"⠓⠻⠢⠞","herer":"⠓⠻⠻","honest":"⠓⠐⠕⠌","iever":"⠊⠑⠧⠻","know":"⠐⠅","lord":"⠐⠇","many":"⠸⠍","mention":"⠍⠢⠰⠝","monetary":"⠍⠐⠕⠞⠜⠽","mother":"⠐⠍","name":"⠐⠝","nament":"⠝⠁⠰⠞","of":"⠷","ofor":"⠕⠿","one":"⠐⠕","ou":"⠳","ought":"⠐⠳","ow":"⠪","owork":"⠕⠐⠺","part":"⠐⠏","phad":"⠏⠓⠁⠙","pineapple":"⠏⠔⠑⠁⠏⠏⠇⠑","question":"⠐⠟","reverb":"⠗⠑⠧⠻⠃","reversab":"⠗⠑⠧⠻⠎⠁⠃","reversib":"⠗⠑⠧⠻⠎⠊⠃","reversif":"⠗⠑⠧⠻⠎⠊⠋","right":"⠐⠗","severed":"⠎⠐⠑⠫","sh":"⠩","some":"⠐⠎","somever":"⠎⠕⠍⠐⠑","spirit":"⠸⠎","st":"⠌","th":"⠹","the":"⠮","their":"⠸⠮","these":"⠘⠮","through":"⠐⠹","time":"⠐⠞","timent":"⠞⠊⠰⠞","under":"⠐⠥","upon":"⠘⠥","vinedress":"⠧⠔⠑⠙⠗⠑⠎⠎","wh":"⠱","where":"⠐⠱","whose":"⠘⠱","with":"⠾","word":"⠘⠺","work":"⠐⠺","world":"⠸⠺","young":"⠐⠽"};
+// word：整個單詞縮寫（如 about, can, but...）
+const G2_WORD   = {"about":"⠁⠃","aboutface":"⠁⠃⠋⠁⠉⠑","aboutfaced":"⠁⠃⠋⠁⠉⠫","aboutfacer":"⠁⠃⠋⠁⠉⠻","aboutfacers":"⠁⠃⠋⠁⠉⠻⠎","aboutfaces":"⠁⠃⠋⠁⠉⠑⠎","aboutfacing":"⠁⠃⠋⠁⠉⠬","aboutfacings":"⠁⠃⠋⠁⠉⠬⠎","aboutturn":"⠁⠃⠞⠥⠗⠝","aboutturned":"⠁⠃⠞⠥⠗⠝⠫","aboutturns":"⠁⠃⠞⠥⠗⠝⠎","above":"⠁⠃⠧","aboveboard":"⠁⠃⠧⠃⠕⠜⠙","aboveboards":"⠁⠃⠧⠃⠕⠜⠙⠎","aboveground":"⠁⠃⠧⠛⠗⠨⠙","abovegrounds":"⠁⠃⠧⠛⠗⠨⠙⠎","abovementioned":"⠁⠃⠧⠍⠢⠰⠝⠫","aboves":"⠁⠃⠧⠎","according":"⠁⠉","accordingly":"⠁⠉⠇⠽","accordings":"⠁⠉⠎","across":"⠁⠉⠗","acrosss":"⠁⠉⠗⠎","aforesaid":"⠁⠿⠑⠎⠙","aforesaids":"⠁⠿⠑⠎⠙⠎","after":"⠁⠋","afterbattle":"⠁⠋⠃⠁⠞⠞⠇⠑","afterbattles":"⠁⠋⠃⠁⠞⠞⠇⠑⠎","afterbirth":"⠁⠋⠃⠊⠗⠹","afterbirths":"⠁⠋⠃⠊⠗⠹⠎","afterbreakfast":"⠁⠋⠃⠗⠂⠅⠋⠁⠌","afterbreakfasts":"⠁⠋⠃⠗⠂⠅⠋⠁⠌⠎","afterburn":"⠁⠋⠃⠥⠗⠝","afterburned":"⠁⠋⠃⠥⠗⠝⠫","afterburner":"⠁⠋⠃⠥⠗⠝⠻","afterburners":"⠁⠋⠃⠥⠗⠝⠻⠎","afterburning":"⠁⠋⠃⠥⠗⠝⠬","afterburnings":"⠁⠋⠃⠥⠗⠝⠬⠎","afterburns":"⠁⠋⠃⠥⠗⠝⠎","aftercare":"⠁⠋⠉⠜⠑","aftercares":"⠁⠋⠉⠜⠑⠎","afterclap":"⠁⠋⠉⠇⠁⠏","afterclaps":"⠁⠋⠉⠇⠁⠏⠎","aftercoffee":"⠁⠋⠉⠷⠋⠑⠑","aftercoffees":"⠁⠋⠉⠷⠋⠑⠑⠎","afterdamp":"⠁⠋⠙⠁⠍⠏","afterdamps":"⠁⠋⠙⠁⠍⠏⠎","afterdark":"⠁⠋⠙⠜⠅","afterdarks":"⠁⠋⠙⠜⠅⠎","afterdeck":"⠁⠋⠙⠑⠉⠅","afterdecks":"⠁⠋⠙⠑⠉⠅⠎","afterdinner":"⠁⠋⠙⠔⠝⠻","afterdinners":"⠁⠋⠙⠔⠝⠻⠎","afterflow":"⠁⠋⠋⠇⠪","afterflows":"⠁⠋⠋⠇⠪⠎","aftergame":"⠁⠋⠛⠁⠍⠑","aftergames":"⠁⠋⠛⠁⠍⠑⠎","afterglow":"⠁⠋⠛⠇⠪","afterglows":"⠁⠋⠛⠇⠪⠎","afterguard":"⠁⠋⠛⠥⠜⠙","afterguards":"⠁⠋⠛⠥⠜⠙⠎","afterhatch":"⠁⠋⠓⠁⠞⠡","afterhatches":"⠁⠋⠓⠁⠞⠡⠑⠎","afterhatchess":"⠁⠋⠓⠁⠞⠡⠑⠎⠎","afterhatchs":"⠁⠋⠓⠁⠞⠡⠎","afterhour":"⠁⠋⠓⠳⠗","afterhours":"⠁⠋⠓⠳⠗⠎","afterlife":"⠁⠋⠇⠊⠋⠑","afterlifes":"⠁⠋⠇⠊⠋⠑⠎","afterlight":"⠁⠋⠇⠊⠣⠞","afterlights":"⠁⠋⠇⠊⠣⠞⠎","afterlives":"⠁⠋⠇⠊⠧⠑⠎","afterlivess":"⠁⠋⠇⠊⠧⠑⠎⠎","afterlunch":"⠁⠋⠇⠥⠝⠡","afterlunches":"⠁⠋⠇⠥⠝⠡⠑⠎","afterlunchess":"⠁⠋⠇⠥⠝⠡⠑⠎⠎","afterlunchs":"⠁⠋⠇⠥⠝⠡⠎","aftermarket":"⠁⠋⠍⠜⠅⠑⠞","aftermarkets":"⠁⠋⠍⠜⠅⠑⠞⠎","aftermatch":"⠁⠋⠍⠁⠞⠡","aftermatches":"⠁⠋⠍⠁⠞⠡⠑⠎","aftermatchs":"⠁⠋⠍⠁⠞⠡⠎","aftermath":"⠁⠋⠍⠁⠹","aftermaths":"⠁⠋⠍⠁⠹⠎","aftermeeting":"⠁⠋⠍⠑⠑⠞⠬","aftermeetings":"⠁⠋⠍⠑⠑⠞⠬⠎","aftermentioned":"⠁⠋⠍⠢⠰⠝⠫","aftermentioneds":"⠁⠋⠍⠢⠰⠝⠫⠎","aftermidday":"⠁⠋⠍⠊⠙⠐⠙","aftermiddays":"⠁⠋⠍⠊⠙⠐⠙⠎","aftermidnight":"⠁⠋⠍⠊⠙⠝⠊⠣⠞","aftermidnights":"⠁⠋⠍⠊⠙⠝⠊⠣⠞⠎","aftermost":"⠁⠋⠍⠕⠌","aftermosts":"⠁⠋⠍⠕⠌⠎","afternoon":"⠁⠋⠝","afternoons":"⠁⠋⠝⠎","afternoontea":"⠁⠋⠝⠞⠑⠁","afternoonteas":"⠁⠋⠝⠞⠑⠁⠎","afterpain":"⠁⠋⠏⠁⠔","afterpains":"⠁⠋⠏⠁⠔⠎","afterparties":"⠁⠋⠐⠏⠊⠑⠎","afterpartiess":"⠁⠋⠐⠏⠊⠑⠎⠎","afterparty":"⠁⠋⠐⠏⠽","afterpartys":"⠁⠋⠐⠏⠽⠎","afterpiece":"⠁⠋⠏⠊⠑⠉⠑","afterpieces":"⠁⠋⠏⠊⠑⠉⠑⠎","afterplay":"⠁⠋⠏⠇⠁⠽","afterplays":"⠁⠋⠏⠇⠁⠽⠎","afters":"⠁⠋⠎","aftersale":"⠁⠋⠎⠁⠇⠑","aftersales":"⠁⠋⠎⠁⠇⠑⠎","afterschool":"⠁⠋⠎⠡⠕⠕⠇","afterschools":"⠁⠋⠎⠡⠕⠕⠇⠎","aftersensation":"⠁⠋⠎⠢⠎⠁⠰⠝","aftersensations":"⠁⠋⠎⠢⠎⠁⠰⠝⠎","aftershave":"⠁⠋⠩⠁⠧⠑","aftershaves":"⠁⠋⠩⠁⠧⠑⠎","aftershock":"⠁⠋⠩⠕⠉⠅","aftershocks":"⠁⠋⠩⠕⠉⠅⠎","aftershow":"⠁⠋⠩⠪","aftershower":"⠁⠋⠩⠪⠻","aftershowers":"⠁⠋⠩⠪⠻⠎","aftershows":"⠁⠋⠩⠪⠎","aftersupper":"⠁⠋⠎⠥⠏⠏⠻","aftersuppers":"⠁⠋⠎⠥⠏⠏⠻⠎","aftertaste":"⠁⠋⠞⠁⠌⠑","aftertastes":"⠁⠋⠞⠁⠌⠑⠎","aftertax":"⠁⠋⠞⠁⠭","aftertaxes":"⠁⠋⠞⠁⠭⠑⠎","aftertaxess":"⠁⠋⠞⠁⠭⠑⠎⠎","aftertaxs":"⠁⠋⠞⠁⠭⠎","aftertea":"⠁⠋⠞⠑⠁","afterteas":"⠁⠋⠞⠑⠁⠎","aftertheater":"⠁⠋⠮⠁⠞⠻","aftertheaters":"⠁⠋⠮⠁⠞⠻⠎","aftertheatre":"⠁⠋⠮⠁⠞⠗⠑","aftertheatres":"⠁⠋⠮⠁⠞⠗⠑⠎","afterthought":"⠁⠋⠹⠐⠳","afterthoughts":"⠁⠋⠹⠐⠳⠎","aftertime":"⠁⠋⠐⠞","aftertimes":"⠁⠋⠐⠞⠎","aftertreatment":"⠁⠋⠞⠗⠂⠞⠰⠞","aftertreatments":"⠁⠋⠞⠗⠂⠞⠰⠞⠎","afterward":"⠁⠋⠺","afterwards":"⠁⠋⠺⠎","afterword":"⠁⠋⠘⠺","afterwords":"⠁⠋⠘⠺⠎","afterwork":"⠁⠋⠐⠺","afterworks":"⠁⠋⠐⠺⠎","afterworld":"⠁⠋⠸⠺","afterworlds":"⠁⠋⠸⠺⠎","again":"⠁⠛","agains":"⠁⠛⠎","against":"⠁⠛⠌","againsts":"⠁⠛⠌⠎","almost":"⠁⠇⠍","alms":"⠁⠇⠍⠎","already":"⠁⠇⠗","alreadys":"⠁⠇⠗⠎","also":"⠁⠇","alsos":"⠁⠇⠎","although":"⠁⠇⠹","althoughs":"⠁⠇⠹⠎","altogether":"⠁⠇⠞","altogethers":"⠁⠇⠞⠎","always":"⠁⠇⠺","alwayss":"⠁⠇⠺⠎","apperceive":"⠁⠏⠏⠻⠉⠧","apperceived":"⠁⠏⠏⠻⠉⠧⠙","apperceiver":"⠁⠏⠏⠻⠉⠧⠗","apperceivers":"⠁⠏⠏⠻⠉⠧⠗⠎","apperceives":"⠁⠏⠏⠻⠉⠧⠎","apperceiving":"⠁⠏⠏⠻⠉⠧⠛","apperceivings":"⠁⠏⠏⠻⠉⠧⠛⠎","archdeceiver":"⠜⠡⠙⠉⠧⠗","archdeceivers":"⠜⠡⠙⠉⠧⠗⠎","as":"⠵","because":"⠆⠉","becauses":"⠆⠉⠎","before":"⠆⠋","beforehand":"⠆⠋⠓⠯","beforehands":"⠆⠋⠓⠯⠎","beforementioned":"⠆⠋⠍⠢⠰⠝⠫","beforementioneds":"⠆⠋⠍⠢⠰⠝⠫⠎","befores":"⠆⠋⠎","befriend":"⠆⠋⠗","befriends":"⠆⠋⠗⠎","behind":"⠆⠓","behindhand":"⠆⠓⠓⠯","behindhands":"⠆⠓⠓⠯⠎","behinds":"⠆⠓⠎","belittle":"⠆⠇⠇","belittled":"⠆⠇⠇⠙","belittlement":"⠆⠇⠇⠰⠞","belittlements":"⠆⠇⠇⠰⠞⠎","belittler":"⠆⠇⠇⠗","belittlers":"⠆⠇⠇⠗⠎","belittles":"⠆⠇⠇⠎","below":"⠆⠇","belowdeck":"⠆⠇⠙⠑⠉⠅","belowdecks":"⠆⠇⠙⠑⠉⠅⠎","belowground":"⠆⠇⠛⠗⠨⠙","belowgrounds":"⠆⠇⠛⠗⠨⠙⠎","belowmentioned":"⠆⠇⠍⠢⠰⠝⠫","belows":"⠆⠇⠎","beneath":"⠆⠝","beneathdeck":"⠆⠝⠙⠑⠉⠅","beneathdecks":"⠆⠝⠙⠑⠉⠅⠎","beneathground":"⠆⠝⠛⠗⠨⠙","beneathgrounds":"⠆⠝⠛⠗⠨⠙⠎","beneaths":"⠆⠝⠎","beside":"⠆⠎","besides":"⠆⠎⠎","between":"⠆⠞","betweendeck":"⠆⠞⠙⠑⠉⠅","betweendecks":"⠆⠞⠙⠑⠉⠅⠎","betweens":"⠆⠞⠎","betweentime":"⠆⠞⠐⠞","betweentimes":"⠆⠞⠐⠞⠎","betweenwhile":"⠆⠞⠱⠊⠇⠑","betweenwhiles":"⠆⠞⠱⠊⠇⠑⠎","beyond":"⠆⠽","beyonds":"⠆⠽⠎","blind":"⠃⠇","blindfish":"⠃⠇⠋⠊⠩","blindfishes":"⠃⠇⠋⠊⠩⠑⠎","blindfishess":"⠃⠇⠋⠊⠩⠑⠎⠎","blindfishs":"⠃⠇⠋⠊⠩⠎","blindfold":"⠃⠇⠋⠕⠇⠙","blindfolded":"⠃⠇⠋⠕⠇⠙⠫","blindfolder":"⠃⠇⠋⠕⠇⠙⠻","blindfolders":"⠃⠇⠋⠕⠇⠙⠻⠎","blindfolding":"⠃⠇⠋⠕⠇⠙⠬","blindfoldings":"⠃⠇⠋⠕⠇⠙⠬⠎","blindfolds":"⠃⠇⠋⠕⠇⠙⠎","blindly":"⠃⠇⠇⠽","blindlys":"⠃⠇⠇⠽⠎","blindman":"⠃⠇⠍⠁⠝","blindmans":"⠃⠇⠍⠁⠝⠎","blindmen":"⠃⠇⠍⠢","blindmens":"⠃⠇⠍⠢⠎","blindness":"⠃⠇⠰⠎","blindnesses":"⠃⠇⠰⠎⠑⠎","blindnessess":"⠃⠇⠰⠎⠑⠎⠎","blindnesss":"⠃⠇⠰⠎⠎","blinds":"⠃⠇⠎","blindside":"⠃⠇⠎⠊⠙⠑","blindsided":"⠃⠇⠎⠊⠙⠫","blindsider":"⠃⠇⠎⠊⠙⠻","blindsiders":"⠃⠇⠎⠊⠙⠻⠎","blindsides":"⠃⠇⠎⠊⠙⠑⠎","blindsiding":"⠃⠇⠎⠊⠙⠬","blindsidings":"⠃⠇⠎⠊⠙⠬⠎","blindsight":"⠃⠇⠎⠊⠣⠞","blindsights":"⠃⠇⠎⠊⠣⠞⠎","blindstories":"⠃⠇⠌⠕⠗⠊⠑⠎","blindstoriess":"⠃⠇⠌⠕⠗⠊⠑⠎⠎","blindstory":"⠃⠇⠌⠕⠗⠽","blindstorys":"⠃⠇⠌⠕⠗⠽⠎","blindworm":"⠃⠇⠺⠕⠗⠍","blindworms":"⠃⠇⠺⠕⠗⠍⠎","bloodletter":"⠃⠇⠕⠕⠙⠇⠗","bloodletters":"⠃⠇⠕⠕⠙⠇⠗⠎","boyfriend":"⠃⠕⠽⠋⠗","boyfriends":"⠃⠕⠽⠋⠗⠎","braille":"⠃⠗⠇","brailled":"⠃⠗⠇⠙","brailler":"⠃⠗⠇⠗","braillers":"⠃⠗⠇⠗⠎","brailles":"⠃⠗⠇⠎","braillewriter":"⠃⠗⠇⠺⠗⠊⠞⠻","braillewriters":"⠃⠗⠇⠺⠗⠊⠞⠻⠎","braillewriting":"⠃⠗⠇⠺⠗⠊⠞⠬","braillewritings":"⠃⠗⠇⠺⠗⠊⠞⠬⠎","brailley":"⠃⠗⠇⠽","brailleys":"⠃⠗⠇⠽⠎","brainchildren":"⠃⠗⠁⠔⠡⠝","brainchildrens":"⠃⠗⠁⠔⠡⠝⠎","but":"⠃","can":"⠉","chainletter":"⠡⠁⠔⠇⠗","chainletters":"⠡⠁⠔⠇⠗⠎","child":"⠡","children":"⠡⠝","childrens":"⠡⠝⠎","colorblind":"⠉⠕⠇⠕⠗⠃⠇","colorblindness":"⠉⠕⠇⠕⠗⠃⠇⠰⠎","colorblindnesses":"⠉⠕⠇⠕⠗⠃⠇⠰⠎⠑⠎","colorblindnessess":"⠉⠕⠇⠕⠗⠃⠇⠰⠎⠑⠎⠎","colorblindnesss":"⠉⠕⠇⠕⠗⠃⠇⠰⠎⠎","colorblinds":"⠉⠕⠇⠕⠗⠃⠇⠎","colourblind":"⠉⠕⠇⠳⠗⠃⠇","colourblindness":"⠉⠕⠇⠳⠗⠃⠇⠰⠎","colourblindnesses":"⠉⠕⠇⠳⠗⠃⠇⠰⠎⠑⠎","colourblindnessess":"⠉⠕⠇⠳⠗⠃⠇⠰⠎⠑⠎⠎","colourblindnesss":"⠉⠕⠇⠳⠗⠃⠇⠰⠎⠎","colourblinds":"⠉⠕⠇⠳⠗⠃⠇⠎","conceive":"⠒⠉⠧","conceived":"⠒⠉⠧⠙","conceiver":"⠒⠉⠧⠗","conceivers":"⠒⠉⠧⠗⠎","conceives":"⠒⠉⠧⠎","conceiving":"⠒⠉⠧⠛","conceivings":"⠒⠉⠧⠛⠎","could":"⠉⠙","coulda":"⠉⠙⠁","couldas":"⠉⠙⠁⠎","couldest":"⠉⠙⠑⠌","couldests":"⠉⠙⠑⠌⠎","coulds":"⠉⠙⠎","couldst":"⠉⠙⠌","couldsts":"⠉⠙⠌⠎","deafblind":"⠙⠂⠋⠃⠇","deafblindness":"⠙⠂⠋⠃⠇⠰⠎","deafblindnesses":"⠙⠂⠋⠃⠇⠰⠎⠑⠎","deafblindnessess":"⠙⠂⠋⠃⠇⠰⠎⠑⠎⠎","deafblindnesss":"⠙⠂⠋⠃⠇⠰⠎⠎","deafblinds":"⠙⠂⠋⠃⠇⠎","deceive":"⠙⠉⠧","deceived":"⠙⠉⠧⠙","deceiver":"⠙⠉⠧⠗","deceivers":"⠙⠉⠧⠗⠎","deceives":"⠙⠉⠧⠎","deceiving":"⠙⠉⠧⠛","deceivings":"⠙⠉⠧⠛⠎","declare":"⠙⠉⠇","declared":"⠙⠉⠇⠙","declarer":"⠙⠉⠇⠗","declarers":"⠙⠉⠇⠗⠎","declares":"⠙⠉⠇⠎","declaring":"⠙⠉⠇⠛","declarings":"⠙⠉⠇⠛⠎","defriend":"⠙⠑⠋⠗","defriends":"⠙⠑⠋⠗⠎","do":"⠙","doublequick":"⠙⠳⠃⠇⠑⠟⠅","doublequicks":"⠙⠳⠃⠇⠑⠟⠅⠎","eastabout":"⠑⠁⠌⠁⠃","eastabouts":"⠑⠁⠌⠁⠃⠎","either":"⠑⠊","eithers":"⠑⠊⠎","every":"⠑","feelgood":"⠋⠑⠑⠇⠛⠙","feelgoods":"⠋⠑⠑⠇⠛⠙⠎","feetfirst":"⠋⠑⠑⠞⠋⠌","feetfirsts":"⠋⠑⠑⠞⠋⠌⠎","first":"⠋⠌","firstaid":"⠋⠌⠁⠊⠙","firstaider":"⠋⠌⠁⠊⠙⠻","firstaiders":"⠋⠌⠁⠊⠙⠻⠎","firstaids":"⠋⠌⠁⠊⠙⠎","firstborn":"⠋⠌⠃⠕⠗⠝","firstborns":"⠋⠌⠃⠕⠗⠝⠎","firstclass":"⠋⠌⠉⠇⠁⠎⠎","firstclasses":"⠋⠌⠉⠇⠁⠎⠎⠑⠎","firstclassess":"⠋⠌⠉⠇⠁⠎⠎⠑⠎⠎","firstclasss":"⠋⠌⠉⠇⠁⠎⠎⠎","firstday":"⠋⠌⠐⠙","firstdayer":"⠋⠌⠐⠙⠻","firstdayers":"⠋⠌⠐⠙⠻⠎","firstdays":"⠋⠌⠐⠙⠎","firstfruit":"⠋⠌⠋⠗⠥⠊⠞","firstfruiting":"⠋⠌⠋⠗⠥⠊⠞⠬","firstfruitings":"⠋⠌⠋⠗⠥⠊⠞⠬⠎","firstfruits":"⠋⠌⠋⠗⠥⠊⠞⠎","firstgeneration":"⠋⠌⠛⠢⠻⠁⠰⠝","firstgenerations":"⠋⠌⠛⠢⠻⠁⠰⠝⠎","firsthand":"⠋⠌⠓⠯","firsthanded":"⠋⠌⠓⠯⠫","firsthands":"⠋⠌⠓⠯⠎","firstling":"⠋⠌⠇⠬","firstlings":"⠋⠌⠇⠬⠎","firstly":"⠋⠌⠇⠽","firstlys":"⠋⠌⠇⠽⠎","firstness":"⠋⠌⠰⠎","firstnesss":"⠋⠌⠰⠎⠎","firstnight":"⠋⠌⠝⠊⠣⠞","firstnighter":"⠋⠌⠝⠊⠣⠞⠻","firstnighters":"⠋⠌⠝⠊⠣⠞⠻⠎","firstnights":"⠋⠌⠝⠊⠣⠞⠎","firstrate":"⠋⠌⠗⠁⠞⠑","firstrated":"⠋⠌⠗⠁⠞⠫","firstrates":"⠋⠌⠗⠁⠞⠑⠎","firstrating":"⠋⠌⠗⠁⠞⠬","firstratings":"⠋⠌⠗⠁⠞⠬⠎","firsts":"⠋⠌⠎","firststring":"⠋⠌⠌⠗⠬","firststrings":"⠋⠌⠌⠗⠬⠎","forasmuch":"⠿⠁⠎⠍⠡","forasmuchs":"⠿⠁⠎⠍⠡⠎","foresaid":"⠿⠑⠎⠙","foresaids":"⠿⠑⠎⠙⠎","fosterchildren":"⠋⠕⠌⠻⠡⠝","fosterchildrens":"⠋⠕⠌⠻⠡⠝⠎","friend":"⠋⠗","friendless":"⠋⠗⠨⠎","friendlessness":"⠋⠗⠨⠎⠰⠎","friendlessnesses":"⠋⠗⠨⠎⠰⠎⠑⠎","friendlessnessess":"⠋⠗⠨⠎⠰⠎⠑⠎⠎","friendlessnesss":"⠋⠗⠨⠎⠰⠎⠎","friendlesss":"⠋⠗⠨⠎⠎","friendlier":"⠋⠗⠇⠊⠻","friendliers":"⠋⠗⠇⠊⠻⠎","friendlies":"⠋⠗⠇⠊⠑⠎","friendliess":"⠋⠗⠇⠊⠑⠎⠎","friendliest":"⠋⠗⠇⠊⠑⠌","friendliests":"⠋⠗⠇⠊⠑⠌⠎","friendliness":"⠋⠗⠇⠊⠰⠎","friendlinesses":"⠋⠗⠇⠊⠰⠎⠑⠎","friendlinessess":"⠋⠗⠇⠊⠰⠎⠑⠎⠎","friendlinesss":"⠋⠗⠇⠊⠰⠎⠎","friendly":"⠋⠗⠇⠽","friendlys":"⠋⠗⠇⠽⠎","friends":"⠋⠗⠎","friendship":"⠋⠗⠩⠊⠏","friendships":"⠋⠗⠩⠊⠏⠎","from":"⠋","gadabout":"⠛⠁⠙⠁⠃","gadabouts":"⠛⠁⠙⠁⠃⠎","gainsaid":"⠛⠁⠔⠎⠙","gainsaids":"⠛⠁⠔⠎⠙⠎","galfriend":"⠛⠁⠇⠋⠗","galfriends":"⠛⠁⠇⠋⠗⠎","gentlemanfriend":"⠛⠢⠞⠇⠑⠍⠁⠝⠋⠗","gentlemanfriends":"⠛⠢⠞⠇⠑⠍⠁⠝⠋⠗⠎","gentlemenfriends":"⠛⠢⠞⠇⠑⠍⠢⠋⠗⠎","gentlemenfriendss":"⠛⠢⠞⠇⠑⠍⠢⠋⠗⠎⠎","girlfriend":"⠛⠊⠗⠇⠋⠗","girlfriends":"⠛⠊⠗⠇⠋⠗⠎","go":"⠛","godchildren":"⠛⠕⠙⠡⠝","godchildrens":"⠛⠕⠙⠡⠝⠎","good":"⠛⠙","goodafternoon":"⠛⠙⠁⠋⠝","goodafternoons":"⠛⠙⠁⠋⠝⠎","goodby":"⠛⠙⠃⠽","goodbye":"⠛⠙⠃⠽⠑","goodbyeing":"⠛⠙⠃⠽⠑⠬","goodbyeings":"⠛⠙⠃⠽⠑⠬⠎","goodbyes":"⠛⠙⠃⠽⠑⠎","goodbying":"⠛⠙⠃⠽⠬","goodbyings":"⠛⠙⠃⠽⠬⠎","goodbys":"⠛⠙⠃⠽⠎","goodday":"⠛⠙⠐⠙","gooddays":"⠛⠙⠐⠙⠎","gooder":"⠛⠙⠻","gooders":"⠛⠙⠻⠎","goodest":"⠛⠙⠑⠌","goodests":"⠛⠙⠑⠌⠎","goodevening":"⠛⠙⠑⠧⠢⠬","goodevenings":"⠛⠙⠑⠧⠢⠬⠎","goodfellow":"⠛⠙⠋⠑⠇⠇⠪","goodfellows":"⠛⠙⠋⠑⠇⠇⠪⠎","goodfellowship":"⠛⠙⠋⠑⠇⠇⠪⠩⠊⠏","goodfellowships":"⠛⠙⠋⠑⠇⠇⠪⠩⠊⠏⠎","goodhearted":"⠛⠙⠓⠑⠜⠞⠫","goodheartedly":"⠛⠙⠓⠑⠜⠞⠫⠇⠽","goodheartedlys":"⠛⠙⠓⠑⠜⠞⠫⠇⠽⠎","goodheartedness":"⠛⠙⠓⠑⠜⠞⠫⠰⠎","goodheartednesss":"⠛⠙⠓⠑⠜⠞⠫⠰⠎⠎","goodhumor":"⠛⠙⠓⠥⠍⠕⠗","goodhumored":"⠛⠙⠓⠥⠍⠕⠗⠫","goodhumoredly":"⠛⠙⠓⠥⠍⠕⠗⠫⠇⠽","goodhumoredlys":"⠛⠙⠓⠥⠍⠕⠗⠫⠇⠽⠎","goodhumoredness":"⠛⠙⠓⠥⠍⠕⠗⠫⠰⠎","goodhumorednesses":"⠛⠙⠓⠥⠍⠕⠗⠫⠰⠎⠑⠎","goodhumorednessess":"⠛⠙⠓⠥⠍⠕⠗⠫⠰⠎⠑⠎⠎","goodhumorednesss":"⠛⠙⠓⠥⠍⠕⠗⠫⠰⠎⠎","goodhumors":"⠛⠙⠓⠥⠍⠕⠗⠎","goodhumour":"⠛⠙⠓⠥⠍⠳⠗","goodhumoured":"⠛⠙⠓⠥⠍⠳⠗⠫","goodhumouredly":"⠛⠙⠓⠥⠍⠳⠗⠫⠇⠽","goodhumouredlys":"⠛⠙⠓⠥⠍⠳⠗⠫⠇⠽⠎","goodhumouredness":"⠛⠙⠓⠥⠍⠳⠗⠫⠰⠎","goodhumourednesses":"⠛⠙⠓⠥⠍⠳⠗⠫⠰⠎⠑⠎","goodhumourednessess":"⠛⠙⠓⠥⠍⠳⠗⠫⠰⠎⠑⠎⠎","goodhumourednesss":"⠛⠙⠓⠥⠍⠳⠗⠫⠰⠎⠎","goodhumours":"⠛⠙⠓⠥⠍⠳⠗⠎","goodie":"⠛⠙⠊⠑","goodies":"⠛⠙⠊⠑⠎","goodish":"⠛⠙⠊⠩","goodishs":"⠛⠙⠊⠩⠎","goodlier":"⠛⠙⠇⠊⠻","goodliers":"⠛⠙⠇⠊⠻⠎","goodliest":"⠛⠙⠇⠊⠑⠌","goodliests":"⠛⠙⠇⠊⠑⠌⠎","goodliness":"⠛⠙⠇⠊⠰⠎","goodlinesss":"⠛⠙⠇⠊⠰⠎⠎","goodlook":"⠛⠙⠇⠕⠕⠅","goodlooker":"⠛⠙⠇⠕⠕⠅⠻","goodlookers":"⠛⠙⠇⠕⠕⠅⠻⠎","goodlooking":"⠛⠙⠇⠕⠕⠅⠬","goodlookings":"⠛⠙⠇⠕⠕⠅⠬⠎","goodlooks":"⠛⠙⠇⠕⠕⠅⠎","goodly":"⠛⠙⠇⠽","goodlys":"⠛⠙⠇⠽⠎","goodman":"⠛⠙⠍⠁⠝","goodmans":"⠛⠙⠍⠁⠝⠎","goodmen":"⠛⠙⠍⠢","goodmens":"⠛⠙⠍⠢⠎","goodmorning":"⠛⠙⠍⠕⠗⠝⠬","goodmornings":"⠛⠙⠍⠕⠗⠝⠬⠎","goodnature":"⠛⠙⠝⠁⠞⠥⠗⠑","goodnatured":"⠛⠙⠝⠁⠞⠥⠗⠫","goodnaturedly":"⠛⠙⠝⠁⠞⠥⠗⠫⠇⠽","goodnaturedlys":"⠛⠙⠝⠁⠞⠥⠗⠫⠇⠽⠎","goodnaturedness":"⠛⠙⠝⠁⠞⠥⠗⠫⠰⠎","goodnaturednesss":"⠛⠙⠝⠁⠞⠥⠗⠫⠰⠎⠎","goodnatures":"⠛⠙⠝⠁⠞⠥⠗⠑⠎","goodness":"⠛⠙⠰⠎","goodnesses":"⠛⠙⠰⠎⠑⠎","goodnessess":"⠛⠙⠰⠎⠑⠎⠎","goodnesss":"⠛⠙⠰⠎⠎","goodnight":"⠛⠙⠝⠊⠣⠞","goodnights":"⠛⠙⠝⠊⠣⠞⠎","goods":"⠛⠙⠎","goodsize":"⠛⠙⠎⠊⠵⠑","goodsized":"⠛⠙⠎⠊⠵⠫","goodsizes":"⠛⠙⠎⠊⠵⠑⠎","goodtempered":"⠛⠙⠞⠑⠍⠏⠻⠫","goodtemperedly":"⠛⠙⠞⠑⠍⠏⠻⠫⠇⠽","goodtemperedlys":"⠛⠙⠞⠑⠍⠏⠻⠫⠇⠽⠎","goodtime":"⠛⠙⠐⠞","goodtimes":"⠛⠙⠐⠞⠎","goodun":"⠛⠙⠥⠝","gooduns":"⠛⠙⠥⠝⠎","goodwife":"⠛⠙⠺⠊⠋⠑","goodwifes":"⠛⠙⠺⠊⠋⠑⠎","goodwill":"⠛⠙⠺⠊⠇⠇","goodwilled":"⠛⠙⠺⠊⠇⠇⠫","goodwills":"⠛⠙⠺⠊⠇⠇⠎","goodwives":"⠛⠙⠺⠊⠧⠑⠎","goodwivess":"⠛⠙⠺⠊⠧⠑⠎⠎","goody":"⠛⠙⠽","goodyear":"⠛⠙⠽⠑⠜","goodyears":"⠛⠙⠽⠑⠜⠎","goodys":"⠛⠙⠽⠎","grandchildren":"⠛⠗⠯⠡⠝","grandchildrens":"⠛⠗⠯⠡⠝⠎","great":"⠛⠗⠞","greataunt":"⠛⠗⠞⠁⠥⠝⠞","greataunts":"⠛⠗⠞⠁⠥⠝⠞⠎","greatbatch":"⠛⠗⠞⠃⠁⠞⠡","greatbatchs":"⠛⠗⠞⠃⠁⠞⠡⠎","greatcircle":"⠛⠗⠞⠉⠊⠗⠉⠇⠑","greatcircles":"⠛⠗⠞⠉⠊⠗⠉⠇⠑⠎","greatcoat":"⠛⠗⠞⠉⠕⠁⠞","greatcoats":"⠛⠗⠞⠉⠕⠁⠞⠎","greaten":"⠛⠗⠞⠢","greatened":"⠛⠗⠞⠢⠫","greatener":"⠛⠗⠞⠢⠻","greateners":"⠛⠗⠞⠢⠻⠎","greatening":"⠛⠗⠞⠢⠬","greatenings":"⠛⠗⠞⠢⠬⠎","greatens":"⠛⠗⠞⠢⠎","greater":"⠛⠗⠞⠻","greaters":"⠛⠗⠞⠻⠎","greatest":"⠛⠗⠞⠑⠌","greatests":"⠛⠗⠞⠑⠌⠎","greatgrandaunt":"⠛⠗⠞⠛⠗⠯⠁⠥⠝⠞","greatgrandaunts":"⠛⠗⠞⠛⠗⠯⠁⠥⠝⠞⠎","greatgrandchild":"⠛⠗⠞⠛⠗⠯⠡⠊⠇⠙","greatgrandchildren":"⠛⠗⠞⠛⠗⠯⠡⠝","greatgrandchildrens":"⠛⠗⠞⠛⠗⠯⠡⠝⠎","greatgrandchilds":"⠛⠗⠞⠛⠗⠯⠡⠊⠇⠙⠎","greatgranddad":"⠛⠗⠞⠛⠗⠯⠙⠁⠙","greatgranddads":"⠛⠗⠞⠛⠗⠯⠙⠁⠙⠎","greatgranddaughter":"⠛⠗⠞⠛⠗⠯⠙⠁⠥⠣⠞⠻","greatgranddaughters":"⠛⠗⠞⠛⠗⠯⠙⠁⠥⠣⠞⠻⠎","greatgrandfather":"⠛⠗⠞⠛⠗⠯⠐⠋","greatgrandfatherhood":"⠛⠗⠞⠛⠗⠯⠐⠋⠓⠕⠕⠙","greatgrandfatherhoods":"⠛⠗⠞⠛⠗⠯⠐⠋⠓⠕⠕⠙⠎","greatgrandfathers":"⠛⠗⠞⠛⠗⠯⠐⠋⠎","greatgrandma":"⠛⠗⠞⠛⠗⠯⠍⠁","greatgrandmas":"⠛⠗⠞⠛⠗⠯⠍⠁⠎","greatgrandmother":"⠛⠗⠞⠛⠗⠯⠐⠍","greatgrandmotherhood":"⠛⠗⠞⠛⠗⠯⠐⠍⠓⠕⠕⠙","greatgrandmotherhoods":"⠛⠗⠞⠛⠗⠯⠐⠍⠓⠕⠕⠙⠎","greatgrandmothers":"⠛⠗⠞⠛⠗⠯⠐⠍⠎","greatgrandnephew":"⠛⠗⠞⠛⠗⠯⠝⠑⠏⠓⠑⠺","greatgrandnephews":"⠛⠗⠞⠛⠗⠯⠝⠑⠏⠓⠑⠺⠎","greatgrandniece":"⠛⠗⠞⠛⠗⠯⠝⠊⠑⠉⠑","greatgrandnieces":"⠛⠗⠞⠛⠗⠯⠝⠊⠑⠉⠑⠎","greatgrandpa":"⠛⠗⠞⠛⠗⠯⠏⠁","greatgrandparent":"⠛⠗⠞⠛⠗⠯⠏⠜⠢⠞","greatgrandparenthood":"⠛⠗⠞⠛⠗⠯⠏⠜⠢⠞⠓⠕⠕⠙","greatgrandparenthoods":"⠛⠗⠞⠛⠗⠯⠏⠜⠢⠞⠓⠕⠕⠙⠎","greatgrandparents":"⠛⠗⠞⠛⠗⠯⠏⠜⠢⠞⠎","greatgrandpas":"⠛⠗⠞⠛⠗⠯⠏⠁⠎","greatgrandson":"⠛⠗⠞⠛⠗⠯⠎⠕⠝","greatgrandsons":"⠛⠗⠞⠛⠗⠯⠎⠕⠝⠎","greatgranduncle":"⠛⠗⠞⠛⠗⠯⠥⠝⠉⠇⠑","greatgranduncles":"⠛⠗⠞⠛⠗⠯⠥⠝⠉⠇⠑⠎","greathearted":"⠛⠗⠞⠓⠑⠜⠞⠫","greatheartedly":"⠛⠗⠞⠓⠑⠜⠞⠫⠇⠽","greatheartedlys":"⠛⠗⠞⠓⠑⠜⠞⠫⠇⠽⠎","greatheartedness":"⠛⠗⠞⠓⠑⠜⠞⠫⠰⠎","greatheartednesses":"⠛⠗⠞⠓⠑⠜⠞⠫⠰⠎⠑⠎","greatheartednessess":"⠛⠗⠞⠓⠑⠜⠞⠫⠰⠎⠑⠎⠎","greatheartednesss":"⠛⠗⠞⠓⠑⠜⠞⠫⠰⠎⠎","greatly":"⠛⠗⠞⠇⠽","greatlys":"⠛⠗⠞⠇⠽⠎","greatnephew":"⠛⠗⠞⠝⠑⠏⠓⠑⠺","greatnephews":"⠛⠗⠞⠝⠑⠏⠓⠑⠺⠎","greatness":"⠛⠗⠞⠰⠎","greatnesses":"⠛⠗⠞⠰⠎⠑⠎","greatnessess":"⠛⠗⠞⠰⠎⠑⠎⠎","greatnesss":"⠛⠗⠞⠰⠎⠎","greatniece":"⠛⠗⠞⠝⠊⠑⠉⠑","greatnieces":"⠛⠗⠞⠝⠊⠑⠉⠑⠎","greats":"⠛⠗⠞⠎","greatsword":"⠛⠗⠞⠎⠘⠺","greatswords":"⠛⠗⠞⠎⠘⠺⠎","greatuncle":"⠛⠗⠞⠥⠝⠉⠇⠑","greatuncles":"⠛⠗⠞⠥⠝⠉⠇⠑⠎","guyfriend":"⠛⠥⠽⠋⠗","guyfriends":"⠛⠥⠽⠋⠗⠎","hateletter":"⠓⠁⠞⠑⠇⠗","hateletters":"⠓⠁⠞⠑⠇⠗⠎","have":"⠓","headfirst":"⠓⠂⠙⠋⠌","headfirsts":"⠓⠂⠙⠋⠌⠎","hereabout":"⠐⠓⠁⠃","hereabouts":"⠐⠓⠁⠃⠎","hereafter":"⠐⠓⠁⠋","hereafters":"⠐⠓⠁⠋⠎","hereagain":"⠐⠓⠁⠛","hereagains":"⠐⠓⠁⠛⠎","hereagainst":"⠐⠓⠁⠛⠌","hereagainsts":"⠐⠓⠁⠛⠌⠎","hereinabove":"⠐⠓⠔⠁⠃⠧","hereinaboves":"⠐⠓⠔⠁⠃⠧⠎","hereinafter":"⠐⠓⠔⠁⠋","hereinafters":"⠐⠓⠔⠁⠋⠎","hereinagain":"⠐⠓⠔⠁⠛","hereinagains":"⠐⠓⠔⠁⠛⠎","herself":"⠓⠻⠋","herselfs":"⠓⠻⠋⠎","highlypaid":"⠓⠊⠣⠇⠽⠏⠙","highlypaids":"⠓⠊⠣⠇⠽⠏⠙⠎","him":"⠓⠍","himbo":"⠓⠍⠃⠕","himboes":"⠓⠍⠃⠕⠑⠎","himboess":"⠓⠍⠃⠕⠑⠎⠎","himbos":"⠓⠍⠃⠕⠎","himself":"⠓⠍⠋","himselfs":"⠓⠍⠋⠎","illpaid":"⠊⠇⠇⠏⠙","illpaids":"⠊⠇⠇⠏⠙⠎","immediate":"⠊⠍⠍","immediately":"⠊⠍⠍⠇⠽","immediatelys":"⠊⠍⠍⠇⠽⠎","immediateness":"⠊⠍⠍⠰⠎","immediatenesss":"⠊⠍⠍⠰⠎⠎","immediates":"⠊⠍⠍⠎","inasmuch":"⠔⠁⠎⠍⠡","inasmuchs":"⠔⠁⠎⠍⠡⠎","insomuch":"⠔⠎⠕⠍⠡","insomuchs":"⠔⠎⠕⠍⠡⠎","it":"⠭","its":"⠭⠎","itself":"⠭⠋","itselfs":"⠭⠋⠎","itss":"⠭⠎⠎","just":"⠚","knockabout":"⠅⠝⠕⠉⠅⠁⠃","knockabouts":"⠅⠝⠕⠉⠅⠁⠃⠎","knowledge":"⠅","ladyfriend":"⠇⠁⠙⠽⠋⠗","ladyfriends":"⠇⠁⠙⠽⠋⠗⠎","layabout":"⠇⠁⠽⠁⠃","layabouts":"⠇⠁⠽⠁⠃⠎","letter":"⠇⠗","letterbodies":"⠇⠗⠃⠕⠙⠊⠑⠎","letterbodiess":"⠇⠗⠃⠕⠙⠊⠑⠎⠎","letterbody":"⠇⠗⠃⠕⠙⠽","letterbodys":"⠇⠗⠃⠕⠙⠽⠎","letterbomb":"⠇⠗⠃⠕⠍⠃","letterbombed":"⠇⠗⠃⠕⠍⠃⠫","letterbomber":"⠇⠗⠃⠕⠍⠃⠻","letterbombers":"⠇⠗⠃⠕⠍⠃⠻⠎","letterbombing":"⠇⠗⠃⠕⠍⠃⠬","letterbombings":"⠇⠗⠃⠕⠍⠃⠬⠎","letterbombs":"⠇⠗⠃⠕⠍⠃⠎","letterbox":"⠇⠗⠃⠕⠭","letterboxed":"⠇⠗⠃⠕⠭⠫","letterboxer":"⠇⠗⠃⠕⠭⠻","letterboxers":"⠇⠗⠃⠕⠭⠻⠎","letterboxes":"⠇⠗⠃⠕⠭⠑⠎","letterboxess":"⠇⠗⠃⠕⠭⠑⠎⠎","letterboxing":"⠇⠗⠃⠕⠭⠬","letterboxings":"⠇⠗⠃⠕⠭⠬⠎","letterboxs":"⠇⠗⠃⠕⠭⠎","lettered":"⠇⠗⠫","letterer":"⠇⠗⠻","letterers":"⠇⠗⠻⠎","letterform":"⠇⠗⠿⠍","letterforms":"⠇⠗⠿⠍⠎","letterhead":"⠇⠗⠓⠂⠙","letterheading":"⠇⠗⠓⠂⠙⠬","letterheadings":"⠇⠗⠓⠂⠙⠬⠎","letterheads":"⠇⠗⠓⠂⠙⠎","lettering":"⠇⠗⠬","letterings":"⠇⠗⠬⠎","letterman":"⠇⠗⠍⠁⠝","lettermans":"⠇⠗⠍⠁⠝⠎","lettermen":"⠇⠗⠍⠢","lettermens":"⠇⠗⠍⠢⠎","letteropener":"⠇⠗⠕⠏⠢⠻","letteropeners":"⠇⠗⠕⠏⠢⠻⠎","letterperfect":"⠇⠗⠏⠻⠋⠑⠉⠞","letterperfects":"⠇⠗⠏⠻⠋⠑⠉⠞⠎","letterpress":"⠇⠗⠏⠗⠑⠎⠎","letterpressed":"⠇⠗⠏⠗⠑⠎⠎⠫","letterpresses":"⠇⠗⠏⠗⠑⠎⠎⠑⠎","letterpressess":"⠇⠗⠏⠗⠑⠎⠎⠑⠎⠎","letterpressing":"⠇⠗⠏⠗⠑⠎⠎⠬","letterpressings":"⠇⠗⠏⠗⠑⠎⠎⠬⠎","letterpresss":"⠇⠗⠏⠗⠑⠎⠎⠎","letterquality":"⠇⠗⠟⠥⠁⠇⠰⠽","letterqualitys":"⠇⠗⠟⠥⠁⠇⠰⠽⠎","letters":"⠇⠗⠎","letterspace":"⠇⠗⠎⠏⠁⠉⠑","letterspaced":"⠇⠗⠎⠏⠁⠉⠫","letterspaces":"⠇⠗⠎⠏⠁⠉⠑⠎","letterspacing":"⠇⠗⠎⠏⠁⠉⠬","letterspacings":"⠇⠗⠎⠏⠁⠉⠬⠎","lettertext":"⠇⠗⠞⠑⠭⠞","lettertexts":"⠇⠗⠞⠑⠭⠞⠎","like":"⠇","little":"⠇⠇","littled":"⠇⠇⠙","littleneck":"⠇⠇⠝⠑⠉⠅","littlenecks":"⠇⠇⠝⠑⠉⠅⠎","littleness":"⠇⠇⠰⠎","littlenesses":"⠇⠇⠰⠎⠑⠎","littlenessess":"⠇⠇⠰⠎⠑⠎⠎","littlenesss":"⠇⠇⠰⠎⠎","littler":"⠇⠇⠗","littlers":"⠇⠇⠗⠎","littles":"⠇⠇⠎","littlest":"⠇⠇⠌","littlests":"⠇⠇⠌⠎","lovechildren":"⠇⠕⠧⠑⠡⠝","lovechildrens":"⠇⠕⠧⠑⠡⠝⠎","loveletter":"⠇⠕⠧⠑⠇⠗","loveletters":"⠇⠕⠧⠑⠇⠗⠎","lowlypaid":"⠇⠪⠇⠽⠏⠙","lowlypaids":"⠇⠪⠇⠽⠏⠙⠎","manfriend":"⠍⠁⠝⠋⠗","manfriends":"⠍⠁⠝⠋⠗⠎","menfriends":"⠍⠢⠋⠗⠎","menfriendss":"⠍⠢⠋⠗⠎⠎","midafternoon":"⠍⠊⠙⠁⠋⠝","midafternoons":"⠍⠊⠙⠁⠋⠝⠎","misbraille":"⠍⠊⠎⠃⠗⠇","misbrailled":"⠍⠊⠎⠃⠗⠇⠙","misbrailles":"⠍⠊⠎⠃⠗⠇⠎","misperceive":"⠍⠊⠎⠏⠻⠉⠧","misperceived":"⠍⠊⠎⠏⠻⠉⠧⠙","misperceiver":"⠍⠊⠎⠏⠻⠉⠧⠗","misperceivers":"⠍⠊⠎⠏⠻⠉⠧⠗⠎","misperceives":"⠍⠊⠎⠏⠻⠉⠧⠎","misperceiving":"⠍⠊⠎⠏⠻⠉⠧⠛","misperceivings":"⠍⠊⠎⠏⠻⠉⠧⠛⠎","missaid":"⠍⠊⠎⠎⠙","missaids":"⠍⠊⠎⠎⠙⠎","more":"⠍","morningafter":"⠍⠕⠗⠝⠬⠁⠋","morningafters":"⠍⠕⠗⠝⠬⠁⠋⠎","much":"⠍⠡","muchly":"⠍⠡⠇⠽","muchlys":"⠍⠡⠇⠽⠎","muchness":"⠍⠡⠰⠎","muchnesss":"⠍⠡⠰⠎⠎","muchs":"⠍⠡⠎","must":"⠍⠌","musta":"⠍⠌⠁","mustard":"⠍⠌⠜⠙","mustards":"⠍⠌⠜⠙⠎","mustardy":"⠍⠌⠜⠙⠽","mustardys":"⠍⠌⠜⠙⠽⠎","mustas":"⠍⠌⠁⠎","mustier":"⠍⠌⠊⠻","mustiers":"⠍⠌⠊⠻⠎","mustiest":"⠍⠌⠊⠑⠌","mustiests":"⠍⠌⠊⠑⠌⠎","mustily":"⠍⠌⠊⠇⠽","mustilys":"⠍⠌⠊⠇⠽⠎","mustiness":"⠍⠌⠊⠰⠎","mustinesss":"⠍⠌⠊⠰⠎⠎","musts":"⠍⠌⠎","musty":"⠍⠌⠽","mustys":"⠍⠌⠽⠎","myself":"⠍⠽⠋","myselfs":"⠍⠽⠋⠎","necessary":"⠝⠑⠉","necessarys":"⠝⠑⠉⠎","neither":"⠝⠑⠊","neithers":"⠝⠑⠊⠎","newsletter":"⠝⠑⠺⠎⠇⠗","newsletters":"⠝⠑⠺⠎⠇⠗⠎","nonesuch":"⠝⠐⠕⠎⠡","nonesuchs":"⠝⠐⠕⠎⠡⠎","nonsuch":"⠝⠕⠝⠎⠡","nonsuchs":"⠝⠕⠝⠎⠡⠎","northabout":"⠝⠕⠗⠹⠁⠃","northabouts":"⠝⠕⠗⠹⠁⠃⠎","not":"⠝","oneself":"⠐⠕⠋","oneselfs":"⠐⠕⠋⠎","ourselves":"⠳⠗⠧⠎","ourselvess":"⠳⠗⠧⠎⠎","out":"⠳","overmuch":"⠕⠧⠻⠍⠡","overmuchs":"⠕⠧⠻⠍⠡⠎","overpaid":"⠕⠧⠻⠏⠙","overpaids":"⠕⠧⠻⠏⠙⠎","paid":"⠏⠙","paids":"⠏⠙⠎","penfriend":"⠏⠢⠋⠗","penfriends":"⠏⠢⠋⠗⠎","people":"⠏","perceive":"⠏⠻⠉⠧","perceived":"⠏⠻⠉⠧⠙","perceiver":"⠏⠻⠉⠧⠗","perceivers":"⠏⠻⠉⠧⠗⠎","perceives":"⠏⠻⠉⠧⠎","perceiving":"⠏⠻⠉⠧⠛","perceivings":"⠏⠻⠉⠧⠛⠎","perhaps":"⠏⠻⠓","perhapses":"⠏⠻⠓⠑⠎","perhapsess":"⠏⠻⠓⠑⠎⠎","perhapss":"⠏⠻⠓⠎","poorlypaid":"⠏⠕⠕⠗⠇⠽⠏⠙","poorlypaids":"⠏⠕⠕⠗⠇⠽⠏⠙⠎","postpaid":"⠏⠕⠌⠏⠙","postpaids":"⠏⠕⠌⠏⠙⠎","preceive":"⠏⠗⠉⠧","preceiver":"⠏⠗⠉⠧⠗","preceivers":"⠏⠗⠉⠧⠗⠎","preceives":"⠏⠗⠉⠧⠎","preceiving":"⠏⠗⠉⠧⠛","preceivings":"⠏⠗⠉⠧⠛⠎","prepaid":"⠏⠗⠑⠏⠙","prepaids":"⠏⠗⠑⠏⠙⠎","purblind":"⠏⠥⠗⠃⠇","purblindly":"⠏⠥⠗⠃⠇⠇⠽","purblindlys":"⠏⠥⠗⠃⠇⠇⠽⠎","purblindness":"⠏⠥⠗⠃⠇⠰⠎","purblindnesses":"⠏⠥⠗⠃⠇⠰⠎⠑⠎","purblindnessess":"⠏⠥⠗⠃⠇⠰⠎⠑⠎⠎","purblindnesss":"⠏⠥⠗⠃⠇⠰⠎⠎","purblinds":"⠏⠥⠗⠃⠇⠎","quick":"⠟⠅","quickdraw":"⠟⠅⠙⠗⠁⠺","quickdraws":"⠟⠅⠙⠗⠁⠺⠎","quicken":"⠟⠅⠢","quickened":"⠟⠅⠢⠫","quickener":"⠟⠅⠢⠻","quickeners":"⠟⠅⠢⠻⠎","quickening":"⠟⠅⠢⠬","quickenings":"⠟⠅⠢⠬⠎","quickens":"⠟⠅⠢⠎","quicker":"⠟⠅⠻","quickers":"⠟⠅⠻⠎","quickest":"⠟⠅⠑⠌","quickests":"⠟⠅⠑⠌⠎","quickfire":"⠟⠅⠋⠊⠗⠑","quickfires":"⠟⠅⠋⠊⠗⠑⠎","quickfiring":"⠟⠅⠋⠊⠗⠬","quickfirings":"⠟⠅⠋⠊⠗⠬⠎","quickfreeze":"⠟⠅⠋⠗⠑⠑⠵⠑","quickfreezes":"⠟⠅⠋⠗⠑⠑⠵⠑⠎","quickfreezing":"⠟⠅⠋⠗⠑⠑⠵⠬","quickfreezings":"⠟⠅⠋⠗⠑⠑⠵⠬⠎","quickfroze":"⠟⠅⠋⠗⠕⠵⠑","quickfrozen":"⠟⠅⠋⠗⠕⠵⠢","quickfrozens":"⠟⠅⠋⠗⠕⠵⠢⠎","quickfrozes":"⠟⠅⠋⠗⠕⠵⠑⠎","quickie":"⠟⠅⠊⠑","quickies":"⠟⠅⠊⠑⠎","quickish":"⠟⠅⠊⠩","quickishly":"⠟⠅⠊⠩⠇⠽","quickishlys":"⠟⠅⠊⠩⠇⠽⠎","quickishs":"⠟⠅⠊⠩⠎","quicklime":"⠟⠅⠇⠊⠍⠑","quicklimes":"⠟⠅⠇⠊⠍⠑⠎","quickly":"⠟⠅⠇⠽","quicklys":"⠟⠅⠇⠽⠎","quickness":"⠟⠅⠰⠎","quicknesses":"⠟⠅⠰⠎⠑⠎","quicknessess":"⠟⠅⠰⠎⠑⠎⠎","quicknesss":"⠟⠅⠰⠎⠎","quicks":"⠟⠅⠎","quicksand":"⠟⠅⠎⠯","quicksands":"⠟⠅⠎⠯⠎","quickset":"⠟⠅⠎⠑⠞","quicksets":"⠟⠅⠎⠑⠞⠎","quicksilver":"⠟⠅⠎⠊⠇⠧⠻","quicksilvered":"⠟⠅⠎⠊⠇⠧⠻⠫","quicksilvering":"⠟⠅⠎⠊⠇⠧⠻⠬","quicksilverings":"⠟⠅⠎⠊⠇⠧⠻⠬⠎","quicksilvers":"⠟⠅⠎⠊⠇⠧⠻⠎","quicksnap":"⠟⠅⠎⠝⠁⠏","quicksnaps":"⠟⠅⠎⠝⠁⠏⠎","quickstep":"⠟⠅⠌⠑⠏","quickstepped":"⠟⠅⠌⠑⠏⠏⠫","quickstepper":"⠟⠅⠌⠑⠏⠏⠻","quicksteppers":"⠟⠅⠌⠑⠏⠏⠻⠎","quickstepping":"⠟⠅⠌⠑⠏⠏⠬","quicksteppings":"⠟⠅⠌⠑⠏⠏⠬⠎","quicksteps":"⠟⠅⠌⠑⠏⠎","quicktempered":"⠟⠅⠞⠑⠍⠏⠻⠫","quicktime":"⠟⠅⠐⠞","quicktimes":"⠟⠅⠐⠞⠎","quickwitted":"⠟⠅⠺⠊⠞⠞⠫","quickwittedly":"⠟⠅⠺⠊⠞⠞⠫⠇⠽","quickwittedlys":"⠟⠅⠺⠊⠞⠞⠫⠇⠽⠎","quickwittedness":"⠟⠅⠺⠊⠞⠞⠫⠰⠎","quickwittednesss":"⠟⠅⠺⠊⠞⠞⠫⠰⠎⠎","quicky":"⠟⠅⠽","quickys":"⠟⠅⠽⠎","quite":"⠟","rather":"⠗","readacross":"⠗⠂⠙⠁⠉⠗","readacrosss":"⠗⠂⠙⠁⠉⠗⠎","rebraille":"⠗⠑⠃⠗⠇","rebrailled":"⠗⠑⠃⠗⠇⠙","rebrailler":"⠗⠑⠃⠗⠇⠗","rebraillers":"⠗⠑⠃⠗⠇⠗⠎","rebrailles":"⠗⠑⠃⠗⠇⠎","receive":"⠗⠉⠧","received":"⠗⠉⠧⠙","receiver":"⠗⠉⠧⠗","receivers":"⠗⠉⠧⠗⠎","receivership":"⠗⠉⠧⠗⠩⠊⠏","receiverships":"⠗⠉⠧⠗⠩⠊⠏⠎","receives":"⠗⠉⠧⠎","receiving":"⠗⠉⠧⠛","receivings":"⠗⠉⠧⠛⠎","rejoice":"⠗⠚⠉","rejoiced":"⠗⠚⠉⠙","rejoiceful":"⠗⠚⠉⠰⠇","rejoicefully":"⠗⠚⠉⠰⠇⠇⠽","rejoicefullys":"⠗⠚⠉⠰⠇⠇⠽⠎","rejoicefulness":"⠗⠚⠉⠰⠇⠰⠎","rejoicefulnesss":"⠗⠚⠉⠰⠇⠰⠎⠎","rejoicefuls":"⠗⠚⠉⠰⠇⠎","rejoicer":"⠗⠚⠉⠗","rejoicers":"⠗⠚⠉⠗⠎","rejoices":"⠗⠚⠉⠎","rejoicing":"⠗⠚⠉⠛","rejoicingly":"⠗⠚⠉⠛⠇⠽","rejoicinglys":"⠗⠚⠉⠛⠇⠽⠎","rejoicings":"⠗⠚⠉⠛⠎","reletter":"⠗⠑⠇⠗","relettered":"⠗⠑⠇⠗⠫","relettering":"⠗⠑⠇⠗⠬","reletterings":"⠗⠑⠇⠗⠬⠎","reletters":"⠗⠑⠇⠗⠎","repaid":"⠗⠑⠏⠙","repaids":"⠗⠑⠏⠙⠎","rightabout":"⠐⠗⠁⠃","rightabouts":"⠐⠗⠁⠃⠎","roundabout":"⠗⠨⠙⠁⠃","roundabouts":"⠗⠨⠙⠁⠃⠎","roustabout":"⠗⠳⠌⠁⠃","roustabouts":"⠗⠳⠌⠁⠃⠎","runabout":"⠗⠥⠝⠁⠃","runabouts":"⠗⠥⠝⠁⠃⠎","said":"⠎⠙","saidest":"⠎⠙⠑⠌","saidests":"⠎⠙⠑⠌⠎","saids":"⠎⠙⠎","saidst":"⠎⠙⠌","saidsts":"⠎⠙⠌⠎","scattergood":"⠎⠉⠁⠞⠞⠻⠛⠙","scattergoods":"⠎⠉⠁⠞⠞⠻⠛⠙⠎","schoolchildren":"⠎⠡⠕⠕⠇⠡⠝","schoolchildrens":"⠎⠡⠕⠕⠇⠡⠝⠎","schoolfriend":"⠎⠡⠕⠕⠇⠋⠗","schoolfriends":"⠎⠡⠕⠕⠇⠋⠗⠎","shall":"⠩","should":"⠩⠙","shoulda":"⠩⠙⠁","shouldas":"⠩⠙⠁⠎","shouldest":"⠩⠙⠑⠌","shouldests":"⠩⠙⠑⠌⠎","shoulds":"⠩⠙⠎","shouldst":"⠩⠙⠌","shouldsts":"⠩⠙⠌⠎","snowblind":"⠎⠝⠪⠃⠇","snowblindness":"⠎⠝⠪⠃⠇⠰⠎","snowblindnesses":"⠎⠝⠪⠃⠇⠰⠎⠑⠎","snowblindnessess":"⠎⠝⠪⠃⠇⠰⠎⠑⠎⠎","snowblindnesss":"⠎⠝⠪⠃⠇⠰⠎⠎","snowblinds":"⠎⠝⠪⠃⠇⠎","so":"⠎","somesuch":"⠐⠎⠎⠡","somesuchs":"⠐⠎⠎⠡⠎","southabout":"⠎⠳⠹⠁⠃","southabouts":"⠎⠳⠹⠁⠃⠎","stepchildren":"⠌⠑⠏⠡⠝","stepchildrens":"⠌⠑⠏⠡⠝⠎","still":"⠌","stirabout":"⠌⠊⠗⠁⠃","stirabouts":"⠌⠊⠗⠁⠃⠎","such":"⠎⠡","suchlike":"⠎⠡⠇⠊⠅⠑","suchlikes":"⠎⠡⠇⠊⠅⠑⠎","suchs":"⠎⠡⠎","supergood":"⠎⠥⠏⠻⠛⠙","supergoods":"⠎⠥⠏⠻⠛⠙⠎","superquick":"⠎⠥⠏⠻⠟⠅","superquicks":"⠎⠥⠏⠻⠟⠅⠎","tailfirst":"⠞⠁⠊⠇⠋⠌","tailfirsts":"⠞⠁⠊⠇⠋⠌⠎","that":"⠞","themselves":"⠮⠍⠧⠎","themselvess":"⠮⠍⠧⠎⠎","thereabout":"⠐⠮⠁⠃","thereabouts":"⠐⠮⠁⠃⠎","thereafter":"⠐⠮⠁⠋","thereafters":"⠐⠮⠁⠋⠎","thereagain":"⠐⠮⠁⠛","thereagains":"⠐⠮⠁⠛⠎","thereagainst":"⠐⠮⠁⠛⠌","thereagainsts":"⠐⠮⠁⠛⠌⠎","thereinafter":"⠐⠮⠔⠁⠋","thereinafters":"⠐⠮⠔⠁⠋⠎","thereinagain":"⠐⠮⠔⠁⠛","thereinagains":"⠐⠮⠔⠁⠛⠎","this":"⠹","thyself":"⠹⠽⠋","thyselfs":"⠹⠽⠋⠎","today":"⠞⠙","todays":"⠞⠙⠎","together":"⠞⠛⠗","togetherness":"⠞⠛⠗⠰⠎","togethernesss":"⠞⠛⠗⠰⠎⠎","togethers":"⠞⠛⠗⠎","tomorrow":"⠞⠍","tomorrows":"⠞⠍⠎","tonight":"⠞⠝","tonights":"⠞⠝⠎","turnabout":"⠞⠥⠗⠝⠁⠃","turnabouts":"⠞⠥⠗⠝⠁⠃⠎","unaccording":"⠥⠝⠁⠉","unaccordingly":"⠥⠝⠁⠉⠇⠽","unaccordinglys":"⠥⠝⠁⠉⠇⠽⠎","unaccordings":"⠥⠝⠁⠉⠎","unblindfold":"⠥⠝⠃⠇⠋⠕⠇⠙","unblindfolded":"⠥⠝⠃⠇⠋⠕⠇⠙⠫","unblindfolding":"⠥⠝⠃⠇⠋⠕⠇⠙⠬","unblindfoldings":"⠥⠝⠃⠇⠋⠕⠇⠙⠬⠎","unblindfolds":"⠥⠝⠃⠇⠋⠕⠇⠙⠎","unbraille":"⠥⠝⠃⠗⠇","unbrailled":"⠥⠝⠃⠗⠇⠙","unbrailles":"⠥⠝⠃⠗⠇⠎","undeceive":"⠥⠝⠙⠉⠧","undeceived":"⠥⠝⠙⠉⠧⠙","undeceiver":"⠥⠝⠙⠉⠧⠗","undeceivers":"⠥⠝⠙⠉⠧⠗⠎","undeceives":"⠥⠝⠙⠉⠧⠎","undeceiving":"⠥⠝⠙⠉⠧⠛","undeceivings":"⠥⠝⠙⠉⠧⠛⠎","undeclare":"⠥⠝⠙⠉⠇","undeclared":"⠥⠝⠙⠉⠇⠙","undeclares":"⠥⠝⠙⠉⠇⠎","underpaid":"⠐⠥⠏⠙","underpaids":"⠐⠥⠏⠙⠎","unfriend":"⠥⠝⠋⠗","unfriendlier":"⠥⠝⠋⠗⠇⠊⠻","unfriendliers":"⠥⠝⠋⠗⠇⠊⠻⠎","unfriendliest":"⠥⠝⠋⠗⠇⠊⠑⠌","unfriendliests":"⠥⠝⠋⠗⠇⠊⠑⠌⠎","unfriendliness":"⠥⠝⠋⠗⠇⠊⠰⠎","unfriendlinesses":"⠥⠝⠋⠗⠇⠊⠰⠎⠑⠎","unfriendlinessess":"⠥⠝⠋⠗⠇⠊⠰⠎⠑⠎⠎","unfriendlinesss":"⠥⠝⠋⠗⠇⠊⠰⠎⠎","unfriendly":"⠥⠝⠋⠗⠇⠽","unfriendlys":"⠥⠝⠋⠗⠇⠽⠎","unfriends":"⠥⠝⠋⠗⠎","unlettered":"⠥⠝⠇⠗⠫","unnecessary":"⠥⠝⠝⠑⠉","unnecessarys":"⠥⠝⠝⠑⠉⠎","unpaid":"⠥⠝⠏⠙","unpaids":"⠥⠝⠏⠙⠎","unperceive":"⠥⠝⠏⠻⠉⠧","unperceived":"⠥⠝⠏⠻⠉⠧⠙","unperceives":"⠥⠝⠏⠻⠉⠧⠎","unperceiving":"⠥⠝⠏⠻⠉⠧⠛","unperceivings":"⠥⠝⠏⠻⠉⠧⠛⠎","unquick":"⠥⠝⠟⠅","unquicks":"⠥⠝⠟⠅⠎","unreceived":"⠥⠝⠗⠉⠧⠙","unrejoice":"⠥⠝⠗⠚⠉","unrejoiced":"⠥⠝⠗⠚⠉⠙","unrejoiceful":"⠥⠝⠗⠚⠉⠰⠇","unrejoicefully":"⠥⠝⠗⠚⠉⠰⠇⠇⠽","unrejoicefullys":"⠥⠝⠗⠚⠉⠰⠇⠇⠽⠎","unrejoicefulness":"⠥⠝⠗⠚⠉⠰⠇⠰⠎","unrejoicefulnesss":"⠥⠝⠗⠚⠉⠰⠇⠰⠎⠎","unrejoicefuls":"⠥⠝⠗⠚⠉⠰⠇⠎","unrejoicer":"⠥⠝⠗⠚⠉⠗","unrejoicers":"⠥⠝⠗⠚⠉⠗⠎","unrejoices":"⠥⠝⠗⠚⠉⠎","unrejoicing":"⠥⠝⠗⠚⠉⠛","unrejoicingly":"⠥⠝⠗⠚⠉⠛⠇⠽","unrejoicinglys":"⠥⠝⠗⠚⠉⠛⠇⠽⠎","unrejoicings":"⠥⠝⠗⠚⠉⠛⠎","unrepaid":"⠥⠝⠗⠑⠏⠙","unrepaids":"⠥⠝⠗⠑⠏⠙⠎","unsaid":"⠥⠝⠎⠙","unsaids":"⠥⠝⠎⠙⠎","us":"⠥","very":"⠧","walkabout":"⠺⠁⠇⠅⠁⠃","walkabouts":"⠺⠁⠇⠅⠁⠃⠎","wellpaid":"⠺⠑⠇⠇⠏⠙","wellpaids":"⠺⠑⠇⠇⠏⠙⠎","westabout":"⠺⠑⠌⠁⠃","westabouts":"⠺⠑⠌⠁⠃⠎","whereabout":"⠐⠱⠁⠃","whereabouts":"⠐⠱⠁⠃⠎","whereafter":"⠐⠱⠁⠋","whereafters":"⠐⠱⠁⠋⠎","whereagain":"⠐⠱⠁⠛","whereagains":"⠐⠱⠁⠛⠎","whereagainst":"⠐⠱⠁⠛⠌","whereagainsts":"⠐⠱⠁⠛⠌⠎","whereinafter":"⠐⠱⠔⠁⠋","whereinafters":"⠐⠱⠔⠁⠋⠎","whereinagain":"⠐⠱⠔⠁⠛","whereinagains":"⠐⠱⠔⠁⠛⠎","which":"⠱","will":"⠺","womanfriend":"⠺⠕⠍⠁⠝⠋⠗","womanfriends":"⠺⠕⠍⠁⠝⠋⠗⠎","womenfriends":"⠺⠕⠍⠢⠋⠗⠎","womenfriendss":"⠺⠕⠍⠢⠋⠗⠎⠎","would":"⠺⠙","woulda":"⠺⠙⠁","wouldas":"⠺⠙⠁⠎","wouldest":"⠺⠙⠑⠌","wouldests":"⠺⠙⠑⠌⠎","woulds":"⠺⠙⠎","wouldst":"⠺⠙⠌","wouldsts":"⠺⠙⠌⠎","you":"⠽","your":"⠽⠗","yours":"⠽⠗⠎","yourself":"⠽⠗⠋","yourselfs":"⠽⠗⠋⠎","yourselves":"⠽⠗⠧⠎","yourselvess":"⠽⠗⠧⠎⠎"};
+
+// ════════════════════════════════════════════════════════════
+//  CTB 解析器（直接 fetch zh-tw.ctb）
+// ════════════════════════════════════════════════════════════
+
+let zhMap   = new Map();   // 中文及符號 char → braille unicode
+let isLoaded = false;
+
+const BR_TO_ASCII = {
+    '\u2801':'a','\u2803':'b','\u2809':'c','\u2819':'d','\u2811':'e',
+    '\u280b':'f','\u281b':'g','\u2813':'h','\u280a':'i','\u281a':'j',
+    '\u2805':'k','\u2807':'l','\u280d':'m','\u281d':'n','\u2815':'o',
+    '\u280f':'p','\u281f':'q','\u2817':'r','\u280e':'s','\u281e':'t',
+    '\u2825':'u','\u2827':'v','\u283a':'w','\u282d':'x','\u283d':'y',
+    '\u2835':'z','\u2802':'1','\u2806':'2','\u2812':'3','\u283a':'w',
+    '\u2800':' ',
+    // full BR→ASCII map
+    '\u2801':'a','\u2802':'1','\u2803':'b','\u2804':'\'','\u2805':'k',
+    '\u2806':'2','\u2807':'l','\u2808':'`','\u2809':'c','\u280a':'i',
+    '\u280b':'f','\u280c':'/','\u280d':'m','\u280e':'s','\u280f':'p',
+    '\u2810':'"','\u2811':'e','\u2812':'3','\u2813':'h','\u2814':'9',
+    '\u2815':'o','\u2816':'6','\u2817':'r','\u2818':'~','\u2819':'d',
+    '\u281a':'j','\u281b':'g','\u281c':'>','\u281d':'n','\u281e':'t',
+    '\u281f':'q','\u2820':',','\u2821':'*','\u2822':'5','\u2823':'<',
+    '\u2824':'-','\u2825':'u','\u2826':'8','\u2827':'v','\u2828':'.',
+    '\u2829':'%','\u282a':'{','\u282b':'$','\u282c':'+','\u282d':'x',
+    '\u282e':'!','\u282f':'&','\u2830':';','\u2831':':','\u2832':'4',
+    '\u2833':'|','\u2834':'0','\u2835':'z','\u2836':'7','\u2837':'(',
+    '\u2838':'_','\u2839':'?','\u283a':'w','\u283b':'}','\u283c':'#',
+    '\u283d':'y','\u283e':')','\u283f':'=','\u2800':' '
+};
+
+function dotsToUnicode(s) {
+    if (/^[\u2800-\u28ff]+$/.test(s)) return s;
+    const cleaned = s.replace(/(-0)+$/, '');
+    if (!cleaned) return '\u2800';
+    return cleaned.split('-').map(cell => {
+        if (cell === '0' || cell === '') return '\u2800';
+        let off = 0;
+        for (const c of cell) { const d=parseInt(c); if(d>=1&&d<=8) off+=(1<<(d-1)); }
+        return String.fromCharCode(0x2800+off);
+    }).join('');
+}
+
+const CHAR_OPS = new Set(['letter','lowercase','uppercase','punctuation','sign','math','digit','base','litdigit','display']);
+const SKIP_INCLUDES = new Set([
+    'en-us-comp8.ctb','en-ueb-chardefs.uti','en-ueb-math.ctb',
+    'en-ueb-g1.ctb','en-ueb-g2.ctb',
+    'braille-patterns.cti','IPA-unicode-range.uti','spaces.uti',
+    'loweredDigits6Dots.uti','loweredDigits8Dots.uti'
+]);
+
+function parseCtb(text) {
+    const childIncludes = [];
+    for (let raw of text.split('\n')) {
+        const line = raw.replace(/#.*$/, '').trim();
+        if (!line) continue;
+        const parts = line.split(/\s+/);
+        let op = parts[0].toLowerCase();
+
+        if (op === 'include') {
+            const fn = parts[1];
+            if (fn && !SKIP_INCLUDES.has(fn)) childIncludes.push(fn);
+            continue;
+        }
+
+        let ci = 1, di = 2;
+        if (op === 'noback' || op === 'nofor') { op = (parts[1]||'').toLowerCase(); ci=2; di=3; }
+        if (!CHAR_OPS.has(op) || parts.length <= di) continue;
+
+        const tok = parts[ci], dotsTok = parts[di];
+        let char;
+        const esc = tok.match(/^\\x([0-9a-fA-F]{1,6})$/);
+        if (esc) char = String.fromCodePoint(parseInt(esc[1], 16));
+        else if (tok.length === 1) char = tok;
+        else continue;
+
+        // 跳過 ASCII 英文字母（由內建表處理）
+        if (/^[a-zA-Z]$/.test(char)) continue;
+
+        try { zhMap.set(char, dotsToUnicode(dotsTok)); } catch(e) {}
+    }
+    return childIncludes;
+}
+
+const _visited = new Set();
+async function fetchAndParse(fn) {
+    if (_visited.has(fn)) return;
+    _visited.add(fn);
+    let text;
+    try {
+        const r = await fetch(fn);
+        if (!r.ok) throw new Error(r.status);
+        text = await r.text();
+    } catch(e) { console.warn('skip', fn, e.message); return; }
+    const children = parseCtb(text);
+    for (const c of children) await fetchAndParse(c);
+}
+
+async function loadRules() {
+    _visited.clear();
+    zhMap.clear();
+    isLoaded = false;
+
+    const st = document.getElementById('rules-status');
+    st.className = 'rules-status loading';
+    st.textContent = '正在載入 zh-tw.ctb...';
+
+    try {
+        await fetchAndParse('zh-tw.ctb');
+        isLoaded = true;
+        const mode = document.getElementById('en-mode').value;
+        const modeLabel = {'comp8':'電腦八點','ueb-g1':'UEB G1','ueb-g2':'UEB G2'}[mode];
+        st.className = 'rules-status ok';
+        st.textContent = `規則載入完成（中文 ${zhMap.size} 字元，英文：${modeLabel}）`;
+        render();
+    } catch(e) {
+        st.className = 'rules-status error';
+        st.textContent = '載入失敗：' + e.message;
+    }
+}
+
+// ════════════════════════════════════════════════════════════
+//  英文點字轉換
+// ════════════════════════════════════════════════════════════
+
+// UEB G2：對整個英文詞套用縮寫
+// 策略：先嘗試 word 整詞；逐字時若有 always 縮寫則套用
+function translateEnglishG2(word) {
+    const lw = word.toLowerCase();
+    // 1. 整詞縮寫（word）
+    if (G2_WORD[lw]) return capWrap(word, G2_WORD[lw]);
+
+    // 2. 逐字元，遇到 always 縮寫（可跨字元的子串）先貪婪匹配
+    let result = '';
+    let i = 0;
+    // 先加大寫指示符
+    const hasCaps = /[A-Z]/.test(word);
+    const isAllCaps = word === word.toUpperCase() && /[A-Z]/.test(word);
+    if (isAllCaps && word.length > 1) result += UEB_CAPS_WORD;
+
+    while (i < lw.length) {
+        // 嘗試貪婪匹配 always 縮寫（最長優先）
+        let matched = false;
+        // 找從 i 開始的最長 always key
+        const candidates = Object.keys(G2_ALWAYS).filter(k => lw.startsWith(k, i)).sort((a,b)=>b.length-a.length);
+        if (candidates.length > 0) {
+            result += G2_ALWAYS[candidates[0]];
+            i += candidates[0].length;
+            matched = true;
+        }
+        if (!matched) {
+            const c = lw[i];
+            const orig = word[i];
+            if (!isAllCaps && orig !== orig.toLowerCase()) result += UEB_CAPS_INDICATOR;
+            result += UEB_ALPHA[c] || c;
+            i++;
+        }
+    }
+    return result;
+}
+
+function translateEnglishUEB(word) {
+    // G1：只有字母，不縮寫
+    const lw = word.toLowerCase();
+    const isAllCaps = word === word.toUpperCase() && /[A-Z]/.test(word) && word.length > 1;
+    let result = isAllCaps ? UEB_CAPS_WORD : '';
+    for (let i = 0; i < lw.length; i++) {
+        const c = lw[i];
+        const orig = word[i];
+        if (!isAllCaps && orig !== orig.toLowerCase()) result += UEB_CAPS_INDICATOR;
+        result += UEB_ALPHA[c] || c;
+    }
+    return result;
+}
+
+function translateEnglishComp8(word) {
+    // comp8：小寫用 UEB_ALPHA，大寫加 dot7
+    let result = '';
+    for (const c of word) {
+        if (/[A-Z]/.test(c)) result += COMP8_UPPER[c] || c;
+        else result += UEB_ALPHA[c.toLowerCase()] || c;
+    }
+    return result;
+}
+
+function capWrap(origWord, braille) {
+    // 處理整詞縮寫的大寫
+    const isAllCaps = origWord === origWord.toUpperCase() && /[A-Z]/.test(origWord) && origWord.length > 1;
+    const isInitCap = /^[A-Z]/.test(origWord);
+    if (isAllCaps) return UEB_CAPS_WORD + braille;
+    if (isInitCap) return UEB_CAPS_INDICATOR + braille;
+    return braille;
+}
+
+function translateEnglish(word) {
+    const mode = document.getElementById('en-mode').value;
+    if (mode === 'comp8')  return translateEnglishComp8(word);
+    if (mode === 'ueb-g1') return translateEnglishUEB(word);
+    if (mode === 'ueb-g2') return translateEnglishG2(word);
+    return word;
+}
+
+// ════════════════════════════════════════════════════════════
+//  數字
+// ════════════════════════════════════════════════════════════
+const DIGIT_MAP_UEB   = {'0':'\u2834','1':'\u2802','2':'\u2806','3':'\u2812','4':'\u2832','5':'\u2822','6':'\u2816','7':'\u2836','8':'\u2826','9':'\u2814'};
+const DIGIT_MAP_COMP8 = {'0':'\u281a','1':'\u2801','2':'\u2803','3':'\u2809','4':'\u2819','5':'\u2811','6':'\u280b','7':'\u281b','8':'\u2813','9':'\u280a'};
+// comp8 數字 = 字母a-j 但加 dot 8（+128）
+(function(){
+    for (const [k, v] of Object.entries(DIGIT_MAP_COMP8)) {
+        DIGIT_MAP_COMP8[k] = String.fromCharCode(v.charCodeAt(0) + 128);
+    }
+})();
+
+function getDigitMap() {
+    return document.getElementById('en-mode').value === 'comp8' ? DIGIT_MAP_COMP8 : DIGIT_MAP_UEB;
+}
+function getNumSign() {
+    return document.getElementById('en-mode').value === 'comp8' ? '' : '\u283c'; // comp8 不需要 numsign
+}
+
+// ════════════════════════════════════════════════════════════
+//  分詞 & 渲染
+// ════════════════════════════════════════════════════════════
+
+const TERMINAL = new Set(['。','？','！','?','!']);
+const NO_LINE_BEGIN = new Set(['，','、','；','：','。','？','！','」','』','）','〉','》','．','…','—']);
+
+function tokenize(text) {
+    const tokens = [];
+    let i = 0;
+    while (i < text.length) {
+        const ch = text[i];
+        if (ch === ' ' || ch === '\u2800') { tokens.push({text:'空', braille:'\u2800', isSpace:true}); i++; continue; }
+        if (ch === '\n')                   { tokens.push({text:'↵', braille:'\n'});                   i++; continue; }
+
+        // 英文 + 數字混合串
+        if (/[a-zA-Z0-9]/.test(ch)) {
+            let cluster = '';
+            while (i < text.length && /[a-zA-Z0-9]/.test(text[i])) { cluster += text[i]; i++; }
+            
+            // 拆分：數字串 vs 英文串
+            let braille = '';
+            const parts = cluster.match(/[a-zA-Z]+|[0-9]+/g) || [];
+            for (const part of parts) {
+                if (/^[0-9]+$/.test(part)) {
+                    const dm = getDigitMap();
+                    const ns = getNumSign();
+                    braille += ns + part.split('').map(d => dm[d]||d).join('');
+                } else {
+                    braille += translateEnglish(part);
+                }
+            }
+            tokens.push({text:cluster, braille});
+            continue;
+        }
+
+        // 中文/符號：查 zhMap
+        const b = zhMap.get(ch) || ch;
+        tokens.push({text:ch, braille:b});
+        i++;
+        if (TERMINAL.has(ch)) {
+            tokens.push({text:'空', braille:'\u2800', isSpace:true});
+            if (i < text.length && (text[i]===' ' || text[i]==='\u2800')) i++;
+        }
+    }
+    return tokens;
+}
+
+function render() {
+    if (!isLoaded) return;
+    const input   = document.getElementById('input-text').value;
+    const max     = parseInt(document.getElementById('cell-limit').value) || 40;
+    const isAscii = document.querySelector('input[name="output-format"]:checked').value === 'ascii';
+    const outArea = document.getElementById('output-text');
+    const view    = document.getElementById('parallel-view');
+
+    const tokens = tokenize(input);
+    view.innerHTML = '';
+    outArea.className = isAscii ? 'font-ascii' : 'font-unicode';
+
+    let resultText = '';
+    let lineCells  = 0;
+
+    tokens.forEach((t, idx) => {
+        if (t.braille === '\n') {
+            resultText += '\n'; lineCells = 0;
+            const br = document.createElement('div'); br.className='line-break'; view.appendChild(br);
+            return;
+        }
+        const bArr = Array.from(t.braille);
+        const bLen = bArr.length;
+        let extra = 0;
+        if (idx+1 < tokens.length && NO_LINE_BEGIN.has(tokens[idx+1].text))
+            extra = Array.from(tokens[idx+1].braille).length;
+
+        if (lineCells + bLen + extra > max && lineCells > 0) {
+            resultText += '\n'; lineCells = 0;
+            const br = document.createElement('div'); br.className='line-break'; view.appendChild(br);
+        }
+
+        const dispB = isAscii ? bArr.map(c => BR_TO_ASCII[c]||c).join('') : t.braille;
+        const g = document.createElement('div');
+        g.className = 'token-group' + (t.isSpace ? ' token-space' : '');
+        g.innerHTML = `<div class="token-text">${escHtml(t.text)}</div>`
+                    + `<div class="token-braille ${isAscii?'font-ascii':'font-unicode'}">${escHtml(dispB)}</div>`;
+        view.appendChild(g);
+
+        resultText += t.braille;
+        lineCells  += bLen;
+    });
+
+    outArea.value = isAscii ? Array.from(resultText).map(c=>BR_TO_ASCII[c]||c).join('') : resultText;
+}
+
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ════════════════════════════════════════════════════════════
+//  匯出
+// ════════════════════════════════════════════════════════════
+function downloadTxt() {
+    const blob = new Blob([document.getElementById('output-text').value], {type:'text/plain'});
+    const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='braille_result.txt'; a.click();
+}
+function downloadParallelHtml() {
+    const fs = document.getElementById('font-size-slider').value;
+    const html = `<html><head><meta charset="UTF-8"><style>
+        @font-face{font-family:'SimBraille';src:url('SIMBRL.TTF') format('truetype')}
+        body{font-family:sans-serif;padding:20px}
+        .token-group{display:inline-flex;flex-direction:column;align-items:center;padding:5px;border:1px solid #ccc;background:#f8f9fa;border-radius:4px;margin:3px}
+        .token-text{font-size:${fs*.6}px;color:#666;border-bottom:1px solid #eee;width:100%;text-align:center}
+        .token-braille{font-size:${fs*1.3}px}
+        .token-space{background:#fffde7}
+        .font-ascii{font-family:'SimBraille'}
+        .line-break{display:block;width:100%;height:10px;border-top:2px solid #000;margin:10px 0}
+    </style></head><body>${document.getElementById('parallel-view').innerHTML}</body></html>`;
+    const blob = new Blob([html], {type:'text/html'});
+    const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='parallel_check.html'; a.click();
+}
+
+// ════════════════════════════════════════════════════════════
+//  事件綁定
+// ════════════════════════════════════════════════════════════
+document.getElementById('font-size-slider').addEventListener('input', e => {
+    document.documentElement.style.setProperty('--base-font-size', e.target.value+'px');
+    document.getElementById('font-size-val').textContent = e.target.value+'px';
+});
+document.getElementById('input-text').addEventListener('input', render);
+document.getElementById('cell-limit').addEventListener('input', render);
+document.getElementById('en-mode').addEventListener('change', () => { render(); updateStatus(); });
+document.querySelectorAll('input[name="output-format"]').forEach(r => r.addEventListener('change', render));
+
+function updateStatus() {
+    if (!isLoaded) return;
+    const mode = document.getElementById('en-mode').value;
+    const modeLabel = {'comp8':'電腦八點','ueb-g1':'UEB G1','ueb-g2':'UEB G2'}[mode];
+    const st = document.getElementById('rules-status');
+    st.className = 'rules-status ok';
+    st.textContent = `規則載入完成（中文 ${zhMap.size} 字元，英文：${modeLabel}）`;
+}
+
+loadRules();
+</script>
+</body>
+</html>
