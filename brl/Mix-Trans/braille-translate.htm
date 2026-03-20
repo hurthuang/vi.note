@@ -638,11 +638,22 @@ function wrapCaps(origWord, braille) {
 // G2 整詞轉換
 function translateG2Word(word) {
     const lw = word.toLowerCase();
-    // 單字母且有 wordsign（非 a/i/o）→ 前加 grade1 indicator ⠰（UEB規範）
+    // UEB Lesson 25：單字母若有對應的 alphabetic wordsign，前需加 ⠰ grade1 indicator
+    // 但 a / i / o 三個字母沒有 wordsign（不在 UEB wordsign 表中），所以不需要 ⠰
+    // 需要 ⠰ 的單字母 wordsigns：b c d e f g h j k l m n p q r s t u v w y
     const WS_LETTERS = new Set(['b','c','d','e','f','g','h','j','k','l','m','n','p','q','r','s','t','u','v','w','y']);
+    // a / i / o 明確排除：不加 ⠰，直接輸出字母點字（加大寫指示符如有需要）
+    if (lw.length === 1 && !WS_LETTERS.has(lw)) {
+        // 單字母但不是 wordsign（含 a/i/o 及其大寫）→ 直接輸出，不加 ⠰
+        if (lw === 'a' || lw === 'i' || lw === 'o') {
+            const capPfx = /[A-Z]/.test(word[0]) ? CAP1 : '';
+            return capPfx + UEB_ALPHA[lw];
+        }
+        // 其他單字母不在 WS_LETTERS → 走一般序列翻譯
+    }
     if (lw.length === 1 && WS_LETTERS.has(lw)) {
         const capPfx = /[A-Z]/.test(word[0]) ? CAP1 : '';
-        return '⠰' + capPfx + UEB_ALPHA[lw];
+        return G1_SYM + capPfx + UEB_ALPHA[lw];
     }
     // 1. lowword：整詞低位點字縮寫（were/was/his/enough）
     if (G2_LOWWORD[lw]) return wrapCaps(word, G2_LOWWORD[lw]);
@@ -771,11 +782,18 @@ function translateG2Seq(word) {
 function translateG1(word) {
     const lw = word.toLowerCase();
     const isAllCaps = word===word.toUpperCase() && /[A-Z]/.test(word) && word.length>1;
-    // 單字母且有 wordsign（非 a/i/o）→ 前加 grade1 indicator ⠰
-    const WORDSIGN_LETTERS = new Set(['b','c','d','e','f','g','h','j','k','l','m','n','p','q','r','s','t','u','v','w','y']);
-    if (lw.length === 1 && WORDSIGN_LETTERS.has(lw)) {
+    // UEB Lesson 25：a / i / o 沒有 wordsign，不需要 grade1 indicator
+    // 需要 ⠰ 的單字母：b c d e f g h j k l m n p q r s t u v w y
+    const WS_LETTERS = new Set(['b','c','d','e','f','g','h','j','k','l','m','n','p','q','r','s','t','u','v','w','y']);
+    if (lw.length === 1) {
         const capPfx = /[A-Z]/.test(word[0]) ? CAP1 : '';
-        return '⠰' + capPfx + UEB_ALPHA[lw];
+        if (WS_LETTERS.has(lw)) {
+            // 有 wordsign → 需要 ⠰
+            return G1_SYM + capPfx + UEB_ALPHA[lw];
+        } else {
+            // a / i / o 及其他無 wordsign 字母 → 直接輸出，不加 ⠰
+            return capPfx + UEB_ALPHA[lw];
+        }
     }
     let result = isAllCaps ? CAP_WORD : '';
     for (let i=0; i<lw.length; i++) {
@@ -929,7 +947,17 @@ function translateEnglish(word) {
 //  分詞 & 渲染
 // ════════════════════════════════════════════════════════════
 const TERMINAL    = new Set(['。','？','！','?','!']);
-const NO_LINE_BEGIN = new Set(['，','、','；','：','。','？','！','」','』','）','〉','》','．','…','—']);
+// 不可放在行首的字元（標點跟著前字一起換行）
+// 包含中文標點與英文標點
+const NO_LINE_BEGIN = new Set([
+    // 中文標點
+    '，','、','；','：','。','？','！','」','』','）','〉','》','．','…','—',
+    // 英文標點（不可孤立在行首）
+    ',', '.', '?', '!', ':', ';', '\'', '\u2019', '\u2018',
+    // 閉括號
+    ')', ']', '}',
+    '\u201d', '\u201c'  // 右引號
+]);
 
 // ════════════════════════════════════════════════════════════
 //  自定義規則
@@ -973,20 +1001,60 @@ function render() {
     const renderTokens = [];
 
     tokens.forEach((t, idx) => {
+        // ── 明確換行（\n 在原文中）──
         if (t.braille === '\n') {
             resultUnicode += '\n'; lineCells = 0;
             renderTokens.push({ ...t, isLineBreak: true, isExplicitBreak: true });
             return;
         }
-        const bArr = Array.from(t.braille);
+
+        const bArr = Array.from(t.braille || '');
         const bLen = bArr.length;
+        if (bLen === 0) {
+            renderTokens.push({ ...t });
+            return;
+        }
+
+        // ── 計算「此 token 必須跟著走」的後繼長度 ──
+        // 標點不能在行首：找下一個非空格實質 token，若是不可行首標點，
+        // 則把中間所有空格 + 標點的長度都加入 extra
         let extra = 0;
-        if (idx+1 < tokens.length && NO_LINE_BEGIN.has(tokens[idx+1].text))
-            extra = Array.from(tokens[idx+1].braille).length;
+        {
+            let ni = idx + 1;
+            let spaceLen = 0;
+            // 跳過空格，計算空格總長
+            while (ni < tokens.length && tokens[ni].isSpace) {
+                spaceLen += Array.from(tokens[ni].braille).length;
+                ni++;
+            }
+            if (ni < tokens.length && NO_LINE_BEGIN.has(tokens[ni].text)) {
+                extra = spaceLen + Array.from(tokens[ni].braille).length;
+            }
+        }
+
+        // ── 是否需要自動換行 ──
         if (lineCells + bLen + extra > max && lineCells > 0) {
+            // Bug 1 修正：若上一個 token 是空格，行尾不留空格 → 回退掉它
+            if (resultUnicode.length > 0) {
+                const lastChar = resultUnicode[resultUnicode.length - 1];
+                if (lastChar === '\u2800') {
+                    resultUnicode = resultUnicode.slice(0, -1);
+                    // 也從 renderTokens 尾端移除那個空格 token（標記為已移除）
+                    for (let ri = renderTokens.length - 1; ri >= 0; ri--) {
+                        if (renderTokens[ri].isSpace && !renderTokens[ri].isLineBreak) {
+                            renderTokens[ri]._hiddenTrailingSpace = true;
+                            break;
+                        }
+                    }
+                }
+            }
             resultUnicode += '\n'; lineCells = 0;
             renderTokens.push({ text:'', braille:'\n', isLineBreak:true, isAutoBreak:true });
+
+            // Bug 1 修正：若目前 token 是空格（行首），跳過它
+            if (t.isSpace) return;
         }
+
         renderTokens.push({ ...t });
         resultUnicode += t.braille;
         lineCells += bLen;
@@ -1090,6 +1158,63 @@ function translateComp8Mixed(str) {
     return result;
 }
 
+// 翻譯可能含撇號縮寫的詞（如 I'm、they've、don't）
+// run 中的撇號為原始字元（' / ' / '）
+function translateWordWithApos(run, modeVal) {
+    const APOS_RE = /['\u2018\u2019]/;
+    const aposIdx = run.search(APOS_RE);
+
+    if (aposIdx === -1) {
+        // 無撇號，正常翻譯
+        const hasDigit = /[0-9]/.test(run);
+        const hasAlpha = /[a-zA-Z]/.test(run);
+        if (!hasDigit) {
+            if (modeVal === 'comp8')  return translateComp8(run);
+            if (modeVal === 'ueb-g1') return translateG1(run);
+            return translateG2Word(run);
+        } else if (!hasAlpha) {
+            let b = UEB_NUMSIGN;
+            const digitMap = modeVal === 'comp8' ? COMP8_DIGIT : UEB_DIGIT;
+            for (const d of run) b += digitMap[d] || d;
+            return b;
+        } else {
+            return translateUEBMixed(run);
+        }
+    }
+
+    // 含撇號：分成「主詞」和「後綴」分別翻譯，中間插入撇號點字 ⠄
+    const main   = run.slice(0, aposIdx);
+    const suffix = run.slice(aposIdx + 1); // 撇號後的字母（如 m、re、ll 等）
+
+    let mainB = '';
+    if (main.length > 0) {
+        if (modeVal === 'comp8')  mainB = translateComp8(main);
+        else if (modeVal === 'ueb-g1') mainB = translateG1(main);
+        else mainB = translateG2Word(main);
+    }
+
+    // 撇號 = ⠄ (UEB dots 3)
+    const apostropheB = '\u2804';
+
+    let suffixB = '';
+    if (suffix.length > 0) {
+        // UEB Lesson 25 Apostrophe 規則：
+        // 撇號後的字母（'d、's、't、'm、'n 等單字母，以及 're、'll、've 多字母後綴）
+        // 直接輸出字母點字，不加 grade 1 indicator、不加縮寫
+        // （撇號本身已起到分隔作用，不會被誤讀）
+        if (modeVal === 'comp8') {
+            suffixB = translateComp8(suffix);
+        } else {
+            // 逐字元輸出字母，不使用任何 wordsign 或 grade1 indicator
+            for (const c of suffix.toLowerCase()) {
+                suffixB += UEB_ALPHA[c] || c;
+            }
+        }
+    }
+
+    return mainB + apostropheB + suffixB;
+}
+
 // tokenize with custom rules taking priority
 function tokenizeWithCustom(text) {
     const tokens = []; let i = 0;
@@ -1115,37 +1240,48 @@ function tokenizeWithCustom(text) {
             continue;
         }
 
-        // ── 英數混合串 ──────────────────────────────────────────
-        // 收集連續字母和數字（不含空格、標點、連字號等）
+        // ── 英數混合串（含撇號縮寫 'd/'ll/'re/'s/'t/'ve/'m/'n 等）──
+        // 收集連續字母和數字（不含空格），並在其後貪婪地吸收 'suffix
         if (/[a-zA-Z0-9]/.test(ch)) {
             let run = '';
             while (i < text.length && /[a-zA-Z0-9]/.test(text[i])) {
                 run += text[i]; i++;
             }
-            // 純英文（無數字）
-            if (!/[0-9]/.test(run)) {
-                const m = mode();
-                let b;
-                if (m === 'comp8')  b = translateComp8(run);
-                else if (m === 'ueb-g1') b = translateG1(run);
-                else b = translateG2Word(run);
-                tokens.push({ text: run, braille: b, isEnglish: true });
-            } else if (!/[a-zA-Z]/.test(run)) {
-                // 純數字
-                let b = '';
-                if (mode() === 'comp8') {
-                    b = UEB_NUMSIGN;
-                    for (const d of run) b += COMP8_DIGIT[d] || d;
-                } else {
-                    b = UEB_NUMSIGN;
-                    for (const d of run) b += UEB_DIGIT[d] || d;
+            // 嘗試吸收後接的撇號縮寫（如 's、'd、'll、're、've、't、'm、'n）
+            // 撇號可以是 ' (U+0027)、' (U+2019)、' (U+2018)
+            const APOS = new Set(["'", '\u2019', '\u2018']);
+            // 縮寫後綴（不含前置撇號）
+            const CONTRACTION_SFXS = ["ve","ll","re","d","s","t","m","n"];
+            if (i < text.length && APOS.has(text[i])) {
+                // 看後面接的字母串是不是縮寫後綴
+                let sfxLen = 0;
+                for (const sfx of CONTRACTION_SFXS.sort((a,b)=>b.length-a.length)) {
+                    if (text.slice(i+1, i+1+sfx.length).toLowerCase() === sfx
+                        && (i+1+sfx.length >= text.length || !/[a-zA-Z0-9]/.test(text[i+1+sfx.length]))) {
+                        sfxLen = sfx.length;
+                        break;
+                    }
                 }
-                tokens.push({ text: run, braille: b, isNumber: true });
-            } else {
-                // 英數混合：整串一起翻譯
-                const b = translateUEBMixed(run);
-                tokens.push({ text: run, braille: b, isEnglish: true });
+                if (sfxLen > 0) {
+                    // 吸收撇號 + 後綴到 run 中，以特殊分隔符記錄撇號位置
+                    const apostrophe = text[i];
+                    const suffix = text.slice(i+1, i+1+sfxLen);
+                    run = run + apostrophe + suffix;
+                    i += 1 + sfxLen;
+                }
             }
+
+            // 翻譯 run（可能含撇號）
+            const b = translateWordWithApos(run, mode());
+            const hasAlnum = /[a-zA-Z0-9]/.test(run);
+            const hasDigit = /[0-9]/.test(run);
+            const hasAlpha = /[a-zA-Z]/.test(run);
+            tokens.push({
+                text: run,
+                braille: b,
+                isEnglish: hasAlpha,
+                isNumber: !hasAlpha && hasDigit
+            });
             continue;
         }
 
@@ -1211,7 +1347,13 @@ function renderParallelView(tokens) {
     view.innerHTML = '';
 
     tokens.forEach(t => {
-        if (t.isAutoBreak) return;
+        if (t.isAutoBreak) {
+            // 自動換行也在雙視區顯示分隔線
+            const br = document.createElement('div');
+            br.className = 'line-break'; view.appendChild(br);
+            return;
+        }
+        if (t._hiddenTrailingSpace) return;  // 行尾空格已移除，不在雙視區顯示
         if (t.isLineBreak) {
             const br = document.createElement('div');
             br.className = 'line-break'; view.appendChild(br);
