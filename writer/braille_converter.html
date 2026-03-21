@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>點字轉換工具</title>
+  <style>
+    @font-face {
+      font-family: 'SimBraille';
+      src: url('SIMBRL.TTF') format('truetype');
+    }
+
+    /* ── 無障礙色彩系統 ──────────────────────────────
+       所有文字/背景對比比率均達 WCAG AA（≥4.5:1）
+       支援 prefers-color-scheme 自動切換
+       ────────────────────────────────────────────── */
+    :root {
+      --bg:           #F5F4F0;
+      --surface:      #FFFFFF;
+      --surface2:     #EEECEA;
+      --border:       #9E9C95;
+      --border-focus: #1A5FA8;
+
+      --text:         #1A1916;
+      --text-sub:     #4A4845;
+      --text-hint:    #696663;
+
+      --accent-bg:    #1A5FA8;
+      --accent-text:  #FFFFFF;
+      --accent-light: #E8F0FA;
+      --accent-border:#1A5FA8;
+
+      --badge-ascii-bg:   #FFF3E0;
+      --badge-ascii-text: #7C3A00;
+      --badge-ascii-bd:   #7C3A00;
+      --badge-uni-bg:     #E3F2FD;
+      --badge-uni-text:   #003D7A;
+      --badge-uni-bd:     #003D7A;
+      --badge-font-bg:    #E8F5E9;
+      --badge-font-text:  #1B5E20;
+      --badge-font-bd:    #1B5E20;
+
+      --success-bg:    #E8F5E9;
+      --success-text:  #1B5E20;
+      --success-border:#2E7D32;
+
+      --radius: 8px;
+      --mono: 'Courier New', monospace;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg:           #1A1916;
+        --surface:      #232220;
+        --surface2:     #2D2C29;
+        --border:       #5A5855;
+        --border-focus: #5B9FE8;
+
+        --text:         #F0EEE9;
+        --text-sub:     #C8C5BE;
+        --text-hint:    #A09D96;
+
+        --accent-bg:    #5B9FE8;
+        --accent-text:  #0A1520;
+        --accent-light: #0D2540;
+        --accent-border:#5B9FE8;
+
+        --badge-ascii-bg:   #3A2200;
+        --badge-ascii-text: #FFD580;
+        --badge-ascii-bd:   #FFD580;
+        --badge-uni-bg:     #001E40;
+        --badge-uni-text:   #82C4FF;
+        --badge-uni-bd:     #82C4FF;
+        --badge-font-bg:    #00280A;
+        --badge-font-text:  #86E893;
+        --badge-font-bd:    #86E893;
+
+        --success-bg:    #00280A;
+        --success-text:  #86E893;
+        --success-border:#4CAF50;
+      }
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', '微軟正黑體', system-ui, sans-serif;
+      font-size: 1rem;
+      line-height: 1.6;
+      min-height: 100vh;
+      padding: 28px 16px 48px;
+    }
+
+    .skip-link {
+      position: absolute;
+      top: -999px;
+      left: 8px;
+      padding: 8px 16px;
+      background: var(--accent-bg);
+      color: var(--accent-text);
+      border-radius: var(--radius);
+      font-weight: 700;
+      z-index: 100;
+      text-decoration: none;
+    }
+    .skip-link:focus { top: 8px; }
+
+    :focus-visible {
+      outline: 3px solid var(--border-focus);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    header h1 {
+      font-size: clamp(1.3rem, 4vw, 1.8rem);
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 0.02em;
+    }
+
+    header h1 .braille-deco {
+      color: var(--accent-bg);
+      font-family: 'SimBraille', var(--mono);
+    }
+
+    header p {
+      color: var(--text-sub);
+      font-size: 0.88rem;
+      margin-top: 6px;
+    }
+
+    .tabs {
+      display: flex;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 4px;
+      max-width: 680px;
+      margin: 0 auto 24px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px 8px;
+      border: none;
+      background: transparent;
+      color: var(--text-sub);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.92rem;
+      font-family: inherit;
+      font-weight: 600;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .tab-btn:hover {
+      background: var(--surface2);
+      color: var(--text);
+    }
+
+    .tab-btn.active {
+      background: var(--accent-bg);
+      color: var(--accent-text);
+    }
+
+    .panel {
+      display: none;
+      max-width: 680px;
+      margin: 0 auto;
+      animation: fadeIn 0.18s ease;
+    }
+    .panel.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .file-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      background: var(--accent-light);
+      border: 1.5px solid var(--accent-border);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+    }
+
+    .file-row input[type="file"] {
+      position: absolute;
+      width: 1px; height: 1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+    }
+
+    .file-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 18px;
+      background: var(--accent-bg);
+      color: var(--accent-text);
+      border: 2px solid transparent;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.88rem;
+      font-weight: 700;
+      font-family: inherit;
+      white-space: nowrap;
+      transition: filter 0.15s;
+    }
+    .file-label:hover { filter: brightness(1.12); }
+    .file-label:focus-within {
+      outline: 3px solid var(--border-focus);
+      outline-offset: 2px;
+    }
+
+    .file-name {
+      font-size: 0.82rem;
+      color: var(--text-sub);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .field { margin-bottom: 18px; }
+
+    .field label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--text-sub);
+      margin-bottom: 6px;
+    }
+
+    .badge {
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      margin-left: 6px;
+      text-transform: none;
+      letter-spacing: 0;
+      vertical-align: middle;
+      border: 1.5px solid transparent;
+    }
+    .badge-ascii { background: var(--badge-ascii-bg); color: var(--badge-ascii-text); border-color: var(--badge-ascii-bd); }
+    .badge-uni   { background: var(--badge-uni-bg);   color: var(--badge-uni-text);   border-color: var(--badge-uni-bd); }
+    .badge-font  { background: var(--badge-font-bg);  color: var(--badge-font-text);  border-color: var(--badge-font-bd); }
+
+    textarea {
+      width: 100%;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      font-size: 1rem;
+      font-family: var(--mono);
+      padding: 10px 12px;
+      resize: vertical;
+      min-height: 112px;
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      line-height: 1.65;
+    }
+    textarea:focus {
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--border-focus) 22%, transparent);
+    }
+    textarea[readonly] {
+      background: var(--surface2);
+      color: var(--text-sub);
+      cursor: default;
+    }
+    textarea.braille-font {
+      font-family: 'SimBraille', var(--mono);
+      font-size: 1.15rem;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 7px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 7px 16px;
+      border-radius: 6px;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      color: var(--text-sub);
+      font-size: 0.84rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.13s, border-color 0.13s, color 0.13s;
+    }
+    .btn:hover {
+      background: var(--surface2);
+      color: var(--text);
+      border-color: var(--text-sub);
+    }
+    .btn.primary {
+      background: var(--accent-bg);
+      color: var(--accent-text);
+      border-color: var(--accent-bg);
+    }
+    .btn.primary:hover { filter: brightness(1.12); }
+    .btn.copied {
+      background: var(--success-bg);
+      color: var(--success-text);
+      border-color: var(--success-border);
+    }
+
+    .arrow-divider {
+      text-align: center;
+      font-size: 1.2rem;
+      color: var(--text-hint);
+      margin: 2px 0 10px;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+
+<a href="#main-content" class="skip-link">跳至主要內容</a>
+
+<header>
+  <h1><span class="braille-deco" aria-hidden="true">ab</span> 點字轉換工具</h1>
+  <p>ASCII code ⇄ Braille Unicode &nbsp;·&nbsp; 支援開啟 .txt / .brl / .brf 文字檔</p>
+</header>
+
+<div class="tabs" role="tablist" aria-label="轉換模式">
+  <button class="tab-btn active"
+          role="tab" aria-selected="true" aria-controls="panel-ascii2uni" id="tab-a2u"
+          onclick="switchTab('ascii2uni')">ASCII → Unicode</button>
+  <button class="tab-btn"
+          role="tab" aria-selected="false" aria-controls="panel-uni2ascii" id="tab-u2a"
+          onclick="switchTab('uni2ascii')">Unicode → ASCII</button>
+</div>
+
+<main id="main-content">
+
+<!-- 面板一：ASCII → Unicode -->
+<div class="panel active" id="panel-ascii2uni" role="tabpanel" aria-labelledby="tab-a2u">
+
+  <div class="file-row">
+    <label class="file-label" for="fileA">
+      &#128193; 開啟文字檔
+      <input type="file" id="fileA" accept=".txt,.brl,.brf,.bra,.brs,text/plain"
+             onchange="loadFile(event,'inputA')" aria-label="開啟文字檔（ASCII 模式）">
+    </label>
+    <span class="file-name" id="fileNameA" aria-live="polite">尚未選擇檔案</span>
+  </div>
+
+  <div class="field">
+    <label for="inputA">輸入 <span class="badge badge-ascii">ASCII</span></label>
+    <textarea id="inputA" placeholder="在此輸入 ASCII code，或點上方按鈕開啟檔案…" oninput="a2u()"></textarea>
+    <div class="actions">
+      <button class="btn" onclick="clearField('inputA'); a2u()">清除</button>
+    </div>
+  </div>
+
+  <div class="arrow-divider" aria-hidden="true">▼</div>
+
+  <div class="field">
+    <label for="fontA">點字字型 <span class="badge badge-font">SimBraille</span></label>
+    <textarea id="fontA" readonly class="braille-font" aria-label="點字字型預覽"></textarea>
+    <div class="actions">
+      <button class="btn primary" onclick="copyField('fontA', this)">複製</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="outputA">輸出 <span class="badge badge-uni">Braille Unicode</span></label>
+    <textarea id="outputA" readonly aria-live="polite"></textarea>
+    <div class="actions">
+      <button class="btn primary" onclick="copyField('outputA', this)">複製</button>
+      <button class="btn" onclick="downloadTxt('outputA','braille_unicode.txt')">下載 .txt</button>
+    </div>
+  </div>
+</div>
+
+<!-- 面板二：Unicode → ASCII -->
+<div class="panel" id="panel-uni2ascii" role="tabpanel" aria-labelledby="tab-u2a" hidden>
+
+  <div class="file-row">
+    <label class="file-label" for="fileB">
+      &#128193; 開啟文字檔
+      <input type="file" id="fileB" accept=".txt,.brl,.brf,.bra,.brs,text/plain"
+             onchange="loadFile(event,'inputB')" aria-label="開啟文字檔（Unicode 模式）">
+    </label>
+    <span class="file-name" id="fileNameB" aria-live="polite">尚未選擇檔案</span>
+  </div>
+
+  <div class="field">
+    <label for="inputB">輸入 <span class="badge badge-uni">Braille Unicode</span></label>
+    <textarea id="inputB" placeholder="在此貼上 Braille Unicode，或點上方按鈕開啟 .brl / .brf 檔案…" oninput="u2a()"></textarea>
+    <div class="actions">
+      <button class="btn" onclick="clearField('inputB'); u2a()">清除</button>
+    </div>
+  </div>
+
+  <div class="arrow-divider" aria-hidden="true">▼</div>
+
+  <div class="field">
+    <label for="outputB">輸出 <span class="badge badge-ascii">ASCII</span></label>
+    <textarea id="outputB" readonly aria-live="polite"></textarea>
+    <div class="actions">
+      <button class="btn primary" onclick="copyField('outputB', this)">複製</button>
+      <button class="btn" onclick="downloadTxt('outputB','ascii_code.txt')">下載 .txt</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <label for="fontB">點字字型 <span class="badge badge-font">SimBraille</span></label>
+    <textarea id="fontB" readonly class="braille-font" aria-label="點字字型預覽"></textarea>
+    <div class="actions">
+      <button class="btn primary" onclick="copyField('fontB', this)">複製</button>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<script>
+const ASCII_TO_UNI = {
+  'a':'⠁','1':'⠂','b':'⠃',"'":'⠄','k':'⠅','2':'⠆','l':'⠇','`':'⠈',
+  'c':'⠉','i':'⠊','f':'⠋','/':'⠌','m':'⠍','s':'⠎','p':'⠏','"':'⠐',
+  'e':'⠑','3':'⠒','h':'⠓','9':'⠔','o':'⠕','6':'⠖','r':'⠗','~':'⠘',
+  '^':'⠘','d':'⠙','j':'⠚','g':'⠛','>':'⠜','n':'⠝','t':'⠞','q':'⠟',
+  ',':'⠠','*':'⠡','5':'⠢','<':'⠣','-':'⠤','u':'⠥','8':'⠦','v':'⠧',
+  '.':'⠨','%':'⠩','{':'⠪','$':'⠫','+':'⠬','x':'⠭','!':'⠮','&':'⠯',
+  ';':'⠰',':':'⠱','4':'⠲','|':'⠳','0':'⠴','z':'⠵','7':'⠶','(':'⠷',
+  '_':'⠸','?':'⠹','w':'⠺','}':'⠻','#':'⠼','y':'⠽',')':'⠾',
+  '[':'⠪',']':'⠻','\\':'⠳','@':'⠈','=':'⠿'
+};
+
+const UNI_TO_ASCII = {
+  '⠁':'a','⠂':'1','⠃':'b','⠄':"'",'⠅':'k','⠆':'2','⠇':'l','⠈':'`',
+  '⠉':'c','⠊':'i','⠋':'f','⠌':'/','⠍':'m','⠎':'s','⠏':'p','⠐':'"',
+  '⠑':'e','⠒':'3','⠓':'h','⠔':'9','⠕':'o','⠖':'6','⠗':'r','⠘':'~',
+  '⠙':'d','⠚':'j','⠛':'g','⠜':'>','⠝':'n','⠞':'t','⠟':'q','⠠':',',
+  '⠡':'*','⠢':'5','⠣':'<','⠤':'-','⠥':'u','⠦':'8','⠧':'v','⠨':'.',
+  '⠩':'%','⠪':'{','⠫':'$','⠬':'+','⠭':'x','⠮':'!','⠯':'&','⠰':';',
+  '⠱':':','⠲':'4','⠳':'|','⠴':'0','⠵':'z','⠶':'7','⠷':'(','⠸':'_',
+  '⠹':'?','⠺':'w','⠻':'}','⠼':'#','⠽':'y','⠾':')','⠿':'='
+};
+
+function a2u() {
+  const input = document.getElementById('inputA').value;
+  let uni = '';
+  for (const ch of input) uni += ASCII_TO_UNI[ch] ?? ch;
+  document.getElementById('outputA').value = uni;
+  document.getElementById('fontA').value = input;
+}
+
+function u2a() {
+  const input = document.getElementById('inputB').value;
+  let ascii = '';
+  for (const ch of input) ascii += UNI_TO_ASCII[ch] ?? ch;
+  document.getElementById('outputB').value = ascii;
+  document.getElementById('fontB').value = ascii;
+}
+
+function switchTab(name) {
+  const ids = ['ascii2uni','uni2ascii'];
+  document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+    const active = ids[i] === name;
+    btn.classList.toggle('active', active);
+    btn.setAttribute('aria-selected', String(active));
+  });
+  document.querySelectorAll('.panel').forEach(p => {
+    const active = p.id === 'panel-' + name;
+    p.classList.toggle('active', active);
+    if (active) p.removeAttribute('hidden');
+    else p.setAttribute('hidden', '');
+  });
+}
+
+function loadFile(evt, targetId) {
+  const file = evt.target.files[0];
+  if (!file) return;
+  const labelId = targetId === 'inputA' ? 'fileNameA' : 'fileNameB';
+  document.getElementById(labelId).textContent = file.name;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById(targetId).value = e.target.result;
+    targetId === 'inputA' ? a2u() : u2a();
+  };
+  reader.readAsText(file, 'UTF-8');
+}
+
+function clearField(id) {
+  document.getElementById(id).value = '';
+}
+
+function copyField(id, btn) {
+  const text = document.getElementById(id).value;
+  if (!text) return;
+  navigator.clipboard.writeText(text).then(() => {
+    const orig = btn.textContent;
+    btn.textContent = '\u2713 已複製';
+    btn.classList.add('copied');
+    btn.classList.remove('primary');
+    setTimeout(() => {
+      btn.textContent = orig;
+      btn.classList.remove('copied');
+      btn.classList.add('primary');
+    }, 1800);
+  });
+}
+
+function downloadTxt(id, filename) {
+  const text = document.getElementById(id).value;
+  if (!text) return;
+  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+</script>
+</body>
+</html>
