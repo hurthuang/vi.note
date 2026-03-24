@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>點字即時轉換器</title>
+    <title>點字即時轉換器 (專業校對版)</title>
     <style>
         @font-face { font-family: 'SimBraille'; src: url('SIMBRL.TTF') format('truetype'); }
         
@@ -53,17 +53,42 @@
             background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
             margin-bottom: 20px; overflow: hidden;
         }
+        /* button 重設後還原成 header 外觀 */
         .custom-rules-header {
             display: flex; align-items: center; gap: 12px;
-            padding: 11px 20px; cursor: pointer;
-            background: #f8f9fa; border-bottom: 1px solid #e0e0e0;
+            width: 100%; padding: 11px 20px; cursor: pointer;
+            background: #f8f9fa; border: none; border-bottom: 1px solid #e0e0e0;
+            text-align: left; font-family: inherit; font-size: inherit;
             user-select: none;
         }
+        .custom-rules-header:hover { background: #f0f2f4; }
+        .custom-rules-header:focus-visible { outline: 3px solid #1976d2; outline-offset: -3px; }
         .custom-rules-header h3 { margin: 0; font-size: 1em; color: #333; flex: 1; }
         .toggle-arrow { font-size: 0.78em; color: #aaa; transition: transform 0.2s; display: inline-block; }
-        .custom-rules-header.open .toggle-arrow { transform: rotate(90deg); }
+        /* 透過 aria-expanded 控制箭頭旋轉（不依賴 .open class） */
+        .custom-rules-header[aria-expanded="true"] .toggle-arrow,
+        .dot-grid-toggle[aria-expanded="true"] .toggle-arrow { transform: rotate(90deg); }
         .custom-rules-body { padding: 20px; display: none; }
         .custom-rules-body.open { display: block; }
+
+        /* dot-grid-toggle 也是 button */
+        .dot-grid-toggle {
+            display: flex; align-items: center; gap: 5px;
+            font-size: 0.75em; color: #888; cursor: pointer;
+            background: none; border: none; padding: 4px 0;
+            font-family: inherit; text-align: left;
+            user-select: none; margin-top: 2px;
+        }
+        .dot-grid-toggle:hover { color: #555; }
+        .dot-grid-toggle:focus-visible { outline: 2px solid #1976d2; outline-offset: 2px; border-radius: 2px; }
+        .dot-grid-toggle .toggle-arrow { font-size: 0.8em; }
+
+        /* sr-only：僅螢幕閱讀器可見 */
+        .sr-only {
+            position: absolute; width: 1px; height: 1px;
+            padding: 0; margin: -1px; overflow: hidden;
+            clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+        }
 
         /* 新增規則表單 — 兩欄 */
         .add-rule-form {
@@ -278,12 +303,13 @@
 
     <!-- ── 自定義規則區 ── -->
     <div class="custom-rules-panel">
-        <div class="custom-rules-header" id="custom-rules-toggle">
-            <span class="toggle-arrow">▶</span>
+        <button class="custom-rules-header" id="custom-rules-toggle"
+                aria-expanded="false" aria-controls="custom-rules-body">
+            <span class="toggle-arrow" aria-hidden="true">▶</span>
             <h3>⚙ 自定義點字規則</h3>
-            <span id="custom-count-badge" style="font-size:0.82em;color:#888;"></span>
-        </div>
-        <div class="custom-rules-body" id="custom-rules-body">
+            <span id="custom-count-badge" style="font-size:0.82em;color:#888;" aria-live="polite"></span>
+        </button>
+        <div class="custom-rules-body" id="custom-rules-body" role="region" aria-label="自定義點字規則">
             <!-- 新增規則表單 -->
             <div class="add-rule-form">
 
@@ -296,11 +322,15 @@
                 <!-- 欄2：點字輸入 -->
                 <div class="rf-col-braille">
                     <div class="rf-label-row">
-                        <span class="rf-label">自訂點字</span>
-                        <span class="rf-hint">S=1 D=2 F=3 &nbsp;J=4 K=5 L=6 &nbsp;｜&nbsp; Space=空格</span>
+                        <label for="rule-braille-input" class="rf-label">自訂點字</label>
+                        <span class="rf-hint" aria-hidden="true">S=1 D=2 F=3 &nbsp;J=4 K=5 L=6 &nbsp;｜&nbsp; Space=空格</span>
                     </div>
                     <div class="rf-braille-row">
-                        <textarea id="rule-braille-input" placeholder="在此輸入…" spellcheck="false"></textarea>
+                        <textarea id="rule-braille-input"
+                            placeholder="在此輸入…"
+                            spellcheck="false"
+                            aria-label="自訂點字輸入（鍵盤六點：S=點1 D=點2 F=點3 J=點4 K=點5 L=點6，空白=空格）"
+                        ></textarea>
                         <div class="rf-braille-btns">
                             <button onclick="clearRuleBraille()" style="background:#ef5350!important;">清除</button>
                             <label class="rf-ascii-label">
@@ -309,25 +339,27 @@
                         </div>
                     </div>
                     <!-- 點陣輔助（可收合） -->
-                    <div class="dot-grid-toggle" id="dot-grid-toggle" onclick="toggleDotGrid()">
-                        <span class="toggle-arrow" id="dot-grid-arrow">▶</span>
+                    <button class="dot-grid-toggle" id="dot-grid-toggle"
+                            aria-expanded="false" aria-controls="dot-grid-panel"
+                            onclick="toggleDotGrid()">
+                        <span class="toggle-arrow" id="dot-grid-arrow" aria-hidden="true">▶</span>
                         <span>點陣輔助（點擊選點 → 按「加格」）</span>
-                    </div>
-                    <div class="dot-grid-panel" id="dot-grid-panel">
-                        <div class="dot-grid" id="dot-grid">
-                            <button class="dot-btn" data-dot="1">1</button>
-                            <button class="dot-btn" data-dot="4">4</button>
-                            <button class="dot-btn" data-dot="2">2</button>
-                            <button class="dot-btn" data-dot="5">5</button>
-                            <button class="dot-btn" data-dot="3">3</button>
-                            <button class="dot-btn" data-dot="6">6</button>
-                            <button class="dot-btn" data-dot="7" style="border-radius:4px;font-size:0.68em;">7</button>
-                            <button class="dot-btn" data-dot="8" style="border-radius:4px;font-size:0.68em;">8</button>
+                    </button>
+                    <div class="dot-grid-panel" id="dot-grid-panel" role="group" aria-label="六點點陣輔助">
+                        <div class="dot-grid" id="dot-grid" role="group" aria-label="點位選擇">
+                            <button class="dot-btn" data-dot="1" aria-pressed="false" aria-label="點1">1</button>
+                            <button class="dot-btn" data-dot="4" aria-pressed="false" aria-label="點4">4</button>
+                            <button class="dot-btn" data-dot="2" aria-pressed="false" aria-label="點2">2</button>
+                            <button class="dot-btn" data-dot="5" aria-pressed="false" aria-label="點5">5</button>
+                            <button class="dot-btn" data-dot="3" aria-pressed="false" aria-label="點3">3</button>
+                            <button class="dot-btn" data-dot="6" aria-pressed="false" aria-label="點6">6</button>
+                            <button class="dot-btn" data-dot="7" style="border-radius:4px;font-size:0.68em;" aria-pressed="false" aria-label="點7（八點用）">7</button>
+                            <button class="dot-btn" data-dot="8" style="border-radius:4px;font-size:0.68em;" aria-pressed="false" aria-label="點8（八點用）">8</button>
                         </div>
-                        <div class="dot-preview-cell" id="dot-preview">⠀</div>
+                        <div class="dot-preview-cell" id="dot-preview" aria-live="polite" aria-label="目前點字預覽">⠀</div>
                         <div class="dot-grid-actions">
-                            <button class="btn-dot-add" onclick="dotGridAddCell()">＋ 加格</button>
-                            <button class="btn-dot-clr" onclick="dotGridClearDots()">清除點</button>
+                            <button class="btn-dot-add" onclick="dotGridAddCell()">加入此格</button>
+                            <button class="btn-dot-clr" onclick="dotGridClearDots()">清除點選</button>
                         </div>
                     </div>
                 </div>
@@ -341,39 +373,39 @@
 
             <!-- 規則列表 -->
             <div class="rules-list-header">
-                <span class="rules-count" id="rules-count">共 0 條規則</span>
+                <span class="rules-count" id="rules-count" aria-live="polite">共 0 條規則</span>
                 <div class="rules-list-actions">
-                    <button class="btn-import" onclick="importRules()">📥 匯入</button>
-                    <button class="btn-export" onclick="exportRules()">📤 匯出</button>
-                    <button class="btn-clear-all" onclick="clearAllRules()">🗑 全部清除</button>
+                    <button class="btn-import" onclick="importRules()">匯入規則</button>
+                    <button class="btn-export" onclick="exportRules()">匯出規則</button>
+                    <button class="btn-clear-all" onclick="clearAllRules()">清除全部規則</button>
                 </div>
             </div>
-            <table class="rules-table" id="rules-table">
+            <table class="rules-table" id="rules-table" aria-label="自定義點字規則列表">
                 <thead>
                     <tr>
-                        <th style="width:30px;">#</th>
-                        <th>印刷字</th>
-                        <th>點字（Unicode）</th>
-                        <th>點字（ASCII）</th>
-                        <th style="width:60px;"></th>
+                        <th scope="col" style="width:30px;">#</th>
+                        <th scope="col">印刷字</th>
+                        <th scope="col">點字（Unicode）</th>
+                        <th scope="col">點字（ASCII）</th>
+                        <th scope="col" style="width:60px;"><span class="sr-only">操作</span></th>
                     </tr>
                 </thead>
                 <tbody id="rules-tbody">
                     <tr><td colspan="5" class="rules-empty">尚無自定義規則</td></tr>
                 </tbody>
             </table>
-            <input type="file" id="import-file-input" accept=".json" style="display:none" onchange="handleImportFile(event)">
+            <input type="file" id="import-file-input" accept=".json" style="display:none" onchange="handleImportFile(event)" aria-hidden="true">
         </div>
     </div>
 
-    <div class="parallel-container">
-        <div class="parallel-title">雙視校對區</div>
-        <div class="diff-legend">
+    <div class="parallel-container" tabindex="0" role="region" aria-label="雙視校對區">
+        <div class="parallel-title" aria-hidden="true">雙視校對區</div>
+        <div class="diff-legend" aria-hidden="true">
             <span><span class="legend-dot" style="background:#f1f8e9;border:1px solid #a5d6a7;"></span> 規則轉換</span>
             <span><span class="legend-dot" style="background:#fff3e0;border:1px solid #ffb74d;"></span> 自定義規則</span>
             <span><span class="legend-dot" style="background:#fffde7;border:1px solid #fff176;"></span> 空格</span>
         </div>
-        <div id="parallel-view"></div>
+        <div id="parallel-view" aria-live="polite" aria-label="點字雙視對照內容"></div>
     </div>
 <script>
 // ════════════════════════════════════════════════════════════
@@ -451,7 +483,7 @@ const UEB_PUNCT = {
     // 引號（雙）
     "\u201c": "\u2826",          // " → ⠦ opening double  dots 236
     "\u201d": "\u2834",          // " → ⠴ closing double  dots 356
-    "\"":     "\u2834",          // 直引號 → closing form（通用）
+    // 直引號 " 由 tokenizer 依前後文決定開/閉，不在此靜態映射
     // 引號（單）
     "\u2018": "\u2820\u2826",    // ' → ⠠⠦ opening single  dot6 + dots236
     "\u2019": "\u2820\u2834",    // ' → ⠠⠴ closing single  dot6 + dots356
@@ -959,6 +991,16 @@ const NO_LINE_BEGIN = new Set([
     '\u201d', '\u201c'  // 右引號
 ]);
 
+// 英文標點集合（用於中英自動空格判斷）
+const EN_PUNCT_SET = new Set([
+    ',', '.', '?', '!', ':', ';', '\'', '"',
+    '-', '_', '(', ')', '[', ']', '{', '}',
+    '/', '\\', '@', '#', '$', '%', '&', '*',
+    '+', '=', '<', '>', '|', '~', '`', '^',
+    '\u2018', '\u2019', '\u201c', '\u201d',
+    '\u2013', '\u2014', '\u2026'
+]);
+
 // ════════════════════════════════════════════════════════════
 //  自定義規則
 // ════════════════════════════════════════════════════════════
@@ -1016,8 +1058,8 @@ function render() {
         }
 
         // ── 計算「此 token 必須跟著走」的後繼長度 ──
-        // 標點不能在行首：找下一個非空格實質 token，若是不可行首標點，
-        // 則把中間所有空格 + 標點的長度都加入 extra
+        // 規則1：標點不能在行首
+        // 規則2：前引號（⠦ / ⠠⠦）開始的內容，整個引號區塊不可被切斷到下一行開頭
         let extra = 0;
         {
             let ni = idx + 1;
@@ -1029,6 +1071,40 @@ function render() {
             }
             if (ni < tokens.length && NO_LINE_BEGIN.has(tokens[ni].text)) {
                 extra = spaceLen + Array.from(tokens[ni].braille).length;
+            }
+
+            // 規則2：若目前 token 本身是前引號，或下一個實質 token 是前引號，
+            // 把整個引號內容（到對應閉引號）的長度都加入 extra，強制整塊換行
+            const OPEN_Q  = new Set(['\u201c', '"']);   // " 與直引號（奇數）
+            const CLOSE_Q = new Set(['\u201d', '"']);   // " 與直引號（偶數）
+            // 判斷一個 token 是否為前引號
+            const isOpenQuote  = tok => tok && (OPEN_Q.has(tok.text) ||
+                tok.braille === '\u2826' || tok.braille === '\u2820\u2826');
+            // 判斷一個 token 是否為閉引號
+            const isCloseQuote = tok => tok && (CLOSE_Q.has(tok.text) ||
+                tok.braille === '\u2834' || tok.braille === '\u2820\u2834');
+
+            // 找出引號掃描起點：目前 token 若是前引號，或跳過空格後的下一個是前引號
+            let qStart = -1;
+            if (isOpenQuote(t)) {
+                qStart = idx;
+            } else if (ni < tokens.length && isOpenQuote(tokens[ni])) {
+                qStart = ni;
+            }
+
+            if (qStart >= 0) {
+                // 往後掃描到對應閉引號，把中間所有 token 長度累加到 extra
+                let depth = 0;
+                let qExtra = 0;
+                for (let qi = qStart; qi < tokens.length; qi++) {
+                    if (qi === idx) continue; // 跳過自身（已算在 bLen）
+                    const qt = tokens[qi];
+                    qExtra += Array.from(qt.braille || '').length;
+                    if (isOpenQuote(qt))  depth++;
+                    if (isCloseQuote(qt)) { depth--; if (depth <= 0) break; }
+                }
+                // 只在引號整塊比 extra 更長時才覆蓋
+                if (qExtra > extra) extra = qExtra;
             }
         }
 
@@ -1219,6 +1295,8 @@ function translateWordWithApos(run, modeVal) {
 function tokenizeWithCustom(text) {
     const tokens = []; let i = 0;
     const mode = () => document.getElementById('en-mode').value;
+    // 追蹤直引號開/閉狀態：false=下一個是開引號，true=下一個是閉引號
+    let straightQuoteOpen = false;
 
     while (i < text.length) {
         const ch = text[i];
@@ -1286,9 +1364,27 @@ function tokenizeWithCustom(text) {
         }
 
         // ── 標點 ────────────────────────────────────────────────
+        // 直引號 " 依前後文決定開/閉引號（僅 UEB 模式）
+        if (ch === '"') {
+            const modeVal = mode();
+            let quoteBraille;
+            if (modeVal === 'comp8') {
+                // comp8 不分開/閉，直接用 ⠐（U+2810）
+                quoteBraille = '\u2810';
+            } else {
+                if (!straightQuoteOpen) {
+                    quoteBraille = '\u2826'; // ⠦ 前引號 dots 236
+                } else {
+                    quoteBraille = '\u2834'; // ⠴ 後引號 dots 356
+                }
+                straightQuoteOpen = !straightQuoteOpen;
+            }
+            tokens.push({ text: ch, braille: quoteBraille, isEnglishPunct: true }); i++;
+            continue;
+        }
         const p = getPunct(ch);
         if (p) {
-            tokens.push({ text: ch, braille: p }); i++;
+            tokens.push({ text: ch, braille: p, isEnglishPunct: EN_PUNCT_SET.has(ch) }); i++;
             if (TERMINAL.has(ch)) {
                 tokens.push({ text:'空', braille:'\u2800', isSpace:true });
                 if (i < text.length && (text[i] === ' ' || text[i] === '\u2800')) i++;
@@ -1306,7 +1402,7 @@ function tokenizeWithCustom(text) {
     }
 
     // ── 中英文邊界自動插入空格 ──────────────────────────────────
-    // 規則：CJK 字元和英數之間，若沒有空格則自動插入一個空格 token
+    // 規則：CJK 字元和英數/英文標點之間，若沒有空格則自動插入一個空格 token
     const CJK_RE = /[\u2E80-\u9FFF\uF900-\uFAFF\uFE30-\uFE4F]/;
     const spaced = [];
     for (let ti = 0; ti < tokens.length; ti++) {
@@ -1320,9 +1416,9 @@ function tokenizeWithCustom(text) {
             const curFirstCh = cur.text  ? cur.text[0]                     : '';
             const prevIsCJK  = CJK_RE.test(prevLastCh);
             const curIsCJK   = CJK_RE.test(curFirstCh);
-            const prevIsAlnum = !prevIsCJK && (prev.isEnglish || prev.isNumber);
-            const curIsAlnum  = !curIsCJK  && (cur.isEnglish  || cur.isNumber);
-            if ((prevIsCJK && curIsAlnum) || (prevIsAlnum && curIsCJK)) {
+            const prevIsEn = !prevIsCJK && (prev.isEnglish || prev.isNumber || prev.isEnglishPunct);
+            const curIsEn  = !curIsCJK  && (cur.isEnglish  || cur.isNumber  || cur.isEnglishPunct);
+            if ((prevIsCJK && curIsEn) || (prevIsEn && curIsCJK)) {
                 spaced.push({ text:'空', braille:'\u2800', isSpace:true, isAutoSpace:true });
             }
         }
@@ -1451,10 +1547,10 @@ function getRuleBrailleUnicode() {
 let dotGridBits = 0;
 
 function toggleDotGrid() {
-    const panel = document.getElementById('dot-grid-panel');
-    const arrow = document.getElementById('dot-grid-arrow');
-    const open  = panel.classList.toggle('open');
-    arrow.style.transform = open ? 'rotate(90deg)' : '';
+    const panel  = document.getElementById('dot-grid-panel');
+    const btn    = document.getElementById('dot-grid-toggle');
+    const open   = panel.classList.toggle('open');
+    btn.setAttribute('aria-expanded', String(open));
 }
 
 document.getElementById('dot-grid').addEventListener('click', function(e) {
@@ -1462,7 +1558,9 @@ document.getElementById('dot-grid').addEventListener('click', function(e) {
     if (!btn) return;
     const bit = 1 << (parseInt(btn.dataset.dot) - 1);
     dotGridBits ^= bit;
-    btn.classList.toggle('active', !!(dotGridBits & bit));
+    const pressed = !!(dotGridBits & bit);
+    btn.classList.toggle('active', pressed);
+    btn.setAttribute('aria-pressed', String(pressed));
     document.getElementById('dot-preview').textContent =
         String.fromCharCode(0x2800 + dotGridBits);
 });
@@ -1476,7 +1574,10 @@ function dotGridAddCell() {
 
 function dotGridClearDots() {
     dotGridBits = 0;
-    document.querySelectorAll('#dot-grid .dot-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('#dot-grid .dot-btn').forEach(b => {
+        b.classList.remove('active');
+        b.setAttribute('aria-pressed', 'false');
+    });
     document.getElementById('dot-preview').textContent = '⠀';
 }
 
@@ -1589,8 +1690,9 @@ function handleImportFile(e) {
 
 // ── Collapsible panel ────────────────────────────────────────
 document.getElementById('custom-rules-toggle').addEventListener('click', function() {
-    this.classList.toggle('open');
-    document.getElementById('custom-rules-body').classList.toggle('open');
+    const expanded = this.getAttribute('aria-expanded') === 'true';
+    this.setAttribute('aria-expanded', String(!expanded));
+    document.getElementById('custom-rules-body').classList.toggle('open', !expanded);
 });
 
 // ════════════════════════════════════════════════════════════
@@ -1652,18 +1754,17 @@ document.querySelectorAll('input[name="output-format"]').forEach(r=>r.addEventLi
 // ════════════════════════════════════════════════════════════
 function insertCJKSpaces() {
     const ta = document.getElementById('input-text');
-    const CJK_RE   = /[\u2E80-\u9FFF\uF900-\uFAFF\uFE30-\uFE4F]/;
-    const ALNUM_RE = /[a-zA-Z0-9]/;
+    const CJK_RE = /[\u2E80-\u9FFF\uF900-\uFAFF\uFE30-\uFE4F]/;
+    const EN_RE  = ch => /[a-zA-Z0-9]/.test(ch) || EN_PUNCT_SET.has(ch);
     const text = ta.value;
     let result = '';
     for (let i = 0; i < text.length; i++) {
         const ch   = text[i];
         const prev = i > 0 ? text[i - 1] : '';
         if (prev && (
-            (CJK_RE.test(prev) && ALNUM_RE.test(ch)) ||
-            (ALNUM_RE.test(prev) && CJK_RE.test(ch))
+            (CJK_RE.test(prev) && EN_RE(ch)) ||
+            (EN_RE(prev) && CJK_RE.test(ch))
         )) {
-            // don't double-add if space already there
             if (result[result.length - 1] !== ' ') result += ' ';
         }
         result += ch;
