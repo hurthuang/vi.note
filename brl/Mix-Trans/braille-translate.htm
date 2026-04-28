@@ -244,6 +244,10 @@
         .token-group.custom-rule { background-color: #fff3e0 !important; border-color: #ffb74d !important; }
         .token-group.custom-rule .token-braille { color: #e65100; }
         .token-group.custom-rule .token-text { color: #ef6c00; border-color: #ffe0b2; }
+        /* Nemeth 數學 → 深橘紅色 */
+        .token-group.is-nemeth { background-color: #fbe9e7 !important; border-color: #ff5722 !important; border-width: 2px !important; }
+        .token-group.is-nemeth .token-braille { color: #bf360c; }
+        .token-group.is-nemeth .token-text { color: #e64a19; border-color: #ffccbc; }
         /* 空格保持黃色 */
         .token-space { background-color: #fffde7 !important; border-color: #fff176 !important; }
         .token-space .token-text { color: #f9a825 !important; border-color: #fff9c4 !important; }
@@ -327,6 +331,25 @@
         .token-group.is-contraction { background-color: #e8eaf6 !important; border-color: #9fa8da !important; }
         .token-group.is-contraction .token-braille { color: #283593; }
         .token-group.is-contraction .token-text { color: #3949ab; border-color: #c5cae9; }
+
+        /* ── 點字直接輸入模式 ── */
+        #braille-mode-indicator {
+            display: none;
+            align-items: center;
+            gap: 6px;
+            background: #b71c1c;
+            color: white;
+            border-radius: 4px;
+            padding: 3px 10px;
+            font-size: 0.82em;
+            font-weight: bold;
+        }
+        #braille-mode-indicator.active { display: flex; }
+        #braille-mode-indicator .bmi-hint {
+            font-weight: normal;
+            font-size: 0.88em;
+            opacity: 0.88;
+        }
     </style>
 </head>
 <body>
@@ -357,6 +380,12 @@
                 <option value="ueb-custom">UEB 自定</option>
                 <option value="comp8">電腦八點（comp8）</option>
             </select>
+        </div>
+        <div class="control-item" title="勾選後，數字與數學符號改用 Nemeth 點字碼（下位數字系統）">
+            <label style="display:inline; margin:0; cursor:pointer;">
+                <input type="checkbox" id="nemeth-mode" onchange="render()" style="cursor:pointer; accent-color:#e65100;">
+                <strong style="color:#e65100;">⟨N⟩ Nemeth 數學</strong>
+            </label>
         </div>
         <div class="btn-group">
             <button onclick="downloadTxt()">💾 儲存點字</button>
@@ -439,8 +468,9 @@
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
                 <label style="margin:0;">輸入文字：</label>
                 <button onclick="insertCJKSpaces()" title="在中文與英數之間自動插入空格" style="padding:4px 12px;font-size:0.8em;background:#546e7a;">⇔ 中英加空格</button>
+                <div id="braille-mode-indicator" role="status" aria-live="polite">點字輸入</div>
             </div>
-            <textarea id="input-text" autofocus placeholder="請在此輸入內容..."></textarea>
+            <textarea id="input-text" autofocus placeholder="請在此輸入內容...（Ctrl+B 切換點字直接輸入）"></textarea>
         </div>
         <div class="output-area">
             <label>點字輸出：</label>
@@ -595,6 +625,178 @@ const UEB_DIGIT = {
     '6':'\u280b','7':'\u281b','8':'\u2813','9':'\u280a','0':'\u281a'
 };
 
+// ════════════════════════════════════════════════════════════
+//  Nemeth 數學點字系統（CTI: nemethdefs.cti）
+// ════════════════════════════════════════════════════════════
+// Nemeth 下位數字：dots 2,3,4,5,6 下移一排
+const NEMETH_DIGIT = {
+    '1':'\u2802',  // ⠂ dots 2
+    '2':'\u2806',  // ⠆ dots 23
+    '3':'\u2812',  // ⠒ dots 25
+    '4':'\u2832',  // ⠲ dots 256
+    '5':'\u2822',  // ⠢ dots 26
+    '6':'\u2816',  // ⠖ dots 235
+    '7':'\u2836',  // ⠶ dots 2356
+    '8':'\u2826',  // ⠦ dots 236
+    '9':'\u2814',  // ⠔ dots 35
+    '0':'\u283c',  // ⠼ dots 3456
+};
+const NEMETH_NUMSIGN = '\u283c';   // ⠼  dots 3456（數字開始指示符）
+const NEMETH_DECIMAL = '\u2828';   // ⠨  dots 46（小數點）
+const NEMETH_LETTER  = '\u2830';   // ⠰  dots 56（數字模式結束→字母指示符）
+
+// Nemeth 數學符號（依 Nemeth 2022 規範）
+const NEMETH_MATH_PUNCT = {
+    '+': '\u282c',  // ⠬ dots 346  (Rule 20)
+    '-': '\u2824',  // ⠤ dots 36   (Rule 20)
+    '−': '\u2824',  // ⠤ U+2212 minus sign
+    '=': '\u2828\u2805',  // ⠨⠅ dots 46-13  (Rule 21: .k)
+    '/': '\u280c',  // ⠌ dots 34
+    '%': '\u2808\u2834',  // ⠈⠴ dots 4-356 percent
+    '×': '\u2808\u2821',  // ⠈⠡ dots 4-16 (×, Rule 20)
+    '÷': '\u2828\u280c',  // ⠨⠌ dots 46-34 (Rule 20)
+    '±': '\u282c\u2824',  // ⠬⠤ dots 346-36
+    '<': '\u2808\u2805',  // ⠈⠅ dots 4-13  (Rule 21: "k)
+    '>': '\u2828\u2802',  // ⠨⠂ dots 46-2  (Rule 21: .1)
+    '≤': '\u2808\u2805\u2831', // ⠈⠅⠱ dots 4-13-156  (≤)
+    '≥': '\u2828\u2802\u2831', // ⠨⠂⠱ dots 46-2-156  (≥)
+    '≠': '\u2808\u2824\u2828\u2805', // ⠈⠤⠨⠅ dots 4-36-46-13  (≠ = /.k)
+    '≈': '\u2808\u2831\u2808\u2831', // ⠈⠱⠈⠱ dots 4-156-4-156 (approx equal)
+    '∞': '\u2820\u283f',  // ⠠⠿ dots 6-123456
+    '√': '\u2810\u2809',  // ⠐⠉ dots 5-14 (square root)
+    '^': '\u2838\u2823',  // ⠸⠣ superscript indicator 456-126 (opening)
+    '²': '\u2818\u2806',  // ⠘⠆ 45-23 superscript 2
+    '³': '\u2818\u2809',  // ⠘⠉ 45-14 superscript 3
+    '(': '\u2837',        // ⠷ dots 12356  (Rule 19: normal left parenthesis)
+    ')': '\u283e',        // ⠾ dots 23456  (Rule 19: normal right parenthesis)
+    '[': '\u2808\u2837',  // ⠈⠷ dots 4-12356  (Rule 19: @()
+    ']': '\u2808\u283e',  // ⠈⠾ dots 4-23456  (Rule 19: @))
+    '{': '\u2832\u2837',  // ⠲⠷ dots 256-12356  (Rule 19: .()
+    '}': '\u2832\u283e',  // ⠲⠾ dots 256-23456  (Rule 19: .))
+};
+
+// Nemeth 字母指示符（用於數字後出現字母時）
+// 在 Nemeth 中，數字串結束後如需字母，加 ⠰ 指示符
+function isNemethMode() {
+    const cb = document.getElementById('nemeth-mode');
+    return cb && cb.checked;
+}
+
+/**
+ * 將一個數字字串轉成 Nemeth 點字
+ * 處理：整數、小數、分數（a/b）、負號、千位逗號
+ * @param {string} numStr - 純數字串（含可能的 . , - /）
+ * @returns {string} Nemeth 點字
+ */
+function translateNemethNumber(numStr) {
+    let result = NEMETH_NUMSIGN;
+    let i = 0;
+    while (i < numStr.length) {
+        const ch = numStr[i];
+        if (ch >= '0' && ch <= '9') {
+            result += NEMETH_DIGIT[ch];
+        } else if (ch === '.') {
+            result += NEMETH_DECIMAL;  // ⠨ decimal point
+        } else if (ch === ',') {
+            // Nemeth: comma in numbers is blank (dots a = empty)
+            // 通常直接忽略千位符，或輸出空格
+            // 標準做法：千位符在 Nemeth 中省略
+            // skip
+        } else if (ch === '/') {
+            // 分數線：先結束數字模式，輸出 ⠌，再開新數字
+            result += NEMETH_DIGIT['0']; // placeholder? no:
+            // 實際分數線在 Nemeth = dots 34 = ⠌，前後各有 numsign
+            // 但這裡我們簡化：直接輸出 ⠌ 作為分數線
+            result = result.slice(0, -0); // no-op
+            // 刪除剛才加入的內容，改用正確分數格式
+            // 分子已在 result 中，現在加分數線再加分母
+            result += '\u280c'; // ⠌ fraction line
+            result += NEMETH_NUMSIGN; // 重新開啟數字模式給分母
+        } else if (ch === '-' || ch === '−') {
+            result += NEMETH_MATH_PUNCT['-']; // ⠤ minus
+        } else {
+            result += ch;
+        }
+        i++;
+    }
+    return result;
+}
+
+/**
+ * Nemeth 模式下的 token 翻譯
+ *
+ * 數字指示符規則（Nemeth 2022 §3.3 / §3.4）：
+ *  §3.3.1 數字號用在：行首、空格後、負號在行首/空格後
+ *  §3.4.1 數字前面緊接（unspaced）任何符號時 → 【不需要】數字號
+ *         例：+3 → +3（無⠼）；x-5 → x-5（無⠼）
+ *
+ *  跨 token 情況：
+ *    - 運算符號（+, -, ×, ÷）是獨立 token，後接數字 token
+ *    - 此時數字 token 雖然是 token 開頭，但前一個 token 是運算符，不加⠼
+ *    - 由呼叫者傳入 skipNumsign=true 處理
+ *
+ * @param {string}  token        - 數字或含運算符的字串（不含空格）
+ * @param {boolean} skipNumsign  - true=跳過 token 開頭的數字號（緊接運算符後）
+ */
+function translateNemethInline(token, skipNumsign = false) {
+    // 運算符號（緊接後面的數字不需要數字號）
+    const OPER = new Set(['+', '-', '−', '×', '÷', '/', '*', '·', '±', '∓']);
+
+    let result = '';
+    let i = 0;
+    let lastWasOper = false;  // 前一個字符是否為運算符號
+
+    while (i < token.length) {
+        const ch = token[i];
+
+        // ── 數字 ──
+        if (ch >= '0' && ch <= '9') {
+            // 加數字號的條件：
+            //   token 開頭（i===0）且沒有運算符在前（lastWasOper=false）
+            //   且呼叫者沒有要求跳過（skipNumsign=false）
+            if (i === 0 && !lastWasOper && !skipNumsign) {
+                result += NEMETH_NUMSIGN;
+            }
+            result += NEMETH_DIGIT[ch];
+            lastWasOper = false;
+            i++; continue;
+        }
+
+        // ── 小數點（在數字串中間，後面接數字）──
+        if (ch === '.' && i + 1 < token.length && token[i+1] >= '0' && token[i+1] <= '9') {
+            result += NEMETH_DECIMAL; // ⠨ dots 46
+            lastWasOper = false;
+            i++; continue;
+        }
+
+        // ── 千位逗號（忽略）──
+        if (ch === ',') {
+            i++; continue;
+        }
+
+        // ── 運算符號 ──
+        if (OPER.has(ch) && NEMETH_MATH_PUNCT[ch]) {
+            result += NEMETH_MATH_PUNCT[ch];
+            lastWasOper = true;  // 後面的數字不需要⠼
+            i++; continue;
+        }
+
+        // ── 其他數學符號（關係符號等）──
+        if (NEMETH_MATH_PUNCT[ch]) {
+            result += NEMETH_MATH_PUNCT[ch];
+            lastWasOper = false;
+            i++; continue;
+        }
+
+        // ── 其他字元 ──
+        result += ch;
+        lastWasOper = false;
+        i++;
+    }
+    return result;
+}
+
+
 // UEB 大寫指示符
 const CAP1 = '\u2820';           // ⠠  dots 6
 const CAP_WORD = '\u2820\u2820'; // ⠠⠠  dots 6-6
@@ -663,15 +865,115 @@ const UEB_PUNCT = {
     "<":  "\u2808\u2823",  // ⠈⠣
     ">":  "\u2808\u281c",  // ⠈⠜
     "|":  "\u2838\u2833",  // ⠸⠳
-    "~":  "\u2808\u2831",  // ⠈⠒
+    "~":  "\u2808\u2814",  // ⠈⠔ dot4 + dots35  (UEB §3 / en-ueb-chardefs.uti)
     "`":  "\u2808",        // ⠈
     "^":  "\u2808\u2822",  // ⠈⠢
-    "_":  "\u2838"         // ⠸ dots456
+    "_":  "\u2828\u2824"   // ⠨⠤ dots46 + dots36  (UEB §3 / en-ueb-chardefs.uti)
 };
 
 // Unicode 長破折號 ⸺ → UEB long dash ⠐⠠⠤
 UEB_PUNCT["\u2E3A"] = "\u2810\u2820\u2824";
 UEB_PUNCT["\u2E3B"] = "\u2810\u2820\u2824";
+
+// ── 補充 UEB 特殊符號（en-ueb-chardefs.uti 完整版）──
+// 修正：© ® ± ≈ 的值與 CTB 對照後更正
+UEB_PUNCT["\u00a9"] = "⠘⠉"; // © copyright  45-14
+UEB_PUNCT["\u00ae"] = "⠘⠗"; // ® registered  45-1235
+UEB_PUNCT["\u00b1"] = "⠸⠖"; // ± plus-minus  456-235
+UEB_PUNCT["\u2248"] = "⠘⠔"; // ≈ almost equal  45-35
+UEB_PUNCT["\u00a0"] = "⠀"; // NBSP → space
+UEB_PUNCT["\u00a1"] = "⠖"; // ¡ inverted !  235
+UEB_PUNCT["\u00a4"] = "⠫"; // ¤ currency  1246
+UEB_PUNCT["\u00a5"] = "⠈⠽"; // ¥ yen  4-13456
+UEB_PUNCT["\u00a6"] = "⠸⠳"; // ¦ broken bar  456-1256
+UEB_PUNCT["\u00a8"] = "⠘⠒"; // ¨ diaeresis  45-25
+UEB_PUNCT["\u00ab"] = "⠸⠦"; // « left guillemet  456-236
+UEB_PUNCT["\u00ac"] = "⠈⠹"; // ¬ not sign  4-1456
+UEB_PUNCT["\u00ad"] = "⠤"; // soft hyphen  36
+UEB_PUNCT["\u00af"] = "⠈⠤"; // ¯ macron  4-36
+UEB_PUNCT["\u00b4"] = "⠘⠌"; // ´ acute accent  45-34
+UEB_PUNCT["\u00b5"] = "⠨⠍"; // µ micro  46-134
+UEB_PUNCT["\u00b7"] = "⠈⠡"; // · middle dot  4-16
+UEB_PUNCT["\u00b8"] = "⠘⠯"; // ¸ cedilla  45-12346
+UEB_PUNCT["\u00bb"] = "⠸⠴"; // » right guillemet  456-356
+UEB_PUNCT["\u00bc"] = "⠼⠁⠌⠙"; // ¼ one quarter  3456-1-34-145
+UEB_PUNCT["\u00bd"] = "⠼⠁⠌⠃"; // ½ one half  3456-1-34-12
+UEB_PUNCT["\u00be"] = "⠼⠉⠌⠙"; // ¾ three quarters  3456-14-34-145
+UEB_PUNCT["\u00bf"] = "⠘⠰⠦"; // ¿ inverted ?  45-56-236
+UEB_PUNCT["\u00b2"] = "⠰⠔⠼⠃"; // ² superscript 2  56-35-3456-12
+UEB_PUNCT["\u00b3"] = "⠰⠔⠼⠉"; // ³ superscript 3  56-35-3456-14
+UEB_PUNCT["\u2010"] = "⠤"; // ‐ hyphen U+2010  36
+UEB_PUNCT["\u2011"] = "⠤"; // ‑ non-breaking hyphen  36
+UEB_PUNCT["\u2015"] = "⠐⠠⠤"; // ― horizontal bar  5-6-36
+UEB_PUNCT["\u2020"] = "⠈⠠⠹"; // † dagger  4-6-1456
+UEB_PUNCT["\u2021"] = "⠈⠠⠻"; // ‡ double dagger  4-6-12456
+UEB_PUNCT["\u2032"] = "⠶"; // ′ prime  2356
+UEB_PUNCT["\u2033"] = "⠶⠶"; // ″ double prime  2356-2356
+UEB_PUNCT["\u20a3"] = "⠈⠋"; // ₣ franc  4-124
+UEB_PUNCT["\u20a6"] = "⠈⠝"; // ₦ naira  4-1345
+UEB_PUNCT["\u2122"] = "⠘⠞"; // ™ trademark  45-2345
+UEB_PUNCT["\u2200"] = "⠘⠁"; // ∀ for all  45-1
+UEB_PUNCT["\u2202"] = "⠈⠙"; // ∂ partial derivative  4-145
+UEB_PUNCT["\u2203"] = "⠘⠢"; // ∃ there exists  45-26
+UEB_PUNCT["\u2205"] = "⠈⠚"; // ∅ empty set  4-245
+UEB_PUNCT["\u2207"] = "⠘⠙"; // ∇ nabla  45-145
+UEB_PUNCT["\u2208"] = "⠘⠑"; // ∈ element of  45-15
+UEB_PUNCT["\u221a"] = "⠐⠩"; // √ square root  5-146
+UEB_PUNCT["\u221e"] = "⠼⠿"; // ∞ infinity  3456-123456
+UEB_PUNCT["\u2212"] = "⠐⠤"; // − minus sign  5-36
+UEB_PUNCT["\u2220"] = "⠸⠪"; // ∠ angle  456-246
+UEB_PUNCT["\u222b"] = "⠮"; // ∫ integral  2346
+UEB_PUNCT["\u2234"] = "⠠⠡"; // ∴ therefore  6-16
+UEB_PUNCT["\u2235"] = "⠈⠌"; // ∵ because  4-34
+UEB_PUNCT["\u2260"] = "⠐⠶⠈⠱"; // ≠ not equal  5-2356-4-156
+UEB_PUNCT["\u2261"] = "⠸⠿"; // ≡ identical  456-123456
+UEB_PUNCT["\u2264"] = "⠸⠈⠣"; // ≤ less or equal  456-4-126
+UEB_PUNCT["\u2265"] = "⠸⠈⠜"; // ≥ greater or equal  456-4-345
+UEB_PUNCT["\u2190"] = "⠰⠳⠪"; // ← left arrow  56-1256-246
+UEB_PUNCT["\u2191"] = "⠰⠳⠬"; // ↑ up arrow  56-1256-346
+UEB_PUNCT["\u2192"] = "⠰⠳⠕"; // → right arrow  56-1256-135
+UEB_PUNCT["\u2193"] = "⠰⠳⠩"; // ↓ down arrow  56-1256-146
+// Greek lowercase letters (46-x prefix)
+UEB_PUNCT["\u03b1"] = "⠨⠁"; // α alpha  46-1
+UEB_PUNCT["\u03b2"] = "⠨⠃"; // β beta  46-12
+UEB_PUNCT["\u03b3"] = "⠨⠛"; // γ gamma  46-1245
+UEB_PUNCT["\u03b4"] = "⠨⠙"; // δ delta  46-145
+UEB_PUNCT["\u03b5"] = "⠨⠑"; // ε epsilon  46-15
+UEB_PUNCT["\u03b6"] = "⠨⠵"; // ζ zeta  46-1356
+UEB_PUNCT["\u03b7"] = "⠨⠱"; // η eta  46-156
+UEB_PUNCT["\u03b8"] = "⠨⠹"; // θ theta  46-1456
+UEB_PUNCT["\u03b9"] = "⠨⠊"; // ι iota  46-24
+UEB_PUNCT["\u03ba"] = "⠨⠅"; // κ kappa  46-13
+UEB_PUNCT["\u03bb"] = "⠨⠇"; // λ lambda  46-123
+UEB_PUNCT["\u03bc"] = "⠨⠍"; // μ mu  46-134
+UEB_PUNCT["\u03bd"] = "⠨⠝"; // ν nu  46-1345
+UEB_PUNCT["\u03be"] = "⠨⠭"; // ξ xi  46-1346
+UEB_PUNCT["\u03bf"] = "⠨⠕"; // ο omicron  46-135
+UEB_PUNCT["\u03c0"] = "⠨⠏"; // π pi  46-1234
+UEB_PUNCT["\u03c1"] = "⠨⠗"; // ρ rho  46-1235
+UEB_PUNCT["\u03c2"] = "⠨⠎"; // ς sigma (final)  46-234
+UEB_PUNCT["\u03c3"] = "⠨⠎"; // σ sigma  46-234
+UEB_PUNCT["\u03c4"] = "⠨⠞"; // τ tau  46-2345
+UEB_PUNCT["\u03c5"] = "⠨⠥"; // υ upsilon  46-136
+UEB_PUNCT["\u03c6"] = "⠨⠋"; // φ phi  46-124
+UEB_PUNCT["\u03c7"] = "⠨⠯"; // χ chi  46-12346
+UEB_PUNCT["\u03c8"] = "⠨⠽"; // ψ psi  46-13456
+UEB_PUNCT["\u03c9"] = "⠨⠺"; // ω omega  46-2456
+// Musical symbols
+UEB_PUNCT["\u266d"] = "⠼⠣"; // ♭ flat  3456-126
+UEB_PUNCT["\u266e"] = "⠼⠡"; // ♮ natural  3456-16
+UEB_PUNCT["\u266f"] = "⠼⠩"; // ♯ sharp  3456-146
+// Miscellaneous
+UEB_PUNCT["\u2022"] = "⠸⠲"; // • bullet  456-256
+UEB_PUNCT["\u2713"] = "⠈⠩"; // ✓ check mark  4-146
+UEB_PUNCT["\u00b0"] = "⠘⠚"; // ° degree  45-245
+UEB_PUNCT["\u00a2"] = "⠈⠉"; // ¢ cent  4-14
+UEB_PUNCT["\u00a3"] = "⠈⠇"; // £ pound  4-123
+UEB_PUNCT["\u20ac"] = "⠈⠑"; // € euro  4-15
+UEB_PUNCT["\u00a7"] = "⠘⠎"; // § section  45-234
+UEB_PUNCT["\u00b6"] = "⠘⠏"; // ¶ paragraph  45-1234
+UEB_PUNCT["\u00f7"] = "⠐⠌"; // ÷ division  5-34
+UEB_PUNCT["\u00d7"] = "⠐⠦"; // × multiply  5-236
 
 // ── UEB G2 縮寫表格 ─────────────────────────────────────────
 // always groupsigns（任何位置）
@@ -696,7 +998,62 @@ const G2_LOWWORD = {'his':'⠦','was':'⠴','were':'⠶','enough':'⠢'};
 const G2_SUFWORD = {'be':'⠆'};
 
 // word-signs（整詞縮寫）
-const G2_WORD = {'about':'⠁⠃','aboutface':'⠁⠃⠋⠁⠉⠑','aboutfaced':'⠁⠃⠋⠁⠉⠫','aboutfacer':'⠁⠃⠋⠁⠉⠻','aboutfacers':'⠁⠃⠋⠁⠉⠻⠎','aboutfaces':'⠁⠃⠋⠁⠉⠑⠎','aboutfacing':'⠁⠃⠋⠁⠉⠬','aboutfacings':'⠁⠃⠋⠁⠉⠬⠎','abouts':'⠁⠃⠳⠞⠎','aboutturn':'⠁⠃⠞⠥⠗⠝','aboutturned':'⠁⠃⠞⠥⠗⠝⠫','aboutturns':'⠁⠃⠞⠥⠗⠝⠎','above':'⠁⠃⠧','aboveboard':'⠁⠃⠧⠃⠕⠜⠙','aboveboards':'⠁⠃⠧⠃⠕⠜⠙⠎','aboveground':'⠁⠃⠧⠛⠗⠨⠙','abovegrounds':'⠁⠃⠧⠛⠗⠨⠙⠎','abovementioned':'⠁⠃⠧⠍⠢⠰⠝⠫','aboves':'⠁⠃⠧⠎','according':'⠁⠉','accordingly':'⠁⠉⠇⠽','accordings':'⠁⠉⠎','across':'⠁⠉⠗','acrosss':'⠁⠉⠗⠎','aforesaid':'⠁⠿⠑⠎⠙','aforesaids':'⠁⠿⠑⠎⠙⠎','after':'⠁⠋','afterbattle':'⠁⠋⠃⠁⠞⠞⠇⠑','afterbattles':'⠁⠋⠃⠁⠞⠞⠇⠑⠎','afterbirth':'⠁⠋⠃⠊⠗⠹','afterbirths':'⠁⠋⠃⠊⠗⠹⠎','afterbreakfast':'⠁⠋⠃⠗⠂⠅⠋⠁⠌','afterbreakfasts':'⠁⠋⠃⠗⠂⠅⠋⠁⠌⠎','afterburn':'⠁⠋⠃⠥⠗⠝','afterburned':'⠁⠋⠃⠥⠗⠝⠫','afterburner':'⠁⠋⠃⠥⠗⠝⠻','afterburners':'⠁⠋⠃⠥⠗⠝⠻⠎','afterburning':'⠁⠋⠃⠥⠗⠝⠬','afterburnings':'⠁⠋⠃⠥⠗⠝⠬⠎','afterburns':'⠁⠋⠃⠥⠗⠝⠎','aftercare':'⠁⠋⠉⠜⠑','aftercares':'⠁⠋⠉⠜⠑⠎','afterclap':'⠁⠋⠉⠇⠁⠏','afterclaps':'⠁⠋⠉⠇⠁⠏⠎','aftercoffee':'⠁⠋⠉⠷⠋⠑⠑','aftercoffees':'⠁⠋⠉⠷⠋⠑⠑⠎','afterdamp':'⠁⠋⠙⠁⠍⠏','afterdamps':'⠁⠋⠙⠁⠍⠏⠎','afterdark':'⠁⠋⠙⠜⠅','afterdarks':'⠁⠋⠙⠜⠅⠎','afterdeck':'⠁⠋⠙⠑⠉⠅','afterdecks':'⠁⠋⠙⠑⠉⠅⠎','afterdinner':'⠁⠋⠙⠔⠝⠻','afterdinners':'⠁⠋⠙⠔⠝⠻⠎','afterflow':'⠁⠋⠋⠇⠪','afterflows':'⠁⠋⠋⠇⠪⠎','aftergame':'⠁⠋⠛⠁⠍⠑','aftergames':'⠁⠋⠛⠁⠍⠑⠎','afterglow':'⠁⠋⠛⠇⠪','afterglows':'⠁⠋⠛⠇⠪⠎','afterguard':'⠁⠋⠛⠥⠜⠙','afterguards':'⠁⠋⠛⠥⠜⠙⠎','afterhatch':'⠁⠋⠓⠁⠞⠡','afterhatches':'⠁⠋⠓⠁⠞⠡⠑⠎','afterhatchess':'⠁⠋⠓⠁⠞⠡⠑⠎⠎','afterhatchs':'⠁⠋⠓⠁⠞⠡⠎','afterhour':'⠁⠋⠓⠳⠗','afterhours':'⠁⠋⠓⠳⠗⠎','afterlife':'⠁⠋⠇⠊⠋⠑','afterlifes':'⠁⠋⠇⠊⠋⠑⠎','afterlight':'⠁⠋⠇⠊⠣⠞','afterlights':'⠁⠋⠇⠊⠣⠞⠎','afterlives':'⠁⠋⠇⠊⠧⠑⠎','afterlivess':'⠁⠋⠇⠊⠧⠑⠎⠎','afterlunch':'⠁⠋⠇⠥⠝⠡','afterlunches':'⠁⠋⠇⠥⠝⠡⠑⠎','afterlunchess':'⠁⠋⠇⠥⠝⠡⠑⠎⠎','afterlunchs':'⠁⠋⠇⠥⠝⠡⠎','aftermarket':'⠁⠋⠍⠜⠅⠑⠞','aftermarkets':'⠁⠋⠍⠜⠅⠑⠞⠎','aftermatch':'⠁⠋⠍⠁⠞⠡','aftermatches':'⠁⠋⠍⠁⠞⠡⠑⠎','aftermatchs':'⠁⠋⠍⠁⠞⠡⠎','aftermath':'⠁⠋⠍⠁⠹','aftermaths':'⠁⠋⠍⠁⠹⠎','aftermeeting':'⠁⠋⠍⠑⠑⠞⠬','aftermeetings':'⠁⠋⠍⠑⠑⠞⠬⠎','aftermentioned':'⠁⠋⠍⠢⠰⠝⠫','aftermentioneds':'⠁⠋⠍⠢⠰⠝⠫⠎','aftermidday':'⠁⠋⠍⠊⠙⠐⠙','aftermiddays':'⠁⠋⠍⠊⠙⠐⠙⠎','aftermidnight':'⠁⠋⠍⠊⠙⠝⠊⠣⠞','aftermidnights':'⠁⠋⠍⠊⠙⠝⠊⠣⠞⠎','aftermost':'⠁⠋⠍⠕⠌','aftermosts':'⠁⠋⠍⠕⠌⠎','afternoon':'⠁⠋⠝','afternoons':'⠁⠋⠝⠎','afternoontea':'⠁⠋⠝⠞⠑⠁','afternoonteas':'⠁⠋⠝⠞⠑⠁⠎','afterpain':'⠁⠋⠏⠁⠔','afterpains':'⠁⠋⠏⠁⠔⠎','afterparties':'⠁⠋⠐⠏⠊⠑⠎','afterpartiess':'⠁⠋⠐⠏⠊⠑⠎⠎','afterparty':'⠁⠋⠐⠏⠽','afterpartys':'⠁⠋⠐⠏⠽⠎','afterpiece':'⠁⠋⠏⠊⠑⠉⠑','afterpieces':'⠁⠋⠏⠊⠑⠉⠑⠎','afterplay':'⠁⠋⠏⠇⠁⠽','afterplays':'⠁⠋⠏⠇⠁⠽⠎','afters':'⠁⠋⠎','aftersale':'⠁⠋⠎⠁⠇⠑','aftersales':'⠁⠋⠎⠁⠇⠑⠎','afterschool':'⠁⠋⠎⠡⠕⠕⠇','afterschools':'⠁⠋⠎⠡⠕⠕⠇⠎','aftersensation':'⠁⠋⠎⠢⠎⠁⠰⠝','aftersensations':'⠁⠋⠎⠢⠎⠁⠰⠝⠎','aftershave':'⠁⠋⠩⠁⠧⠑','aftershaves':'⠁⠋⠩⠁⠧⠑⠎','aftershock':'⠁⠋⠩⠕⠉⠅','aftershocks':'⠁⠋⠩⠕⠉⠅⠎','aftershow':'⠁⠋⠩⠪','aftershower':'⠁⠋⠩⠪⠻','aftershowers':'⠁⠋⠩⠪⠻⠎','aftershows':'⠁⠋⠩⠪⠎','aftersupper':'⠁⠋⠎⠥⠏⠏⠻','aftersuppers':'⠁⠋⠎⠥⠏⠏⠻⠎','aftertaste':'⠁⠋⠞⠁⠌⠑','aftertastes':'⠁⠋⠞⠁⠌⠑⠎','aftertax':'⠁⠋⠞⠁⠭','aftertaxes':'⠁⠋⠞⠁⠭⠑⠎','aftertaxess':'⠁⠋⠞⠁⠭⠑⠎⠎','aftertaxs':'⠁⠋⠞⠁⠭⠎','aftertea':'⠁⠋⠞⠑⠁','afterteas':'⠁⠋⠞⠑⠁⠎','aftertheater':'⠁⠋⠮⠁⠞⠻','aftertheaters':'⠁⠋⠮⠁⠞⠻⠎','aftertheatre':'⠁⠋⠮⠁⠞⠗⠑','aftertheatres':'⠁⠋⠮⠁⠞⠗⠑⠎','afterthought':'⠁⠋⠹⠐⠳','afterthoughts':'⠁⠋⠹⠐⠳⠎','aftertime':'⠁⠋⠐⠞','aftertimes':'⠁⠋⠐⠞⠎','aftertreatment':'⠁⠋⠞⠗⠂⠞⠰⠞','aftertreatments':'⠁⠋⠞⠗⠂⠞⠰⠞⠎','afterward':'⠁⠋⠺','afterwards':'⠁⠋⠺⠎','afterword':'⠁⠋⠘⠺','afterwords':'⠁⠋⠘⠺⠎','afterwork':'⠁⠋⠐⠺','afterworks':'⠁⠋⠐⠺⠎','afterworld':'⠁⠋⠸⠺','afterworlds':'⠁⠋⠸⠺⠎','again':'⠁⠛','agains':'⠁⠛⠎','against':'⠁⠛⠌','againsts':'⠁⠛⠌⠎','almost':'⠁⠇⠍','almosts':'⠁⠇⠍⠕⠌⠎','alms':'⠁⠇⠍⠎','already':'⠁⠇⠗','alreadys':'⠁⠇⠗⠎','also':'⠁⠇','alsos':'⠁⠇⠎','although':'⠁⠇⠹','althoughs':'⠁⠇⠹⠎','altogether':'⠁⠇⠞','altogethers':'⠁⠇⠞⠎','always':'⠁⠇⠺','alwayss':'⠁⠇⠺⠎','apperceive':'⠁⠏⠏⠻⠉⠧','apperceived':'⠁⠏⠏⠻⠉⠧⠙','apperceiver':'⠁⠏⠏⠻⠉⠧⠗','apperceivers':'⠁⠏⠏⠻⠉⠧⠗⠎','apperceives':'⠁⠏⠏⠻⠉⠧⠎','apperceiving':'⠁⠏⠏⠻⠉⠧⠛','apperceivings':'⠁⠏⠏⠻⠉⠧⠛⠎','archdeceiver':'⠜⠡⠙⠉⠧⠗','archdeceivers':'⠜⠡⠙⠉⠧⠗⠎','as':'⠵','beata':'⠆⠁⠞⠁','beatae':'⠆⠁⠞⠁⠑','beati':'⠆⠁⠞⠊','beatus':'⠆⠁⠞⠥⠎','because':'⠆⠉','becauses':'⠆⠉⠎','beche':'⠃⠑⠡⠑','beches':'⠃⠑⠡⠑⠎','bede':'⠃⠫⠑','beden':'⠃⠫⠢','bedes':'⠃⠫⠑⠎','before':'⠆⠋','beforehand':'⠆⠋⠓⠯','beforehands':'⠆⠋⠓⠯⠎','beforementioned':'⠆⠋⠍⠢⠰⠝⠫','beforementioneds':'⠆⠋⠍⠢⠰⠝⠫⠎','befores':'⠆⠋⠎','befriend':'⠆⠋⠗','befriends':'⠆⠋⠗⠎','behind':'⠆⠓','behindhand':'⠆⠓⠓⠯','behindhands':'⠆⠓⠓⠯⠎','behinds':'⠆⠓⠎','bein':'⠃⠑⠔','beins':'⠃⠑⠔⠎','belittle':'⠆⠇⠇','belittled':'⠆⠇⠇⠙','belittlement':'⠆⠇⠇⠰⠞','belittlements':'⠆⠇⠇⠰⠞⠎','belittler':'⠆⠇⠇⠗','belittlers':'⠆⠇⠇⠗⠎','belittles':'⠆⠇⠇⠎','below':'⠆⠇','belowdeck':'⠆⠇⠙⠑⠉⠅','belowdecks':'⠆⠇⠙⠑⠉⠅⠎','belowground':'⠆⠇⠛⠗⠨⠙','belowgrounds':'⠆⠇⠛⠗⠨⠙⠎','belowmentioned':'⠆⠇⠍⠢⠰⠝⠫','belows':'⠆⠇⠎','ben':'⠃⠢','benammi':'⠃⠢⠁⠍⠍⠊','beneath':'⠆⠝','beneathdeck':'⠆⠝⠙⠑⠉⠅','beneathdecks':'⠆⠝⠙⠑⠉⠅⠎','beneathground':'⠆⠝⠛⠗⠨⠙','beneathgrounds':'⠆⠝⠛⠗⠨⠙⠎','beneaths':'⠆⠝⠎','benefic':'⠆⠝⠑⠋⠊⠉','beside':'⠆⠎','besides':'⠆⠎⠎','best':'⠃⠑⠌','bested':'⠃⠑⠌⠫','bester':'⠃⠑⠌⠻','bestest':'⠃⠑⠌⠑⠌','besting':'⠃⠑⠌⠬','bestness':'⠃⠑⠌⠰⠎','besty':'⠃⠑⠌⠽','between':'⠆⠞','betweendeck':'⠆⠞⠙⠑⠉⠅','betweendecks':'⠆⠞⠙⠑⠉⠅⠎','betweens':'⠆⠞⠎','betweentime':'⠆⠞⠐⠞','betweentimes':'⠆⠞⠐⠞⠎','betweenwhile':'⠆⠞⠱⠊⠇⠑','betweenwhiles':'⠆⠞⠱⠊⠇⠑⠎','beyond':'⠆⠽','beyonds':'⠆⠽⠎','biscuity':'⠃⠊⠎⠉⠥⠊⠞⠽','blind':'⠃⠇','blindfish':'⠃⠇⠋⠊⠩','blindfishes':'⠃⠇⠋⠊⠩⠑⠎','blindfishess':'⠃⠇⠋⠊⠩⠑⠎⠎','blindfishs':'⠃⠇⠋⠊⠩⠎','blindfold':'⠃⠇⠋⠕⠇⠙','blindfolded':'⠃⠇⠋⠕⠇⠙⠫','blindfolder':'⠃⠇⠋⠕⠇⠙⠻','blindfolders':'⠃⠇⠋⠕⠇⠙⠻⠎','blindfolding':'⠃⠇⠋⠕⠇⠙⠬','blindfoldings':'⠃⠇⠋⠕⠇⠙⠬⠎','blindfolds':'⠃⠇⠋⠕⠇⠙⠎','blindly':'⠃⠇⠇⠽','blindlys':'⠃⠇⠇⠽⠎','blindman':'⠃⠇⠍⠁⠝','blindmans':'⠃⠇⠍⠁⠝⠎','blindmen':'⠃⠇⠍⠢','blindmens':'⠃⠇⠍⠢⠎','blindness':'⠃⠇⠰⠎','blindnesses':'⠃⠇⠰⠎⠑⠎','blindnessess':'⠃⠇⠰⠎⠑⠎⠎','blindnesss':'⠃⠇⠰⠎⠎','blinds':'⠃⠇⠎','blindside':'⠃⠇⠎⠊⠙⠑','blindsided':'⠃⠇⠎⠊⠙⠫','blindsider':'⠃⠇⠎⠊⠙⠻','blindsiders':'⠃⠇⠎⠊⠙⠻⠎','blindsides':'⠃⠇⠎⠊⠙⠑⠎','blindsiding':'⠃⠇⠎⠊⠙⠬','blindsidings':'⠃⠇⠎⠊⠙⠬⠎','blindsight':'⠃⠇⠎⠊⠣⠞','blindsights':'⠃⠇⠎⠊⠣⠞⠎','blindstories':'⠃⠇⠌⠕⠗⠊⠑⠎','blindstoriess':'⠃⠇⠌⠕⠗⠊⠑⠎⠎','blindstory':'⠃⠇⠌⠕⠗⠽','blindstorys':'⠃⠇⠌⠕⠗⠽⠎','blindworm':'⠃⠇⠺⠕⠗⠍','blindworms':'⠃⠇⠺⠕⠗⠍⠎','bloodletter':'⠃⠇⠕⠕⠙⠇⠗','bloodletters':'⠃⠇⠕⠕⠙⠇⠗⠎','boyfriend':'⠃⠕⠽⠋⠗','boyfriends':'⠃⠕⠽⠋⠗⠎','braille':'⠃⠗⠇','brailled':'⠃⠗⠇⠙','brailler':'⠃⠗⠇⠗','braillers':'⠃⠗⠇⠗⠎','brailles':'⠃⠗⠇⠎','braillewriter':'⠃⠗⠇⠺⠗⠊⠞⠻','braillewriters':'⠃⠗⠇⠺⠗⠊⠞⠻⠎','braillewriting':'⠃⠗⠇⠺⠗⠊⠞⠬','braillewritings':'⠃⠗⠇⠺⠗⠊⠞⠬⠎','brailley':'⠃⠗⠇⠽','brailleys':'⠃⠗⠇⠽⠎','brainchildren':'⠃⠗⠁⠔⠡⠝','brainchildrens':'⠃⠗⠁⠔⠡⠝⠎','but':'⠃','can':'⠉','chainletter':'⠡⠁⠔⠇⠗','chainletters':'⠡⠁⠔⠇⠗⠎','child':'⠡','children':'⠡⠝','childrens':'⠡⠝⠎','colorblind':'⠉⠕⠇⠕⠗⠃⠇','colorblindness':'⠉⠕⠇⠕⠗⠃⠇⠰⠎','colorblindnesses':'⠉⠕⠇⠕⠗⠃⠇⠰⠎⠑⠎','colorblindnessess':'⠉⠕⠇⠕⠗⠃⠇⠰⠎⠑⠎⠎','colorblindnesss':'⠉⠕⠇⠕⠗⠃⠇⠰⠎⠎','colorblinds':'⠉⠕⠇⠕⠗⠃⠇⠎','colourblind':'⠉⠕⠇⠳⠗⠃⠇','colourblindness':'⠉⠕⠇⠳⠗⠃⠇⠰⠎','colourblindnesses':'⠉⠕⠇⠳⠗⠃⠇⠰⠎⠑⠎','colourblindnessess':'⠉⠕⠇⠳⠗⠃⠇⠰⠎⠑⠎⠎','colourblindnesss':'⠉⠕⠇⠳⠗⠃⠇⠰⠎⠎','colourblinds':'⠉⠕⠇⠳⠗⠃⠇⠎','conceive':'⠒⠉⠧','conceived':'⠒⠉⠧⠙','conceiver':'⠒⠉⠧⠗','conceivers':'⠒⠉⠧⠗⠎','conceives':'⠒⠉⠧⠎','conceiving':'⠒⠉⠧⠛','conceivings':'⠒⠉⠧⠛⠎','could':'⠉⠙','coulda':'⠉⠙⠁','couldas':'⠉⠙⠁⠎','couldest':'⠉⠙⠑⠌','couldests':'⠉⠙⠑⠌⠎','coulds':'⠉⠙⠎','couldst':'⠉⠙⠌','couldsts':'⠉⠙⠌⠎','dacoity':'⠙⠁⠉⠕⠊⠞⠽','deafblind':'⠙⠂⠋⠃⠇','deafblindness':'⠙⠂⠋⠃⠇⠰⠎','deafblindnesses':'⠙⠂⠋⠃⠇⠰⠎⠑⠎','deafblindnessess':'⠙⠂⠋⠃⠇⠰⠎⠑⠎⠎','deafblindnesss':'⠙⠂⠋⠃⠇⠰⠎⠎','deafblinds':'⠙⠂⠋⠃⠇⠎','deceive':'⠙⠉⠧','deceived':'⠙⠉⠧⠙','deceiver':'⠙⠉⠧⠗','deceivers':'⠙⠉⠧⠗⠎','deceives':'⠙⠉⠧⠎','deceiving':'⠙⠉⠧⠛','deceivings':'⠙⠉⠧⠛⠎','declare':'⠙⠉⠇','declared':'⠙⠉⠇⠙','declarer':'⠙⠉⠇⠗','declarers':'⠙⠉⠇⠗⠎','declares':'⠙⠉⠇⠎','declaring':'⠙⠉⠇⠛','declarings':'⠙⠉⠇⠛⠎','defriend':'⠙⠑⠋⠗','defriends':'⠙⠑⠋⠗⠎','dish':'⠙⠊⠩','disher':'⠙⠊⠩⠻','dishers':'⠙⠊⠩⠻⠎','dishy':'⠙⠊⠩⠽','disulphide':'⠙⠊⠎⠥⠇⠏⠓⠊⠙⠑','do':'⠙','doublequick':'⠙⠳⠃⠇⠑⠟⠅','doublequicks':'⠙⠳⠃⠇⠑⠟⠅⠎','eastabout':'⠑⠁⠌⠁⠃','eastabouts':'⠑⠁⠌⠁⠃⠎','either':'⠑⠊','eithers':'⠑⠊⠎','erigone':'⠻⠊⠛⠕⠝⠑','every':'⠑','feelgood':'⠋⠑⠑⠇⠛⠙','feelgoods':'⠋⠑⠑⠇⠛⠙⠎','feetfirst':'⠋⠑⠑⠞⠋⠌','feetfirsts':'⠋⠑⠑⠞⠋⠌⠎','first':'⠋⠌','firstaid':'⠋⠌⠁⠊⠙','firstaider':'⠋⠌⠁⠊⠙⠻','firstaiders':'⠋⠌⠁⠊⠙⠻⠎','firstaids':'⠋⠌⠁⠊⠙⠎','firstborn':'⠋⠌⠃⠕⠗⠝','firstborns':'⠋⠌⠃⠕⠗⠝⠎','firstclass':'⠋⠌⠉⠇⠁⠎⠎','firstclasses':'⠋⠌⠉⠇⠁⠎⠎⠑⠎','firstclassess':'⠋⠌⠉⠇⠁⠎⠎⠑⠎⠎','firstclasss':'⠋⠌⠉⠇⠁⠎⠎⠎','firstday':'⠋⠌⠐⠙','firstdayer':'⠋⠌⠐⠙⠻','firstdayers':'⠋⠌⠐⠙⠻⠎','firstdays':'⠋⠌⠐⠙⠎','firstfruit':'⠋⠌⠋⠗⠥⠊⠞','firstfruiting':'⠋⠌⠋⠗⠥⠊⠞⠬','firstfruitings':'⠋⠌⠋⠗⠥⠊⠞⠬⠎','firstfruits':'⠋⠌⠋⠗⠥⠊⠞⠎','firstgeneration':'⠋⠌⠛⠢⠻⠁⠰⠝','firstgenerations':'⠋⠌⠛⠢⠻⠁⠰⠝⠎','firsthand':'⠋⠌⠓⠯','firsthanded':'⠋⠌⠓⠯⠫','firsthands':'⠋⠌⠓⠯⠎','firstling':'⠋⠌⠇⠬','firstlings':'⠋⠌⠇⠬⠎','firstly':'⠋⠌⠇⠽','firstlys':'⠋⠌⠇⠽⠎','firstness':'⠋⠌⠰⠎','firstnesss':'⠋⠌⠰⠎⠎','firstnight':'⠋⠌⠝⠊⠣⠞','firstnighter':'⠋⠌⠝⠊⠣⠞⠻','firstnighters':'⠋⠌⠝⠊⠣⠞⠻⠎','firstnights':'⠋⠌⠝⠊⠣⠞⠎','firstrate':'⠋⠌⠗⠁⠞⠑','firstrated':'⠋⠌⠗⠁⠞⠫','firstrates':'⠋⠌⠗⠁⠞⠑⠎','firstrating':'⠋⠌⠗⠁⠞⠬','firstratings':'⠋⠌⠗⠁⠞⠬⠎','firsts':'⠋⠌⠎','firststring':'⠋⠌⠌⠗⠬','firststrings':'⠋⠌⠌⠗⠬⠎','forasmuch':'⠿⠁⠎⠍⠡','forasmuchs':'⠿⠁⠎⠍⠡⠎','foresaid':'⠿⠑⠎⠙','foresaids':'⠿⠑⠎⠙⠎','fosterchildren':'⠋⠕⠌⠻⠡⠝','fosterchildrens':'⠋⠕⠌⠻⠡⠝⠎','friend':'⠋⠗','friendless':'⠋⠗⠨⠎','friendlessness':'⠋⠗⠨⠎⠰⠎','friendlessnesses':'⠋⠗⠨⠎⠰⠎⠑⠎','friendlessnessess':'⠋⠗⠨⠎⠰⠎⠑⠎⠎','friendlessnesss':'⠋⠗⠨⠎⠰⠎⠎','friendlesss':'⠋⠗⠨⠎⠎','friendlier':'⠋⠗⠇⠊⠻','friendliers':'⠋⠗⠇⠊⠻⠎','friendlies':'⠋⠗⠇⠊⠑⠎','friendliess':'⠋⠗⠇⠊⠑⠎⠎','friendliest':'⠋⠗⠇⠊⠑⠌','friendliests':'⠋⠗⠇⠊⠑⠌⠎','friendliness':'⠋⠗⠇⠊⠰⠎','friendlinesses':'⠋⠗⠇⠊⠰⠎⠑⠎','friendlinessess':'⠋⠗⠇⠊⠰⠎⠑⠎⠎','friendlinesss':'⠋⠗⠇⠊⠰⠎⠎','friendly':'⠋⠗⠇⠽','friendlys':'⠋⠗⠇⠽⠎','friends':'⠋⠗⠎','friendship':'⠋⠗⠩⠊⠏','friendships':'⠋⠗⠩⠊⠏⠎','from':'⠋','fruity':'⠋⠗⠥⠊⠞⠽','gaberones':'⠛⠁⠃⠻⠕⠝⠑⠎','gadabout':'⠛⠁⠙⠁⠃','gadabouts':'⠛⠁⠙⠁⠃⠎','gainsaid':'⠛⠁⠔⠎⠙','gainsaids':'⠛⠁⠔⠎⠙⠎','galfriend':'⠛⠁⠇⠋⠗','galfriends':'⠛⠁⠇⠋⠗⠎','gentlemanfriend':'⠛⠢⠞⠇⠑⠍⠁⠝⠋⠗','gentlemanfriends':'⠛⠢⠞⠇⠑⠍⠁⠝⠋⠗⠎','gentlemenfriends':'⠛⠢⠞⠇⠑⠍⠢⠋⠗⠎','gentlemenfriendss':'⠛⠢⠞⠇⠑⠍⠢⠋⠗⠎⠎','girlfriend':'⠛⠊⠗⠇⠋⠗','girlfriends':'⠛⠊⠗⠇⠋⠗⠎','go':'⠛','godchildren':'⠛⠕⠙⠡⠝','godchildrens':'⠛⠕⠙⠡⠝⠎','good':'⠛⠙','goodafternoon':'⠛⠙⠁⠋⠝','goodafternoons':'⠛⠙⠁⠋⠝⠎','goodby':'⠛⠙⠃⠽','goodbye':'⠛⠙⠃⠽⠑','goodbyeing':'⠛⠙⠃⠽⠑⠬','goodbyeings':'⠛⠙⠃⠽⠑⠬⠎','goodbyes':'⠛⠙⠃⠽⠑⠎','goodbying':'⠛⠙⠃⠽⠬','goodbyings':'⠛⠙⠃⠽⠬⠎','goodbys':'⠛⠙⠃⠽⠎','goodday':'⠛⠙⠐⠙','gooddays':'⠛⠙⠐⠙⠎','gooder':'⠛⠙⠻','gooders':'⠛⠙⠻⠎','goodest':'⠛⠙⠑⠌','goodests':'⠛⠙⠑⠌⠎','goodevening':'⠛⠙⠑⠧⠢⠬','goodevenings':'⠛⠙⠑⠧⠢⠬⠎','goodfellow':'⠛⠙⠋⠑⠇⠇⠪','goodfellows':'⠛⠙⠋⠑⠇⠇⠪⠎','goodfellowship':'⠛⠙⠋⠑⠇⠇⠪⠩⠊⠏','goodfellowships':'⠛⠙⠋⠑⠇⠇⠪⠩⠊⠏⠎','goodhearted':'⠛⠙⠓⠑⠜⠞⠫','goodheartedly':'⠛⠙⠓⠑⠜⠞⠫⠇⠽','goodheartedlys':'⠛⠙⠓⠑⠜⠞⠫⠇⠽⠎','goodheartedness':'⠛⠙⠓⠑⠜⠞⠫⠰⠎','goodheartednesss':'⠛⠙⠓⠑⠜⠞⠫⠰⠎⠎','goodhumor':'⠛⠙⠓⠥⠍⠕⠗','goodhumored':'⠛⠙⠓⠥⠍⠕⠗⠫','goodhumoredly':'⠛⠙⠓⠥⠍⠕⠗⠫⠇⠽','goodhumoredlys':'⠛⠙⠓⠥⠍⠕⠗⠫⠇⠽⠎','goodhumoredness':'⠛⠙⠓⠥⠍⠕⠗⠫⠰⠎','goodhumorednesses':'⠛⠙⠓⠥⠍⠕⠗⠫⠰⠎⠑⠎','goodhumorednessess':'⠛⠙⠓⠥⠍⠕⠗⠫⠰⠎⠑⠎⠎','goodhumorednesss':'⠛⠙⠓⠥⠍⠕⠗⠫⠰⠎⠎','goodhumors':'⠛⠙⠓⠥⠍⠕⠗⠎','goodhumour':'⠛⠙⠓⠥⠍⠳⠗','goodhumoured':'⠛⠙⠓⠥⠍⠳⠗⠫','goodhumouredly':'⠛⠙⠓⠥⠍⠳⠗⠫⠇⠽','goodhumouredlys':'⠛⠙⠓⠥⠍⠳⠗⠫⠇⠽⠎','goodhumouredness':'⠛⠙⠓⠥⠍⠳⠗⠫⠰⠎','goodhumourednesses':'⠛⠙⠓⠥⠍⠳⠗⠫⠰⠎⠑⠎','goodhumourednessess':'⠛⠙⠓⠥⠍⠳⠗⠫⠰⠎⠑⠎⠎','goodhumourednesss':'⠛⠙⠓⠥⠍⠳⠗⠫⠰⠎⠎','goodhumours':'⠛⠙⠓⠥⠍⠳⠗⠎','goodie':'⠛⠙⠊⠑','goodies':'⠛⠙⠊⠑⠎','goodish':'⠛⠙⠊⠩','goodishs':'⠛⠙⠊⠩⠎','goodlier':'⠛⠙⠇⠊⠻','goodliers':'⠛⠙⠇⠊⠻⠎','goodliest':'⠛⠙⠇⠊⠑⠌','goodliests':'⠛⠙⠇⠊⠑⠌⠎','goodliness':'⠛⠙⠇⠊⠰⠎','goodlinesss':'⠛⠙⠇⠊⠰⠎⠎','goodlook':'⠛⠙⠇⠕⠕⠅','goodlooker':'⠛⠙⠇⠕⠕⠅⠻','goodlookers':'⠛⠙⠇⠕⠕⠅⠻⠎','goodlooking':'⠛⠙⠇⠕⠕⠅⠬','goodlookings':'⠛⠙⠇⠕⠕⠅⠬⠎','goodlooks':'⠛⠙⠇⠕⠕⠅⠎','goodly':'⠛⠙⠇⠽','goodlys':'⠛⠙⠇⠽⠎','goodman':'⠛⠙⠍⠁⠝','goodmans':'⠛⠙⠍⠁⠝⠎','goodmen':'⠛⠙⠍⠢','goodmens':'⠛⠙⠍⠢⠎','goodmorning':'⠛⠙⠍⠕⠗⠝⠬','goodmornings':'⠛⠙⠍⠕⠗⠝⠬⠎','goodnature':'⠛⠙⠝⠁⠞⠥⠗⠑','goodnatured':'⠛⠙⠝⠁⠞⠥⠗⠫','goodnaturedly':'⠛⠙⠝⠁⠞⠥⠗⠫⠇⠽','goodnaturedlys':'⠛⠙⠝⠁⠞⠥⠗⠫⠇⠽⠎','goodnaturedness':'⠛⠙⠝⠁⠞⠥⠗⠫⠰⠎','goodnaturednesss':'⠛⠙⠝⠁⠞⠥⠗⠫⠰⠎⠎','goodnatures':'⠛⠙⠝⠁⠞⠥⠗⠑⠎','goodness':'⠛⠙⠰⠎','goodnesses':'⠛⠙⠰⠎⠑⠎','goodnessess':'⠛⠙⠰⠎⠑⠎⠎','goodnesss':'⠛⠙⠰⠎⠎','goodnight':'⠛⠙⠝⠊⠣⠞','goodnights':'⠛⠙⠝⠊⠣⠞⠎','goods':'⠛⠙⠎','goodsize':'⠛⠙⠎⠊⠵⠑','goodsized':'⠛⠙⠎⠊⠵⠫','goodsizes':'⠛⠙⠎⠊⠵⠑⠎','goodtempered':'⠛⠙⠞⠑⠍⠏⠻⠫','goodtemperedly':'⠛⠙⠞⠑⠍⠏⠻⠫⠇⠽','goodtemperedlys':'⠛⠙⠞⠑⠍⠏⠻⠫⠇⠽⠎','goodtime':'⠛⠙⠐⠞','goodtimes':'⠛⠙⠐⠞⠎','goodun':'⠛⠙⠥⠝','gooduns':'⠛⠙⠥⠝⠎','goodwife':'⠛⠙⠺⠊⠋⠑','goodwifes':'⠛⠙⠺⠊⠋⠑⠎','goodwill':'⠛⠙⠺⠊⠇⠇','goodwilled':'⠛⠙⠺⠊⠇⠇⠫','goodwills':'⠛⠙⠺⠊⠇⠇⠎','goodwives':'⠛⠙⠺⠊⠧⠑⠎','goodwivess':'⠛⠙⠺⠊⠧⠑⠎⠎','goody':'⠛⠙⠽','goodyear':'⠛⠙⠽⠑⠜','goodyears':'⠛⠙⠽⠑⠜⠎','goodys':'⠛⠙⠽⠎','grandchildren':'⠛⠗⠯⠡⠝','grandchildrens':'⠛⠗⠯⠡⠝⠎','great':'⠛⠗⠞','greataunt':'⠛⠗⠞⠁⠥⠝⠞','greataunts':'⠛⠗⠞⠁⠥⠝⠞⠎','greatbatch':'⠛⠗⠞⠃⠁⠞⠡','greatbatchs':'⠛⠗⠞⠃⠁⠞⠡⠎','greatcircle':'⠛⠗⠞⠉⠊⠗⠉⠇⠑','greatcircles':'⠛⠗⠞⠉⠊⠗⠉⠇⠑⠎','greatcoat':'⠛⠗⠞⠉⠕⠁⠞','greatcoats':'⠛⠗⠞⠉⠕⠁⠞⠎','greaten':'⠛⠗⠞⠢','greatened':'⠛⠗⠞⠢⠫','greatener':'⠛⠗⠞⠢⠻','greateners':'⠛⠗⠞⠢⠻⠎','greatening':'⠛⠗⠞⠢⠬','greatenings':'⠛⠗⠞⠢⠬⠎','greatens':'⠛⠗⠞⠢⠎','greater':'⠛⠗⠞⠻','greaters':'⠛⠗⠞⠻⠎','greatest':'⠛⠗⠞⠑⠌','greatests':'⠛⠗⠞⠑⠌⠎','greatgrandaunt':'⠛⠗⠞⠛⠗⠯⠁⠥⠝⠞','greatgrandaunts':'⠛⠗⠞⠛⠗⠯⠁⠥⠝⠞⠎','greatgrandchild':'⠛⠗⠞⠛⠗⠯⠡⠊⠇⠙','greatgrandchildren':'⠛⠗⠞⠛⠗⠯⠡⠝','greatgrandchildrens':'⠛⠗⠞⠛⠗⠯⠡⠝⠎','greatgrandchilds':'⠛⠗⠞⠛⠗⠯⠡⠊⠇⠙⠎','greatgranddad':'⠛⠗⠞⠛⠗⠯⠙⠁⠙','greatgranddads':'⠛⠗⠞⠛⠗⠯⠙⠁⠙⠎','greatgranddaughter':'⠛⠗⠞⠛⠗⠯⠙⠁⠥⠣⠞⠻','greatgranddaughters':'⠛⠗⠞⠛⠗⠯⠙⠁⠥⠣⠞⠻⠎','greatgrandfather':'⠛⠗⠞⠛⠗⠯⠐⠋','greatgrandfatherhood':'⠛⠗⠞⠛⠗⠯⠐⠋⠓⠕⠕⠙','greatgrandfatherhoods':'⠛⠗⠞⠛⠗⠯⠐⠋⠓⠕⠕⠙⠎','greatgrandfathers':'⠛⠗⠞⠛⠗⠯⠐⠋⠎','greatgrandma':'⠛⠗⠞⠛⠗⠯⠍⠁','greatgrandmas':'⠛⠗⠞⠛⠗⠯⠍⠁⠎','greatgrandmother':'⠛⠗⠞⠛⠗⠯⠐⠍','greatgrandmotherhood':'⠛⠗⠞⠛⠗⠯⠐⠍⠓⠕⠕⠙','greatgrandmotherhoods':'⠛⠗⠞⠛⠗⠯⠐⠍⠓⠕⠕⠙⠎','greatgrandmothers':'⠛⠗⠞⠛⠗⠯⠐⠍⠎','greatgrandnephew':'⠛⠗⠞⠛⠗⠯⠝⠑⠏⠓⠑⠺','greatgrandnephews':'⠛⠗⠞⠛⠗⠯⠝⠑⠏⠓⠑⠺⠎','greatgrandniece':'⠛⠗⠞⠛⠗⠯⠝⠊⠑⠉⠑','greatgrandnieces':'⠛⠗⠞⠛⠗⠯⠝⠊⠑⠉⠑⠎','greatgrandpa':'⠛⠗⠞⠛⠗⠯⠏⠁','greatgrandparent':'⠛⠗⠞⠛⠗⠯⠏⠜⠢⠞','greatgrandparenthood':'⠛⠗⠞⠛⠗⠯⠏⠜⠢⠞⠓⠕⠕⠙','greatgrandparenthoods':'⠛⠗⠞⠛⠗⠯⠏⠜⠢⠞⠓⠕⠕⠙⠎','greatgrandparents':'⠛⠗⠞⠛⠗⠯⠏⠜⠢⠞⠎','greatgrandpas':'⠛⠗⠞⠛⠗⠯⠏⠁⠎','greatgrandson':'⠛⠗⠞⠛⠗⠯⠎⠕⠝','greatgrandsons':'⠛⠗⠞⠛⠗⠯⠎⠕⠝⠎','greatgranduncle':'⠛⠗⠞⠛⠗⠯⠥⠝⠉⠇⠑','greatgranduncles':'⠛⠗⠞⠛⠗⠯⠥⠝⠉⠇⠑⠎','greathearted':'⠛⠗⠞⠓⠑⠜⠞⠫','greatheartedly':'⠛⠗⠞⠓⠑⠜⠞⠫⠇⠽','greatheartedlys':'⠛⠗⠞⠓⠑⠜⠞⠫⠇⠽⠎','greatheartedness':'⠛⠗⠞⠓⠑⠜⠞⠫⠰⠎','greatheartednesses':'⠛⠗⠞⠓⠑⠜⠞⠫⠰⠎⠑⠎','greatheartednessess':'⠛⠗⠞⠓⠑⠜⠞⠫⠰⠎⠑⠎⠎','greatheartednesss':'⠛⠗⠞⠓⠑⠜⠞⠫⠰⠎⠎','greatly':'⠛⠗⠞⠇⠽','greatlys':'⠛⠗⠞⠇⠽⠎','greatnephew':'⠛⠗⠞⠝⠑⠏⠓⠑⠺','greatnephews':'⠛⠗⠞⠝⠑⠏⠓⠑⠺⠎','greatness':'⠛⠗⠞⠰⠎','greatnesses':'⠛⠗⠞⠰⠎⠑⠎','greatnessess':'⠛⠗⠞⠰⠎⠑⠎⠎','greatnesss':'⠛⠗⠞⠰⠎⠎','greatniece':'⠛⠗⠞⠝⠊⠑⠉⠑','greatnieces':'⠛⠗⠞⠝⠊⠑⠉⠑⠎','greats':'⠛⠗⠞⠎','greatsword':'⠛⠗⠞⠎⠘⠺','greatswords':'⠛⠗⠞⠎⠘⠺⠎','greatuncle':'⠛⠗⠞⠥⠝⠉⠇⠑','greatuncles':'⠛⠗⠞⠥⠝⠉⠇⠑⠎','guyfriend':'⠛⠥⠽⠋⠗','guyfriends':'⠛⠥⠽⠋⠗⠎','hateletter':'⠓⠁⠞⠑⠇⠗','hateletters':'⠓⠁⠞⠑⠇⠗⠎','have':'⠓','headfirst':'⠓⠂⠙⠋⠌','headfirsts':'⠓⠂⠙⠋⠌⠎','hereabout':'⠐⠓⠁⠃','hereabouts':'⠐⠓⠁⠃⠎','hereafter':'⠐⠓⠁⠋','hereafters':'⠐⠓⠁⠋⠎','hereagain':'⠐⠓⠁⠛','hereagains':'⠐⠓⠁⠛⠎','hereagainst':'⠐⠓⠁⠛⠌','hereagainsts':'⠐⠓⠁⠛⠌⠎','hereinabove':'⠐⠓⠔⠁⠃⠧','hereinaboves':'⠐⠓⠔⠁⠃⠧⠎','hereinafter':'⠐⠓⠔⠁⠋','hereinafters':'⠐⠓⠔⠁⠋⠎','hereinagain':'⠐⠓⠔⠁⠛','hereinagains':'⠐⠓⠔⠁⠛⠎','herself':'⠓⠻⠋','herselfs':'⠓⠻⠋⠎','highlypaid':'⠓⠊⠣⠇⠽⠏⠙','highlypaids':'⠓⠊⠣⠇⠽⠏⠙⠎','him':'⠓⠍','himbo':'⠓⠍⠃⠕','himboes':'⠓⠍⠃⠕⠑⠎','himboess':'⠓⠍⠃⠕⠑⠎⠎','himbos':'⠓⠍⠃⠕⠎','hims':'⠓⠊⠍⠎','himself':'⠓⠍⠋','himselfs':'⠓⠍⠋⠎','illpaid':'⠊⠇⠇⠏⠙','illpaids':'⠊⠇⠇⠏⠙⠎','immediate':'⠊⠍⠍','immediately':'⠊⠍⠍⠇⠽','immediatelys':'⠊⠍⠍⠇⠽⠎','immediateness':'⠊⠍⠍⠰⠎','immediatenesss':'⠊⠍⠍⠰⠎⠎','immediates':'⠊⠍⠍⠎','inasmuch':'⠔⠁⠎⠍⠡','inasmuchs':'⠔⠁⠎⠍⠡⠎','insomuch':'⠔⠎⠕⠍⠡','insomuchs':'⠔⠎⠕⠍⠡⠎','it':'⠭','its':'⠭⠎','itself':'⠭⠋','itselfs':'⠭⠋⠎','itss':'⠭⠎⠎','just':'⠚','knockabout':'⠅⠝⠕⠉⠅⠁⠃','knockabouts':'⠅⠝⠕⠉⠅⠁⠃⠎','knowledge':'⠅','ladyfriend':'⠇⠁⠙⠽⠋⠗','ladyfriends':'⠇⠁⠙⠽⠋⠗⠎','layabout':'⠇⠁⠽⠁⠃','layabouts':'⠇⠁⠽⠁⠃⠎','leann':'⠇⠑⠁⠝⠝','leanne':'⠇⠑⠁⠝⠝⠑','letter':'⠇⠗','letterbodies':'⠇⠗⠃⠕⠙⠊⠑⠎','letterbodiess':'⠇⠗⠃⠕⠙⠊⠑⠎⠎','letterbody':'⠇⠗⠃⠕⠙⠽','letterbodys':'⠇⠗⠃⠕⠙⠽⠎','letterbomb':'⠇⠗⠃⠕⠍⠃','letterbombed':'⠇⠗⠃⠕⠍⠃⠫','letterbomber':'⠇⠗⠃⠕⠍⠃⠻','letterbombers':'⠇⠗⠃⠕⠍⠃⠻⠎','letterbombing':'⠇⠗⠃⠕⠍⠃⠬','letterbombings':'⠇⠗⠃⠕⠍⠃⠬⠎','letterbombs':'⠇⠗⠃⠕⠍⠃⠎','letterbox':'⠇⠗⠃⠕⠭','letterboxed':'⠇⠗⠃⠕⠭⠫','letterboxer':'⠇⠗⠃⠕⠭⠻','letterboxers':'⠇⠗⠃⠕⠭⠻⠎','letterboxes':'⠇⠗⠃⠕⠭⠑⠎','letterboxess':'⠇⠗⠃⠕⠭⠑⠎⠎','letterboxing':'⠇⠗⠃⠕⠭⠬','letterboxings':'⠇⠗⠃⠕⠭⠬⠎','letterboxs':'⠇⠗⠃⠕⠭⠎','lettered':'⠇⠗⠫','letterer':'⠇⠗⠻','letterers':'⠇⠗⠻⠎','letterform':'⠇⠗⠿⠍','letterforms':'⠇⠗⠿⠍⠎','letterhead':'⠇⠗⠓⠂⠙','letterheading':'⠇⠗⠓⠂⠙⠬','letterheadings':'⠇⠗⠓⠂⠙⠬⠎','letterheads':'⠇⠗⠓⠂⠙⠎','lettering':'⠇⠗⠬','letterings':'⠇⠗⠬⠎','letterman':'⠇⠗⠍⠁⠝','lettermans':'⠇⠗⠍⠁⠝⠎','lettermen':'⠇⠗⠍⠢','lettermens':'⠇⠗⠍⠢⠎','letteropener':'⠇⠗⠕⠏⠢⠻','letteropeners':'⠇⠗⠕⠏⠢⠻⠎','letterperfect':'⠇⠗⠏⠻⠋⠑⠉⠞','letterperfects':'⠇⠗⠏⠻⠋⠑⠉⠞⠎','letterpress':'⠇⠗⠏⠗⠑⠎⠎','letterpressed':'⠇⠗⠏⠗⠑⠎⠎⠫','letterpresses':'⠇⠗⠏⠗⠑⠎⠎⠑⠎','letterpressess':'⠇⠗⠏⠗⠑⠎⠎⠑⠎⠎','letterpressing':'⠇⠗⠏⠗⠑⠎⠎⠬','letterpressings':'⠇⠗⠏⠗⠑⠎⠎⠬⠎','letterpresss':'⠇⠗⠏⠗⠑⠎⠎⠎','letterquality':'⠇⠗⠟⠥⠁⠇⠰⠽','letterqualitys':'⠇⠗⠟⠥⠁⠇⠰⠽⠎','letters':'⠇⠗⠎','letterspace':'⠇⠗⠎⠏⠁⠉⠑','letterspaced':'⠇⠗⠎⠏⠁⠉⠫','letterspaces':'⠇⠗⠎⠏⠁⠉⠑⠎','letterspacing':'⠇⠗⠎⠏⠁⠉⠬','letterspacings':'⠇⠗⠎⠏⠁⠉⠬⠎','lettertext':'⠇⠗⠞⠑⠭⠞','lettertexts':'⠇⠗⠞⠑⠭⠞⠎','like':'⠇','little':'⠇⠇','littled':'⠇⠇⠙','littleneck':'⠇⠇⠝⠑⠉⠅','littlenecks':'⠇⠇⠝⠑⠉⠅⠎','littleness':'⠇⠇⠰⠎','littlenesses':'⠇⠇⠰⠎⠑⠎','littlenessess':'⠇⠇⠰⠎⠑⠎⠎','littlenesss':'⠇⠇⠰⠎⠎','littler':'⠇⠇⠗','littlers':'⠇⠇⠗⠎','littles':'⠇⠇⠎','littlest':'⠇⠇⠌','littlests':'⠇⠇⠌⠎','lovechildren':'⠇⠕⠧⠑⠡⠝','lovechildrens':'⠇⠕⠧⠑⠡⠝⠎','loveletter':'⠇⠕⠧⠑⠇⠗','loveletters':'⠇⠕⠧⠑⠇⠗⠎','lowlypaid':'⠇⠪⠇⠽⠏⠙','lowlypaids':'⠇⠪⠇⠽⠏⠙⠎','manfriend':'⠍⠁⠝⠋⠗','manfriends':'⠍⠁⠝⠋⠗⠎','menfriends':'⠍⠢⠋⠗⠎','menfriendss':'⠍⠢⠋⠗⠎⠎','midafternoon':'⠍⠊⠙⠁⠋⠝','midafternoons':'⠍⠊⠙⠁⠋⠝⠎','misbraille':'⠍⠊⠎⠃⠗⠇','misbrailled':'⠍⠊⠎⠃⠗⠇⠙','misbrailles':'⠍⠊⠎⠃⠗⠇⠎','misperceive':'⠍⠊⠎⠏⠻⠉⠧','misperceived':'⠍⠊⠎⠏⠻⠉⠧⠙','misperceiver':'⠍⠊⠎⠏⠻⠉⠧⠗','misperceivers':'⠍⠊⠎⠏⠻⠉⠧⠗⠎','misperceives':'⠍⠊⠎⠏⠻⠉⠧⠎','misperceiving':'⠍⠊⠎⠏⠻⠉⠧⠛','misperceivings':'⠍⠊⠎⠏⠻⠉⠧⠛⠎','missaid':'⠍⠊⠎⠎⠙','missaids':'⠍⠊⠎⠎⠙⠎','moneth':'⠍⠕⠝⠑⠹','more':'⠍','morningafter':'⠍⠕⠗⠝⠬⠁⠋','morningafters':'⠍⠕⠗⠝⠬⠁⠋⠎','much':'⠍⠡','muchly':'⠍⠡⠇⠽','muchlys':'⠍⠡⠇⠽⠎','muchness':'⠍⠡⠰⠎','muchnesss':'⠍⠡⠰⠎⠎','muchs':'⠍⠡⠎','must':'⠍⠌','musta':'⠍⠌⠁','mustard':'⠍⠌⠜⠙','mustards':'⠍⠌⠜⠙⠎','mustardy':'⠍⠌⠜⠙⠽','mustardys':'⠍⠌⠜⠙⠽⠎','mustas':'⠍⠌⠁⠎','mustier':'⠍⠌⠊⠻','mustiers':'⠍⠌⠊⠻⠎','mustiest':'⠍⠌⠊⠑⠌','mustiests':'⠍⠌⠊⠑⠌⠎','mustily':'⠍⠌⠊⠇⠽','mustilys':'⠍⠌⠊⠇⠽⠎','mustiness':'⠍⠌⠊⠰⠎','mustinesss':'⠍⠌⠊⠰⠎⠎','musts':'⠍⠌⠎','musty':'⠍⠌⠽','mustys':'⠍⠌⠽⠎','myself':'⠍⠽⠋','myselfs':'⠍⠽⠋⠎','necessary':'⠝⠑⠉','necessarys':'⠝⠑⠉⠎','neither':'⠝⠑⠊','neithers':'⠝⠑⠊⠎','nevers':'⠝⠑⠧⠻⠎','newsletter':'⠝⠑⠺⠎⠇⠗','newsletters':'⠝⠑⠺⠎⠇⠗⠎','none':'⠝⠐⠕','nones':'⠝⠐⠕⠎','nonesuch':'⠝⠐⠕⠎⠡','nonesuchs':'⠝⠐⠕⠎⠡⠎','nonsuch':'⠝⠕⠝⠎⠡','nonsuchs':'⠝⠕⠝⠎⠡⠎','northabout':'⠝⠕⠗⠹⠁⠃','northabouts':'⠝⠕⠗⠹⠁⠃⠎','not':'⠝','oneself':'⠐⠕⠋','oneselfs':'⠐⠕⠋⠎','ourselves':'⠳⠗⠧⠎','ourselvess':'⠳⠗⠧⠎⠎','out':'⠳','overmuch':'⠕⠧⠻⠍⠡','overmuchs':'⠕⠧⠻⠍⠡⠎','overpaid':'⠕⠧⠻⠏⠙','overpaids':'⠕⠧⠻⠏⠙⠎','paid':'⠏⠙','paids':'⠏⠙⠎','penfriend':'⠏⠢⠋⠗','penfriends':'⠏⠢⠋⠗⠎','pensione':'⠏⠢⠎⠊⠕⠝⠑','pensiones':'⠏⠢⠎⠊⠕⠝⠑⠎','people':'⠏','perceive':'⠏⠻⠉⠧','perceived':'⠏⠻⠉⠧⠙','perceiver':'⠏⠻⠉⠧⠗','perceivers':'⠏⠻⠉⠧⠗⠎','perceives':'⠏⠻⠉⠧⠎','perceiving':'⠏⠻⠉⠧⠛','perceivings':'⠏⠻⠉⠧⠛⠎','perhaps':'⠏⠻⠓','perhapses':'⠏⠻⠓⠑⠎','perhapsess':'⠏⠻⠓⠑⠎⠎','perhapss':'⠏⠻⠓⠎','pheres':'⠏⠓⠻⠑⠎','pityard':'⠏⠊⠞⠽⠜⠙','poorlypaid':'⠏⠕⠕⠗⠇⠽⠏⠙','poorlypaids':'⠏⠕⠕⠗⠇⠽⠏⠙⠎','postpaid':'⠏⠕⠌⠏⠙','postpaids':'⠏⠕⠌⠏⠙⠎','preceive':'⠏⠗⠉⠧','preceiver':'⠏⠗⠉⠧⠗','preceivers':'⠏⠗⠉⠧⠗⠎','preceives':'⠏⠗⠉⠧⠎','preceiving':'⠏⠗⠉⠧⠛','preceivings':'⠏⠗⠉⠧⠛⠎','prepaid':'⠏⠗⠑⠏⠙','prepaids':'⠏⠗⠑⠏⠙⠎','purblind':'⠏⠥⠗⠃⠇','purblindly':'⠏⠥⠗⠃⠇⠇⠽','purblindlys':'⠏⠥⠗⠃⠇⠇⠽⠎','purblindness':'⠏⠥⠗⠃⠇⠰⠎','purblindnesses':'⠏⠥⠗⠃⠇⠰⠎⠑⠎','purblindnessess':'⠏⠥⠗⠃⠇⠰⠎⠑⠎⠎','purblindnesss':'⠏⠥⠗⠃⠇⠰⠎⠎','purblinds':'⠏⠥⠗⠃⠇⠎','quick':'⠟⠅','quickdraw':'⠟⠅⠙⠗⠁⠺','quickdraws':'⠟⠅⠙⠗⠁⠺⠎','quicken':'⠟⠅⠢','quickened':'⠟⠅⠢⠫','quickener':'⠟⠅⠢⠻','quickeners':'⠟⠅⠢⠻⠎','quickening':'⠟⠅⠢⠬','quickenings':'⠟⠅⠢⠬⠎','quickens':'⠟⠅⠢⠎','quicker':'⠟⠅⠻','quickers':'⠟⠅⠻⠎','quickest':'⠟⠅⠑⠌','quickests':'⠟⠅⠑⠌⠎','quickfire':'⠟⠅⠋⠊⠗⠑','quickfires':'⠟⠅⠋⠊⠗⠑⠎','quickfiring':'⠟⠅⠋⠊⠗⠬','quickfirings':'⠟⠅⠋⠊⠗⠬⠎','quickfreeze':'⠟⠅⠋⠗⠑⠑⠵⠑','quickfreezes':'⠟⠅⠋⠗⠑⠑⠵⠑⠎','quickfreezing':'⠟⠅⠋⠗⠑⠑⠵⠬','quickfreezings':'⠟⠅⠋⠗⠑⠑⠵⠬⠎','quickfroze':'⠟⠅⠋⠗⠕⠵⠑','quickfrozen':'⠟⠅⠋⠗⠕⠵⠢','quickfrozens':'⠟⠅⠋⠗⠕⠵⠢⠎','quickfrozes':'⠟⠅⠋⠗⠕⠵⠑⠎','quickie':'⠟⠅⠊⠑','quickies':'⠟⠅⠊⠑⠎','quickish':'⠟⠅⠊⠩','quickishly':'⠟⠅⠊⠩⠇⠽','quickishlys':'⠟⠅⠊⠩⠇⠽⠎','quickishs':'⠟⠅⠊⠩⠎','quicklime':'⠟⠅⠇⠊⠍⠑','quicklimes':'⠟⠅⠇⠊⠍⠑⠎','quickly':'⠟⠅⠇⠽','quicklys':'⠟⠅⠇⠽⠎','quickness':'⠟⠅⠰⠎','quicknesses':'⠟⠅⠰⠎⠑⠎','quicknessess':'⠟⠅⠰⠎⠑⠎⠎','quicknesss':'⠟⠅⠰⠎⠎','quicks':'⠟⠅⠎','quicksand':'⠟⠅⠎⠯','quicksands':'⠟⠅⠎⠯⠎','quickset':'⠟⠅⠎⠑⠞','quicksets':'⠟⠅⠎⠑⠞⠎','quicksilver':'⠟⠅⠎⠊⠇⠧⠻','quicksilvered':'⠟⠅⠎⠊⠇⠧⠻⠫','quicksilvering':'⠟⠅⠎⠊⠇⠧⠻⠬','quicksilverings':'⠟⠅⠎⠊⠇⠧⠻⠬⠎','quicksilvers':'⠟⠅⠎⠊⠇⠧⠻⠎','quicksnap':'⠟⠅⠎⠝⠁⠏','quicksnaps':'⠟⠅⠎⠝⠁⠏⠎','quickstep':'⠟⠅⠌⠑⠏','quickstepped':'⠟⠅⠌⠑⠏⠏⠫','quickstepper':'⠟⠅⠌⠑⠏⠏⠻','quicksteppers':'⠟⠅⠌⠑⠏⠏⠻⠎','quickstepping':'⠟⠅⠌⠑⠏⠏⠬','quicksteppings':'⠟⠅⠌⠑⠏⠏⠬⠎','quicksteps':'⠟⠅⠌⠑⠏⠎','quicktempered':'⠟⠅⠞⠑⠍⠏⠻⠫','quicktime':'⠟⠅⠐⠞','quicktimes':'⠟⠅⠐⠞⠎','quickwitted':'⠟⠅⠺⠊⠞⠞⠫','quickwittedly':'⠟⠅⠺⠊⠞⠞⠫⠇⠽','quickwittedlys':'⠟⠅⠺⠊⠞⠞⠫⠇⠽⠎','quickwittedness':'⠟⠅⠺⠊⠞⠞⠫⠰⠎','quickwittednesss':'⠟⠅⠺⠊⠞⠞⠫⠰⠎⠎','quicky':'⠟⠅⠽','quickys':'⠟⠅⠽⠎','quite':'⠟','rabbity':'⠗⠁⠆⠊⠞⠽','rared':'⠗⠁⠗⠫','rather':'⠗','readacross':'⠗⠂⠙⠁⠉⠗','readacrosss':'⠗⠂⠙⠁⠉⠗⠎','readme':'⠗⠂⠙⠍⠑','readmes':'⠗⠂⠙⠍⠑⠎','reave':'⠗⠂⠧⠑','reaved':'⠗⠂⠧⠫','reaves':'⠗⠂⠧⠑⠎','reaving':'⠗⠂⠧⠬','rebraille':'⠗⠑⠃⠗⠇','rebrailled':'⠗⠑⠃⠗⠇⠙','rebrailler':'⠗⠑⠃⠗⠇⠗','rebraillers':'⠗⠑⠃⠗⠇⠗⠎','rebrailles':'⠗⠑⠃⠗⠇⠎','receive':'⠗⠉⠧','received':'⠗⠉⠧⠙','receiver':'⠗⠉⠧⠗','receivers':'⠗⠉⠧⠗⠎','receivership':'⠗⠉⠧⠗⠩⠊⠏','receiverships':'⠗⠉⠧⠗⠩⠊⠏⠎','receives':'⠗⠉⠧⠎','receiving':'⠗⠉⠧⠛','receivings':'⠗⠉⠧⠛⠎','rejoice':'⠗⠚⠉','rejoiced':'⠗⠚⠉⠙','rejoiceful':'⠗⠚⠉⠰⠇','rejoicefully':'⠗⠚⠉⠰⠇⠇⠽','rejoicefullys':'⠗⠚⠉⠰⠇⠇⠽⠎','rejoicefulness':'⠗⠚⠉⠰⠇⠰⠎','rejoicefulnesss':'⠗⠚⠉⠰⠇⠰⠎⠎','rejoicefuls':'⠗⠚⠉⠰⠇⠎','rejoicer':'⠗⠚⠉⠗','rejoicers':'⠗⠚⠉⠗⠎','rejoices':'⠗⠚⠉⠎','rejoicing':'⠗⠚⠉⠛','rejoicingly':'⠗⠚⠉⠛⠇⠽','rejoicinglys':'⠗⠚⠉⠛⠇⠽⠎','rejoicings':'⠗⠚⠉⠛⠎','reletter':'⠗⠑⠇⠗','relettered':'⠗⠑⠇⠗⠫','relettering':'⠗⠑⠇⠗⠬','reletterings':'⠗⠑⠇⠗⠬⠎','reletters':'⠗⠑⠇⠗⠎','repaid':'⠗⠑⠏⠙','repaids':'⠗⠑⠏⠙⠎','rightabout':'⠐⠗⠁⠃','rightabouts':'⠐⠗⠁⠃⠎','roundabout':'⠗⠨⠙⠁⠃','roundabouts':'⠗⠨⠙⠁⠃⠎','roustabout':'⠗⠳⠌⠁⠃','roustabouts':'⠗⠳⠌⠁⠃⠎','runabout':'⠗⠥⠝⠁⠃','runabouts':'⠗⠥⠝⠁⠃⠎','said':'⠎⠙','saidest':'⠎⠙⠑⠌','saidests':'⠎⠙⠑⠌⠎','saids':'⠎⠙⠎','saidst':'⠎⠙⠌','saidsts':'⠎⠙⠌⠎','scattergood':'⠎⠉⠁⠞⠞⠻⠛⠙','scattergoods':'⠎⠉⠁⠞⠞⠻⠛⠙⠎','schoolchildren':'⠎⠡⠕⠕⠇⠡⠝','schoolchildrens':'⠎⠡⠕⠕⠇⠡⠝⠎','schoolfriend':'⠎⠡⠕⠕⠇⠋⠗','schoolfriends':'⠎⠡⠕⠕⠇⠋⠗⠎','shall':'⠩','should':'⠩⠙','shoulda':'⠩⠙⠁','shouldas':'⠩⠙⠁⠎','shouldest':'⠩⠙⠑⠌','shouldests':'⠩⠙⠑⠌⠎','shoulds':'⠩⠙⠎','shouldst':'⠩⠙⠌','shouldsts':'⠩⠙⠌⠎','snowblind':'⠎⠝⠪⠃⠇','snowblindness':'⠎⠝⠪⠃⠇⠰⠎','snowblindnesses':'⠎⠝⠪⠃⠇⠰⠎⠑⠎','snowblindnessess':'⠎⠝⠪⠃⠇⠰⠎⠑⠎⠎','snowblindnesss':'⠎⠝⠪⠃⠇⠰⠎⠎','snowblinds':'⠎⠝⠪⠃⠇⠎','so':'⠎','somesch':'⠎⠕⠍⠑⠎⠉⠓','somesuch':'⠐⠎⠎⠡','somesuchs':'⠐⠎⠎⠡⠎','southabout':'⠎⠳⠹⠁⠃','southabouts':'⠎⠳⠹⠁⠃⠎','stepchildren':'⠌⠑⠏⠡⠝','stepchildrens':'⠌⠑⠏⠡⠝⠎','still':'⠌','stirabout':'⠌⠊⠗⠁⠃','stirabouts':'⠌⠊⠗⠁⠃⠎','struthiones':'⠌⠗⠥⠹⠊⠕⠝⠑⠎','sturiones':'⠌⠥⠗⠊⠕⠝⠑⠎','such':'⠎⠡','suchlike':'⠎⠡⠇⠊⠅⠑','suchlikes':'⠎⠡⠇⠊⠅⠑⠎','suchs':'⠎⠡⠎','supergood':'⠎⠥⠏⠻⠛⠙','supergoods':'⠎⠥⠏⠻⠛⠙⠎','superquick':'⠎⠥⠏⠻⠟⠅','superquicks':'⠎⠥⠏⠻⠟⠅⠎','tailfirst':'⠞⠁⠊⠇⠋⠌','tailfirsts':'⠞⠁⠊⠇⠋⠌⠎','that':'⠞','themselves':'⠮⠍⠧⠎','themselvess':'⠮⠍⠧⠎⠎','thereabout':'⠐⠮⠁⠃','thereabouts':'⠐⠮⠁⠃⠎','thereafter':'⠐⠮⠁⠋','thereafters':'⠐⠮⠁⠋⠎','thereagain':'⠐⠮⠁⠛','thereagains':'⠐⠮⠁⠛⠎','thereagainst':'⠐⠮⠁⠛⠌','thereagainsts':'⠐⠮⠁⠛⠌⠎','thereinafter':'⠐⠮⠔⠁⠋','thereinafters':'⠐⠮⠔⠁⠋⠎','thereinagain':'⠐⠮⠔⠁⠛','thereinagains':'⠐⠮⠔⠁⠛⠎','this':'⠹','thyself':'⠹⠽⠋','thyselfs':'⠹⠽⠋⠎','today':'⠞⠙','todays':'⠞⠙⠎','together':'⠞⠛⠗','togetherness':'⠞⠛⠗⠰⠎','togethernesss':'⠞⠛⠗⠰⠎⠎','togethers':'⠞⠛⠗⠎','tomorrow':'⠞⠍','tomorrows':'⠞⠍⠎','tonight':'⠞⠝','tonights':'⠞⠝⠎','turnabout':'⠞⠥⠗⠝⠁⠃','turnabouts':'⠞⠥⠗⠝⠁⠃⠎','unaccording':'⠥⠝⠁⠉','unaccordingly':'⠥⠝⠁⠉⠇⠽','unaccordinglys':'⠥⠝⠁⠉⠇⠽⠎','unaccordings':'⠥⠝⠁⠉⠎','unblindfold':'⠥⠝⠃⠇⠋⠕⠇⠙','unblindfolded':'⠥⠝⠃⠇⠋⠕⠇⠙⠫','unblindfolding':'⠥⠝⠃⠇⠋⠕⠇⠙⠬','unblindfoldings':'⠥⠝⠃⠇⠋⠕⠇⠙⠬⠎','unblindfolds':'⠥⠝⠃⠇⠋⠕⠇⠙⠎','unbraille':'⠥⠝⠃⠗⠇','unbrailled':'⠥⠝⠃⠗⠇⠙','unbrailles':'⠥⠝⠃⠗⠇⠎','undeceive':'⠥⠝⠙⠉⠧','undeceived':'⠥⠝⠙⠉⠧⠙','undeceiver':'⠥⠝⠙⠉⠧⠗','undeceivers':'⠥⠝⠙⠉⠧⠗⠎','undeceives':'⠥⠝⠙⠉⠧⠎','undeceiving':'⠥⠝⠙⠉⠧⠛','undeceivings':'⠥⠝⠙⠉⠧⠛⠎','undeclare':'⠥⠝⠙⠉⠇','undeclared':'⠥⠝⠙⠉⠇⠙','undeclares':'⠥⠝⠙⠉⠇⠎','underpaid':'⠐⠥⠏⠙','underpaids':'⠐⠥⠏⠙⠎','unfriend':'⠥⠝⠋⠗','unfriendlier':'⠥⠝⠋⠗⠇⠊⠻','unfriendliers':'⠥⠝⠋⠗⠇⠊⠻⠎','unfriendliest':'⠥⠝⠋⠗⠇⠊⠑⠌','unfriendliests':'⠥⠝⠋⠗⠇⠊⠑⠌⠎','unfriendliness':'⠥⠝⠋⠗⠇⠊⠰⠎','unfriendlinesses':'⠥⠝⠋⠗⠇⠊⠰⠎⠑⠎','unfriendlinessess':'⠥⠝⠋⠗⠇⠊⠰⠎⠑⠎⠎','unfriendlinesss':'⠥⠝⠋⠗⠇⠊⠰⠎⠎','unfriendly':'⠥⠝⠋⠗⠇⠽','unfriendlys':'⠥⠝⠋⠗⠇⠽⠎','unfriends':'⠥⠝⠋⠗⠎','unlettered':'⠥⠝⠇⠗⠫','unnecessary':'⠥⠝⠝⠑⠉','unnecessarys':'⠥⠝⠝⠑⠉⠎','unpaid':'⠥⠝⠏⠙','unpaids':'⠥⠝⠏⠙⠎','unperceive':'⠥⠝⠏⠻⠉⠧','unperceived':'⠥⠝⠏⠻⠉⠧⠙','unperceives':'⠥⠝⠏⠻⠉⠧⠎','unperceiving':'⠥⠝⠏⠻⠉⠧⠛','unperceivings':'⠥⠝⠏⠻⠉⠧⠛⠎','unquick':'⠥⠝⠟⠅','unquicks':'⠥⠝⠟⠅⠎','unreceived':'⠥⠝⠗⠉⠧⠙','unrejoice':'⠥⠝⠗⠚⠉','unrejoiced':'⠥⠝⠗⠚⠉⠙','unrejoiceful':'⠥⠝⠗⠚⠉⠰⠇','unrejoicefully':'⠥⠝⠗⠚⠉⠰⠇⠇⠽','unrejoicefullys':'⠥⠝⠗⠚⠉⠰⠇⠇⠽⠎','unrejoicefulness':'⠥⠝⠗⠚⠉⠰⠇⠰⠎','unrejoicefulnesss':'⠥⠝⠗⠚⠉⠰⠇⠰⠎⠎','unrejoicefuls':'⠥⠝⠗⠚⠉⠰⠇⠎','unrejoicer':'⠥⠝⠗⠚⠉⠗','unrejoicers':'⠥⠝⠗⠚⠉⠗⠎','unrejoices':'⠥⠝⠗⠚⠉⠎','unrejoicing':'⠥⠝⠗⠚⠉⠛','unrejoicingly':'⠥⠝⠗⠚⠉⠛⠇⠽','unrejoicinglys':'⠥⠝⠗⠚⠉⠛⠇⠽⠎','unrejoicings':'⠥⠝⠗⠚⠉⠛⠎','unrepaid':'⠥⠝⠗⠑⠏⠙','unrepaids':'⠥⠝⠗⠑⠏⠙⠎','unsaid':'⠥⠝⠎⠙','unsaids':'⠥⠝⠎⠙⠎','us':'⠥','very':'⠧','walkabout':'⠺⠁⠇⠅⠁⠃','walkabouts':'⠺⠁⠇⠅⠁⠃⠎','wellpaid':'⠺⠑⠇⠇⠏⠙','wellpaids':'⠺⠑⠇⠇⠏⠙⠎','westabout':'⠺⠑⠌⠁⠃','westabouts':'⠺⠑⠌⠁⠃⠎','whereabout':'⠐⠱⠁⠃','whereabouts':'⠐⠱⠁⠃⠎','whereafter':'⠐⠱⠁⠋','whereafters':'⠐⠱⠁⠋⠎','whereagain':'⠐⠱⠁⠛','whereagains':'⠐⠱⠁⠛⠎','whereagainst':'⠐⠱⠁⠛⠌','whereagainsts':'⠐⠱⠁⠛⠌⠎','whereinafter':'⠐⠱⠔⠁⠋','whereinafters':'⠐⠱⠔⠁⠋⠎','whereinagain':'⠐⠱⠔⠁⠛','whereinagains':'⠐⠱⠔⠁⠛⠎','which':'⠱','will':'⠺','womanfriend':'⠺⠕⠍⠁⠝⠋⠗','womanfriends':'⠺⠕⠍⠁⠝⠋⠗⠎','womenfriends':'⠺⠕⠍⠢⠋⠗⠎','womenfriendss':'⠺⠕⠍⠢⠋⠗⠎⠎','would':'⠺⠙','woulda':'⠺⠙⠁','wouldas':'⠺⠙⠁⠎','wouldest':'⠺⠙⠑⠌','wouldests':'⠺⠙⠑⠌⠎','woulds':'⠺⠙⠎','wouldst':'⠺⠙⠌','wouldsts':'⠺⠙⠌⠎','you':'⠽','your':'⠽⠗','yours':'⠽⠗⠎','yourself':'⠽⠗⠋','yourselfs':'⠽⠗⠋⠎','yourselves':'⠽⠗⠧⠎','yourselvess':'⠽⠗⠧⠎⠎'};
+const G2_WORD = {
+// ── CTB sufword 例外（ar/st/ow/here 搶先，需直接指定）──
+'aright':'⠁⠐⠗','arights':'⠁⠐⠗⠎',
+'nowhere':'⠝⠕⠐⠱','nowheres':'⠝⠕⠐⠱⠎',
+'heresy':'⠓⠻⠑⠎⠽','heresies':'⠓⠻⠑⠎⠊⠑⠎',
+'heretic':'⠓⠻⠑⠞⠊⠉','heretics':'⠓⠻⠑⠞⠊⠉⠎','heretical':'⠓⠻⠑⠞⠊⠉⠁⠇','heretically':'⠓⠻⠑⠞⠊⠉⠁⠇⠇⠽',
+'mistime':'⠍⠊⠎⠐⠞','mistimed':'⠍⠊⠎⠐⠞⠙','mistiming':'⠍⠊⠎⠐⠞⠬','mistimes':'⠍⠊⠎⠐⠞⠎',
+'pastime':'⠏⠁⠎⠐⠞','pastimes':'⠏⠁⠎⠐⠞⠎',
+'altimeter':'⠁⠇⠞⠊⠍⠑⠞⠻','altimeters':'⠁⠇⠞⠊⠍⠑⠞⠻⠎',
+'asthma':'⠁⠎⠹⠍⠁','asthmas':'⠁⠎⠹⠍⠁⠎','asthmatic':'⠁⠎⠹⠍⠁⠞⠊⠉','asthmatics':'⠁⠎⠹⠍⠁⠞⠊⠉⠎',
+'indiarubber':'⠔⠙⠊⠁⠗⠥⠆⠻','indiarubbers':'⠔⠙⠊⠁⠗⠥⠆⠻⠎',
+'infrared':'⠔⠋⠗⠁⠗⠫','infrareds':'⠔⠋⠗⠁⠗⠫⠎',
+// CTB: cation = ca+tion（不是 ca+t+ion，tion 優先）
+'cation':'⠉⠁⠰⠝','cations':'⠉⠁⠰⠝⠎',
+// CTB: centime = cen+time（en+time 組合）
+'centime':'⠉⠢⠐⠞','centimes':'⠉⠢⠐⠞⠎',
+// CTB: bundestag = bund+est+ag（st 不跨複合詞邊界）
+'bundestag':'⠃⠥⠝⠙⠑⠎⠞⠁⠛',
+// CTB: blossomed = bl+o+ss+omed（some 不縮）
+'blossomed':'⠃⠇⠕⠎⠎⠕⠍⠫',
+// L29: 字母分讀縮寫（acronyms pronounced letter-by-letter → 不縮）
+'kwh':'⠅⠺⠓','kWh':'⠅⠠⠺⠓',
+// L30: foreign words / anglicised words where 'one' must NOT be contracted
+'panettone':'⠏⠁⠝⠑⠞⠞⠕⠝⠑','panettones':'⠏⠁⠝⠑⠞⠞⠕⠝⠑⠎',
+// ── PDF 例外詞：無法靠規則自動處理，直接指定輸出 ──
+// L16: one 縮寫例外（發音不符）
+'colonel':'⠉⠕⠇⠕⠝⠑⠇','colonels':'⠉⠕⠇⠕⠝⠑⠇⠎',
+// L15: ever 縮寫例外（-vere / 前有 e/i）
+'severe':'⠎⠑⠧⠻⠑','severed':'⠎⠐⠑⠫','severely':'⠎⠑⠧⠻⠑⠇⠽','severer':'⠎⠑⠧⠻⠑⠗','severest':'⠎⠑⠧⠻⠑⠌',
+'revere':'⠗⠑⠧⠻⠑','revered':'⠗⠑⠧⠻⠫','reveres':'⠗⠑⠧⠻⠑⠎','revering':'⠗⠑⠧⠻⠬',
+'persevere':'⠏⠻⠎⠑⠧⠻⠑','persevered':'⠏⠻⠎⠑⠧⠻⠫','perseveres':'⠏⠻⠎⠑⠧⠻⠑⠎','persevering':'⠏⠻⠎⠑⠧⠻⠬',
+// L18: these 縮寫例外（theses 意義不同）
+'theses':'⠮⠎⠑⠎','thesis':'⠮⠎⠊⠎',
+// L19: dispirited（spirit 優先於 dis）
+'dispirited':'⠙⠊⠸⠎⠫','dispiritedly':'⠙⠊⠸⠎⠫⠇⠽','dispiritedness':'⠙⠊⠸⠎⠫⠰⠎',
+'dispiriting':'⠙⠊⠸⠎⠬',
+// L17: lathered（the 優先，the+er+ed，而非 there+d）
+'lathered':'⠇⠁⠮⠗⠫',
+// L22: beautifully（beau 是單一音節，be 不縮）
+'beautifully':'⠃⠂⠥⠞⠊⠰⠇⠇⠽','beautify':'⠃⠂⠥⠞⠊⠋⠽','beautified':'⠃⠂⠥⠞⠊⠋⠊⠫','beautifying':'⠃⠂⠥⠞⠊⠋⠊⠬','beautifies':'⠃⠂⠥⠞⠊⠋⠊⠑⠎',
+// L20: lioness/baroness（ness 優先於 one）
+'lioness':'⠇⠊⠕⠰⠎','lionesses':'⠇⠊⠕⠰⠎⠑⠎',
+'baroness':'⠃⠜⠕⠰⠎','baronesses':'⠃⠜⠕⠰⠎⠑⠎',
+'viscountess':'⠧⠊⠎⠉⠨⠞⠰⠎','viscountesses':'⠧⠊⠎⠉⠨⠞⠰⠎⠑⠎',
+'countess':'⠉⠨⠞⠰⠎','countesses':'⠉⠨⠞⠰⠎⠑⠎',
+// L16: name 縮寫例外（en 搶先，需直接指定）
+'renamed':'⠗⠑⠐⠝⠙','renames':'⠗⠑⠐⠝⠎','renaming':'⠗⠑⠐⠝⠬',
+'filename':'⠋⠊⠇⠑⠐⠝','filenames':'⠋⠊⠇⠑⠐⠝⠎',
+// L16: time/st 優先序衝突（st 先吃掉，time 無法匹配）
+'mistimed':'⠍⠊⠎⠐⠞⠙','mistiming':'⠍⠊⠎⠐⠞⠬',
+// L16: under 縮寫（understand 中 under 是詞根，應縮；underived 是 un- 前綴，不縮）
+'understand':'⠐⠥⠌⠯','understands':'⠐⠥⠌⠯⠎','understood':'⠐⠥⠌⠕⠕⠙',
+'understanding':'⠐⠥⠌⠯⠬','understandings':'⠐⠥⠌⠯⠬⠎','understandable':'⠐⠥⠌⠯⠁⠃⠇⠑',
+'misunderstand':'⠍⠊⠎⠐⠥⠌⠯','misunderstood':'⠍⠊⠎⠐⠥⠌⠕⠕⠙',
+// ──────────────────────────────────────────────────
+'about':'⠁⠃','aboutface':'⠁⠃⠋⠁⠉⠑','aboutfaced':'⠁⠃⠋⠁⠉⠫','aboutfacer':'⠁⠃⠋⠁⠉⠻','aboutfacers':'⠁⠃⠋⠁⠉⠻⠎','aboutfaces':'⠁⠃⠋⠁⠉⠑⠎','aboutfacing':'⠁⠃⠋⠁⠉⠬','aboutfacings':'⠁⠃⠋⠁⠉⠬⠎','abouts':'⠁⠃⠳⠞⠎','aboutturn':'⠁⠃⠞⠥⠗⠝','aboutturned':'⠁⠃⠞⠥⠗⠝⠫','aboutturns':'⠁⠃⠞⠥⠗⠝⠎','above':'⠁⠃⠧','aboveboard':'⠁⠃⠧⠃⠕⠜⠙','aboveboards':'⠁⠃⠧⠃⠕⠜⠙⠎','aboveground':'⠁⠃⠧⠛⠗⠨⠙','abovegrounds':'⠁⠃⠧⠛⠗⠨⠙⠎','abovementioned':'⠁⠃⠧⠍⠢⠰⠝⠫','aboves':'⠁⠃⠧⠎','according':'⠁⠉','accordingly':'⠁⠉⠇⠽','accordings':'⠁⠉⠎','across':'⠁⠉⠗','acrosss':'⠁⠉⠗⠎','aforesaid':'⠁⠿⠑⠎⠙','aforesaids':'⠁⠿⠑⠎⠙⠎','after':'⠁⠋','afterbattle':'⠁⠋⠃⠁⠞⠞⠇⠑','afterbattles':'⠁⠋⠃⠁⠞⠞⠇⠑⠎','afterbirth':'⠁⠋⠃⠊⠗⠹','afterbirths':'⠁⠋⠃⠊⠗⠹⠎','afterbreakfast':'⠁⠋⠃⠗⠂⠅⠋⠁⠌','afterbreakfasts':'⠁⠋⠃⠗⠂⠅⠋⠁⠌⠎','afterburn':'⠁⠋⠃⠥⠗⠝','afterburned':'⠁⠋⠃⠥⠗⠝⠫','afterburner':'⠁⠋⠃⠥⠗⠝⠻','afterburners':'⠁⠋⠃⠥⠗⠝⠻⠎','afterburning':'⠁⠋⠃⠥⠗⠝⠬','afterburnings':'⠁⠋⠃⠥⠗⠝⠬⠎','afterburns':'⠁⠋⠃⠥⠗⠝⠎','aftercare':'⠁⠋⠉⠜⠑','aftercares':'⠁⠋⠉⠜⠑⠎','afterclap':'⠁⠋⠉⠇⠁⠏','afterclaps':'⠁⠋⠉⠇⠁⠏⠎','aftercoffee':'⠁⠋⠉⠷⠋⠑⠑','aftercoffees':'⠁⠋⠉⠷⠋⠑⠑⠎','afterdamp':'⠁⠋⠙⠁⠍⠏','afterdamps':'⠁⠋⠙⠁⠍⠏⠎','afterdark':'⠁⠋⠙⠜⠅','afterdarks':'⠁⠋⠙⠜⠅⠎','afterdeck':'⠁⠋⠙⠑⠉⠅','afterdecks':'⠁⠋⠙⠑⠉⠅⠎','afterdinner':'⠁⠋⠙⠔⠝⠻','afterdinners':'⠁⠋⠙⠔⠝⠻⠎','afterflow':'⠁⠋⠋⠇⠪','afterflows':'⠁⠋⠋⠇⠪⠎','aftergame':'⠁⠋⠛⠁⠍⠑','aftergames':'⠁⠋⠛⠁⠍⠑⠎','afterglow':'⠁⠋⠛⠇⠪','afterglows':'⠁⠋⠛⠇⠪⠎','afterguard':'⠁⠋⠛⠥⠜⠙','afterguards':'⠁⠋⠛⠥⠜⠙⠎','afterhatch':'⠁⠋⠓⠁⠞⠡','afterhatches':'⠁⠋⠓⠁⠞⠡⠑⠎','afterhatchess':'⠁⠋⠓⠁⠞⠡⠑⠎⠎','afterhatchs':'⠁⠋⠓⠁⠞⠡⠎','afterhour':'⠁⠋⠓⠳⠗','afterhours':'⠁⠋⠓⠳⠗⠎','afterlife':'⠁⠋⠇⠊⠋⠑','afterlifes':'⠁⠋⠇⠊⠋⠑⠎','afterlight':'⠁⠋⠇⠊⠣⠞','afterlights':'⠁⠋⠇⠊⠣⠞⠎','afterlives':'⠁⠋⠇⠊⠧⠑⠎','afterlivess':'⠁⠋⠇⠊⠧⠑⠎⠎','afterlunch':'⠁⠋⠇⠥⠝⠡','afterlunches':'⠁⠋⠇⠥⠝⠡⠑⠎','afterlunchess':'⠁⠋⠇⠥⠝⠡⠑⠎⠎','afterlunchs':'⠁⠋⠇⠥⠝⠡⠎','aftermarket':'⠁⠋⠍⠜⠅⠑⠞','aftermarkets':'⠁⠋⠍⠜⠅⠑⠞⠎','aftermatch':'⠁⠋⠍⠁⠞⠡','aftermatches':'⠁⠋⠍⠁⠞⠡⠑⠎','aftermatchs':'⠁⠋⠍⠁⠞⠡⠎','aftermath':'⠁⠋⠍⠁⠹','aftermaths':'⠁⠋⠍⠁⠹⠎','aftermeeting':'⠁⠋⠍⠑⠑⠞⠬','aftermeetings':'⠁⠋⠍⠑⠑⠞⠬⠎','aftermentioned':'⠁⠋⠍⠢⠰⠝⠫','aftermentioneds':'⠁⠋⠍⠢⠰⠝⠫⠎','aftermidday':'⠁⠋⠍⠊⠙⠐⠙','aftermiddays':'⠁⠋⠍⠊⠙⠐⠙⠎','aftermidnight':'⠁⠋⠍⠊⠙⠝⠊⠣⠞','aftermidnights':'⠁⠋⠍⠊⠙⠝⠊⠣⠞⠎','aftermost':'⠁⠋⠍⠕⠌','aftermosts':'⠁⠋⠍⠕⠌⠎','afternoon':'⠁⠋⠝','afternoons':'⠁⠋⠝⠎','afternoontea':'⠁⠋⠝⠞⠑⠁','afternoonteas':'⠁⠋⠝⠞⠑⠁⠎','afterpain':'⠁⠋⠏⠁⠔','afterpains':'⠁⠋⠏⠁⠔⠎','afterparties':'⠁⠋⠐⠏⠊⠑⠎','afterpartiess':'⠁⠋⠐⠏⠊⠑⠎⠎','afterparty':'⠁⠋⠐⠏⠽','afterpartys':'⠁⠋⠐⠏⠽⠎','afterpiece':'⠁⠋⠏⠊⠑⠉⠑','afterpieces':'⠁⠋⠏⠊⠑⠉⠑⠎','afterplay':'⠁⠋⠏⠇⠁⠽','afterplays':'⠁⠋⠏⠇⠁⠽⠎','afters':'⠁⠋⠎','aftersale':'⠁⠋⠎⠁⠇⠑','aftersales':'⠁⠋⠎⠁⠇⠑⠎','afterschool':'⠁⠋⠎⠡⠕⠕⠇','afterschools':'⠁⠋⠎⠡⠕⠕⠇⠎','aftersensation':'⠁⠋⠎⠢⠎⠁⠰⠝','aftersensations':'⠁⠋⠎⠢⠎⠁⠰⠝⠎','aftershave':'⠁⠋⠩⠁⠧⠑','aftershaves':'⠁⠋⠩⠁⠧⠑⠎','aftershock':'⠁⠋⠩⠕⠉⠅','aftershocks':'⠁⠋⠩⠕⠉⠅⠎','aftershow':'⠁⠋⠩⠪','aftershower':'⠁⠋⠩⠪⠻','aftershowers':'⠁⠋⠩⠪⠻⠎','aftershows':'⠁⠋⠩⠪⠎','aftersupper':'⠁⠋⠎⠥⠏⠏⠻','aftersuppers':'⠁⠋⠎⠥⠏⠏⠻⠎','aftertaste':'⠁⠋⠞⠁⠌⠑','aftertastes':'⠁⠋⠞⠁⠌⠑⠎','aftertax':'⠁⠋⠞⠁⠭','aftertaxes':'⠁⠋⠞⠁⠭⠑⠎','aftertaxess':'⠁⠋⠞⠁⠭⠑⠎⠎','aftertaxs':'⠁⠋⠞⠁⠭⠎','aftertea':'⠁⠋⠞⠑⠁','afterteas':'⠁⠋⠞⠑⠁⠎','aftertheater':'⠁⠋⠮⠁⠞⠻','aftertheaters':'⠁⠋⠮⠁⠞⠻⠎','aftertheatre':'⠁⠋⠮⠁⠞⠗⠑','aftertheatres':'⠁⠋⠮⠁⠞⠗⠑⠎','afterthought':'⠁⠋⠹⠐⠳','afterthoughts':'⠁⠋⠹⠐⠳⠎','aftertime':'⠁⠋⠐⠞','aftertimes':'⠁⠋⠐⠞⠎','aftertreatment':'⠁⠋⠞⠗⠂⠞⠰⠞','aftertreatments':'⠁⠋⠞⠗⠂⠞⠰⠞⠎','afterward':'⠁⠋⠺','afterwards':'⠁⠋⠺⠎','afterword':'⠁⠋⠘⠺','afterwords':'⠁⠋⠘⠺⠎','afterwork':'⠁⠋⠐⠺','afterworks':'⠁⠋⠐⠺⠎','afterworld':'⠁⠋⠸⠺','afterworlds':'⠁⠋⠸⠺⠎','again':'⠁⠛','agains':'⠁⠛⠎','against':'⠁⠛⠌','againsts':'⠁⠛⠌⠎','almost':'⠁⠇⠍','almosts':'⠁⠇⠍⠕⠌⠎','alms':'⠁⠇⠍⠎','already':'⠁⠇⠗','alreadys':'⠁⠇⠗⠎','also':'⠁⠇','alsos':'⠁⠇⠎','although':'⠁⠇⠹','althoughs':'⠁⠇⠹⠎','altogether':'⠁⠇⠞','altogethers':'⠁⠇⠞⠎','always':'⠁⠇⠺','alwayss':'⠁⠇⠺⠎','apperceive':'⠁⠏⠏⠻⠉⠧','apperceived':'⠁⠏⠏⠻⠉⠧⠙','apperceiver':'⠁⠏⠏⠻⠉⠧⠗','apperceivers':'⠁⠏⠏⠻⠉⠧⠗⠎','apperceives':'⠁⠏⠏⠻⠉⠧⠎','apperceiving':'⠁⠏⠏⠻⠉⠧⠛','apperceivings':'⠁⠏⠏⠻⠉⠧⠛⠎','archdeceiver':'⠜⠡⠙⠉⠧⠗','archdeceivers':'⠜⠡⠙⠉⠧⠗⠎','as':'⠵','beata':'⠆⠁⠞⠁','beatae':'⠆⠁⠞⠁⠑','beati':'⠆⠁⠞⠊','beatus':'⠆⠁⠞⠥⠎','because':'⠆⠉','becauses':'⠆⠉⠎','beche':'⠃⠑⠡⠑','beches':'⠃⠑⠡⠑⠎','bede':'⠃⠫⠑','beden':'⠃⠫⠢','bedes':'⠃⠫⠑⠎','before':'⠆⠋','beforehand':'⠆⠋⠓⠯','beforehands':'⠆⠋⠓⠯⠎','beforementioned':'⠆⠋⠍⠢⠰⠝⠫','beforementioneds':'⠆⠋⠍⠢⠰⠝⠫⠎','befores':'⠆⠋⠎','befriend':'⠆⠋⠗','befriends':'⠆⠋⠗⠎','behind':'⠆⠓','behindhand':'⠆⠓⠓⠯','behindhands':'⠆⠓⠓⠯⠎','behinds':'⠆⠓⠎','bein':'⠃⠑⠔','beins':'⠃⠑⠔⠎','belittle':'⠆⠇⠇','belittled':'⠆⠇⠇⠙','belittlement':'⠆⠇⠇⠰⠞','belittlements':'⠆⠇⠇⠰⠞⠎','belittler':'⠆⠇⠇⠗','belittlers':'⠆⠇⠇⠗⠎','belittles':'⠆⠇⠇⠎','below':'⠆⠇','belowdeck':'⠆⠇⠙⠑⠉⠅','belowdecks':'⠆⠇⠙⠑⠉⠅⠎','belowground':'⠆⠇⠛⠗⠨⠙','belowgrounds':'⠆⠇⠛⠗⠨⠙⠎','belowmentioned':'⠆⠇⠍⠢⠰⠝⠫','belows':'⠆⠇⠎','ben':'⠃⠢','benammi':'⠃⠢⠁⠍⠍⠊','beneath':'⠆⠝','beneathdeck':'⠆⠝⠙⠑⠉⠅','beneathdecks':'⠆⠝⠙⠑⠉⠅⠎','beneathground':'⠆⠝⠛⠗⠨⠙','beneathgrounds':'⠆⠝⠛⠗⠨⠙⠎','beneaths':'⠆⠝⠎','benefic':'⠆⠝⠑⠋⠊⠉','beside':'⠆⠎','besides':'⠆⠎⠎','best':'⠃⠑⠌','bested':'⠃⠑⠌⠫','bester':'⠃⠑⠌⠻','bestest':'⠃⠑⠌⠑⠌','besting':'⠃⠑⠌⠬','bestness':'⠃⠑⠌⠰⠎','besty':'⠃⠑⠌⠽','between':'⠆⠞','betweendeck':'⠆⠞⠙⠑⠉⠅','betweendecks':'⠆⠞⠙⠑⠉⠅⠎','betweens':'⠆⠞⠎','betweentime':'⠆⠞⠐⠞','betweentimes':'⠆⠞⠐⠞⠎','betweenwhile':'⠆⠞⠱⠊⠇⠑','betweenwhiles':'⠆⠞⠱⠊⠇⠑⠎','beyond':'⠆⠽','beyonds':'⠆⠽⠎','biscuity':'⠃⠊⠎⠉⠥⠊⠞⠽','blind':'⠃⠇','blindfish':'⠃⠇⠋⠊⠩','blindfishes':'⠃⠇⠋⠊⠩⠑⠎','blindfishess':'⠃⠇⠋⠊⠩⠑⠎⠎','blindfishs':'⠃⠇⠋⠊⠩⠎','blindfold':'⠃⠇⠋⠕⠇⠙','blindfolded':'⠃⠇⠋⠕⠇⠙⠫','blindfolder':'⠃⠇⠋⠕⠇⠙⠻','blindfolders':'⠃⠇⠋⠕⠇⠙⠻⠎','blindfolding':'⠃⠇⠋⠕⠇⠙⠬','blindfoldings':'⠃⠇⠋⠕⠇⠙⠬⠎','blindfolds':'⠃⠇⠋⠕⠇⠙⠎','blindly':'⠃⠇⠇⠽','blindlys':'⠃⠇⠇⠽⠎','blindman':'⠃⠇⠍⠁⠝','blindmans':'⠃⠇⠍⠁⠝⠎','blindmen':'⠃⠇⠍⠢','blindmens':'⠃⠇⠍⠢⠎','blindness':'⠃⠇⠰⠎','blindnesses':'⠃⠇⠰⠎⠑⠎','blindnessess':'⠃⠇⠰⠎⠑⠎⠎','blindnesss':'⠃⠇⠰⠎⠎','blinds':'⠃⠇⠎','blindside':'⠃⠇⠎⠊⠙⠑','blindsided':'⠃⠇⠎⠊⠙⠫','blindsider':'⠃⠇⠎⠊⠙⠻','blindsiders':'⠃⠇⠎⠊⠙⠻⠎','blindsides':'⠃⠇⠎⠊⠙⠑⠎','blindsiding':'⠃⠇⠎⠊⠙⠬','blindsidings':'⠃⠇⠎⠊⠙⠬⠎','blindsight':'⠃⠇⠎⠊⠣⠞','blindsights':'⠃⠇⠎⠊⠣⠞⠎','blindstories':'⠃⠇⠌⠕⠗⠊⠑⠎','blindstoriess':'⠃⠇⠌⠕⠗⠊⠑⠎⠎','blindstory':'⠃⠇⠌⠕⠗⠽','blindstorys':'⠃⠇⠌⠕⠗⠽⠎','blindworm':'⠃⠇⠺⠕⠗⠍','blindworms':'⠃⠇⠺⠕⠗⠍⠎','bloodletter':'⠃⠇⠕⠕⠙⠇⠗','bloodletters':'⠃⠇⠕⠕⠙⠇⠗⠎','boyfriend':'⠃⠕⠽⠋⠗','boyfriends':'⠃⠕⠽⠋⠗⠎','braille':'⠃⠗⠇','brailled':'⠃⠗⠇⠙','brailler':'⠃⠗⠇⠗','braillers':'⠃⠗⠇⠗⠎','brailles':'⠃⠗⠇⠎','braillewriter':'⠃⠗⠇⠺⠗⠊⠞⠻','braillewriters':'⠃⠗⠇⠺⠗⠊⠞⠻⠎','braillewriting':'⠃⠗⠇⠺⠗⠊⠞⠬','braillewritings':'⠃⠗⠇⠺⠗⠊⠞⠬⠎','brailley':'⠃⠗⠇⠽','brailleys':'⠃⠗⠇⠽⠎','brainchildren':'⠃⠗⠁⠔⠡⠝','brainchildrens':'⠃⠗⠁⠔⠡⠝⠎','but':'⠃','can':'⠉','chainletter':'⠡⠁⠔⠇⠗','chainletters':'⠡⠁⠔⠇⠗⠎','child':'⠡','children':'⠡⠝','childrens':'⠡⠝⠎','colorblind':'⠉⠕⠇⠕⠗⠃⠇','colorblindness':'⠉⠕⠇⠕⠗⠃⠇⠰⠎','colorblindnesses':'⠉⠕⠇⠕⠗⠃⠇⠰⠎⠑⠎','colorblindnessess':'⠉⠕⠇⠕⠗⠃⠇⠰⠎⠑⠎⠎','colorblindnesss':'⠉⠕⠇⠕⠗⠃⠇⠰⠎⠎','colorblinds':'⠉⠕⠇⠕⠗⠃⠇⠎','colourblind':'⠉⠕⠇⠳⠗⠃⠇','colourblindness':'⠉⠕⠇⠳⠗⠃⠇⠰⠎','colourblindnesses':'⠉⠕⠇⠳⠗⠃⠇⠰⠎⠑⠎','colourblindnessess':'⠉⠕⠇⠳⠗⠃⠇⠰⠎⠑⠎⠎','colourblindnesss':'⠉⠕⠇⠳⠗⠃⠇⠰⠎⠎','colourblinds':'⠉⠕⠇⠳⠗⠃⠇⠎','conceive':'⠒⠉⠧','conceived':'⠒⠉⠧⠙','conceiver':'⠒⠉⠧⠗','conceivers':'⠒⠉⠧⠗⠎','conceives':'⠒⠉⠧⠎','conceiving':'⠒⠉⠧⠛','conceivings':'⠒⠉⠧⠛⠎','could':'⠉⠙','coulda':'⠉⠙⠁','couldas':'⠉⠙⠁⠎','couldest':'⠉⠙⠑⠌','couldests':'⠉⠙⠑⠌⠎','coulds':'⠉⠙⠎','couldst':'⠉⠙⠌','couldsts':'⠉⠙⠌⠎','dacoity':'⠙⠁⠉⠕⠊⠞⠽','deafblind':'⠙⠂⠋⠃⠇','deafblindness':'⠙⠂⠋⠃⠇⠰⠎','deafblindnesses':'⠙⠂⠋⠃⠇⠰⠎⠑⠎','deafblindnessess':'⠙⠂⠋⠃⠇⠰⠎⠑⠎⠎','deafblindnesss':'⠙⠂⠋⠃⠇⠰⠎⠎','deafblinds':'⠙⠂⠋⠃⠇⠎','deceive':'⠙⠉⠧','deceived':'⠙⠉⠧⠙','deceiver':'⠙⠉⠧⠗','deceivers':'⠙⠉⠧⠗⠎','deceives':'⠙⠉⠧⠎','deceiving':'⠙⠉⠧⠛','deceivings':'⠙⠉⠧⠛⠎','declare':'⠙⠉⠇','declared':'⠙⠉⠇⠙','declarer':'⠙⠉⠇⠗','declarers':'⠙⠉⠇⠗⠎','declares':'⠙⠉⠇⠎','declaring':'⠙⠉⠇⠛','declarings':'⠙⠉⠇⠛⠎','defriend':'⠙⠑⠋⠗','defriends':'⠙⠑⠋⠗⠎','dish':'⠙⠊⠩','disher':'⠙⠊⠩⠻','dishers':'⠙⠊⠩⠻⠎','dishy':'⠙⠊⠩⠽','disulphide':'⠙⠊⠎⠥⠇⠏⠓⠊⠙⠑','do':'⠙','doublequick':'⠙⠳⠃⠇⠑⠟⠅','doublequicks':'⠙⠳⠃⠇⠑⠟⠅⠎','eastabout':'⠑⠁⠌⠁⠃','eastabouts':'⠑⠁⠌⠁⠃⠎','either':'⠑⠊','eithers':'⠑⠊⠎','erigone':'⠻⠊⠛⠕⠝⠑','every':'⠑','feelgood':'⠋⠑⠑⠇⠛⠙','feelgoods':'⠋⠑⠑⠇⠛⠙⠎','feetfirst':'⠋⠑⠑⠞⠋⠌','feetfirsts':'⠋⠑⠑⠞⠋⠌⠎','first':'⠋⠌','firstaid':'⠋⠌⠁⠊⠙','firstaider':'⠋⠌⠁⠊⠙⠻','firstaiders':'⠋⠌⠁⠊⠙⠻⠎','firstaids':'⠋⠌⠁⠊⠙⠎','firstborn':'⠋⠌⠃⠕⠗⠝','firstborns':'⠋⠌⠃⠕⠗⠝⠎','firstclass':'⠋⠌⠉⠇⠁⠎⠎','firstclasses':'⠋⠌⠉⠇⠁⠎⠎⠑⠎','firstclassess':'⠋⠌⠉⠇⠁⠎⠎⠑⠎⠎','firstclasss':'⠋⠌⠉⠇⠁⠎⠎⠎','firstday':'⠋⠌⠐⠙','firstdayer':'⠋⠌⠐⠙⠻','firstdayers':'⠋⠌⠐⠙⠻⠎','firstdays':'⠋⠌⠐⠙⠎','firstfruit':'⠋⠌⠋⠗⠥⠊⠞','firstfruiting':'⠋⠌⠋⠗⠥⠊⠞⠬','firstfruitings':'⠋⠌⠋⠗⠥⠊⠞⠬⠎','firstfruits':'⠋⠌⠋⠗⠥⠊⠞⠎','firstgeneration':'⠋⠌⠛⠢⠻⠁⠰⠝','firstgenerations':'⠋⠌⠛⠢⠻⠁⠰⠝⠎','firsthand':'⠋⠌⠓⠯','firsthanded':'⠋⠌⠓⠯⠫','firsthands':'⠋⠌⠓⠯⠎','firstling':'⠋⠌⠇⠬','firstlings':'⠋⠌⠇⠬⠎','firstly':'⠋⠌⠇⠽','firstlys':'⠋⠌⠇⠽⠎','firstness':'⠋⠌⠰⠎','firstnesss':'⠋⠌⠰⠎⠎','firstnight':'⠋⠌⠝⠊⠣⠞','firstnighter':'⠋⠌⠝⠊⠣⠞⠻','firstnighters':'⠋⠌⠝⠊⠣⠞⠻⠎','firstnights':'⠋⠌⠝⠊⠣⠞⠎','firstrate':'⠋⠌⠗⠁⠞⠑','firstrated':'⠋⠌⠗⠁⠞⠫','firstrates':'⠋⠌⠗⠁⠞⠑⠎','firstrating':'⠋⠌⠗⠁⠞⠬','firstratings':'⠋⠌⠗⠁⠞⠬⠎','firsts':'⠋⠌⠎','firststring':'⠋⠌⠌⠗⠬','firststrings':'⠋⠌⠌⠗⠬⠎','forasmuch':'⠿⠁⠎⠍⠡','forasmuchs':'⠿⠁⠎⠍⠡⠎','foresaid':'⠿⠑⠎⠙','foresaids':'⠿⠑⠎⠙⠎','fosterchildren':'⠋⠕⠌⠻⠡⠝','fosterchildrens':'⠋⠕⠌⠻⠡⠝⠎','friend':'⠋⠗','friendless':'⠋⠗⠨⠎','friendlessness':'⠋⠗⠨⠎⠰⠎','friendlessnesses':'⠋⠗⠨⠎⠰⠎⠑⠎','friendlessnessess':'⠋⠗⠨⠎⠰⠎⠑⠎⠎','friendlessnesss':'⠋⠗⠨⠎⠰⠎⠎','friendlesss':'⠋⠗⠨⠎⠎','friendlier':'⠋⠗⠇⠊⠻','friendliers':'⠋⠗⠇⠊⠻⠎','friendlies':'⠋⠗⠇⠊⠑⠎','friendliess':'⠋⠗⠇⠊⠑⠎⠎','friendliest':'⠋⠗⠇⠊⠑⠌','friendliests':'⠋⠗⠇⠊⠑⠌⠎','friendliness':'⠋⠗⠇⠊⠰⠎','friendlinesses':'⠋⠗⠇⠊⠰⠎⠑⠎','friendlinessess':'⠋⠗⠇⠊⠰⠎⠑⠎⠎','friendlinesss':'⠋⠗⠇⠊⠰⠎⠎','friendly':'⠋⠗⠇⠽','friendlys':'⠋⠗⠇⠽⠎','friends':'⠋⠗⠎','friendship':'⠋⠗⠩⠊⠏','friendships':'⠋⠗⠩⠊⠏⠎','from':'⠋','fruity':'⠋⠗⠥⠊⠞⠽','gaberones':'⠛⠁⠃⠻⠕⠝⠑⠎','gadabout':'⠛⠁⠙⠁⠃','gadabouts':'⠛⠁⠙⠁⠃⠎','gainsaid':'⠛⠁⠔⠎⠙','gainsaids':'⠛⠁⠔⠎⠙⠎','galfriend':'⠛⠁⠇⠋⠗','galfriends':'⠛⠁⠇⠋⠗⠎','gentlemanfriend':'⠛⠢⠞⠇⠑⠍⠁⠝⠋⠗','gentlemanfriends':'⠛⠢⠞⠇⠑⠍⠁⠝⠋⠗⠎','gentlemenfriends':'⠛⠢⠞⠇⠑⠍⠢⠋⠗⠎','gentlemenfriendss':'⠛⠢⠞⠇⠑⠍⠢⠋⠗⠎⠎','girlfriend':'⠛⠊⠗⠇⠋⠗','girlfriends':'⠛⠊⠗⠇⠋⠗⠎','go':'⠛','godchildren':'⠛⠕⠙⠡⠝','godchildrens':'⠛⠕⠙⠡⠝⠎','good':'⠛⠙','goodafternoon':'⠛⠙⠁⠋⠝','goodafternoons':'⠛⠙⠁⠋⠝⠎','goodby':'⠛⠙⠃⠽','goodbye':'⠛⠙⠃⠽⠑','goodbyeing':'⠛⠙⠃⠽⠑⠬','goodbyeings':'⠛⠙⠃⠽⠑⠬⠎','goodbyes':'⠛⠙⠃⠽⠑⠎','goodbying':'⠛⠙⠃⠽⠬','goodbyings':'⠛⠙⠃⠽⠬⠎','goodbys':'⠛⠙⠃⠽⠎','goodday':'⠛⠙⠐⠙','gooddays':'⠛⠙⠐⠙⠎','gooder':'⠛⠙⠻','gooders':'⠛⠙⠻⠎','goodest':'⠛⠙⠑⠌','goodests':'⠛⠙⠑⠌⠎','goodevening':'⠛⠙⠑⠧⠢⠬','goodevenings':'⠛⠙⠑⠧⠢⠬⠎','goodfellow':'⠛⠙⠋⠑⠇⠇⠪','goodfellows':'⠛⠙⠋⠑⠇⠇⠪⠎','goodfellowship':'⠛⠙⠋⠑⠇⠇⠪⠩⠊⠏','goodfellowships':'⠛⠙⠋⠑⠇⠇⠪⠩⠊⠏⠎','goodhearted':'⠛⠙⠓⠑⠜⠞⠫','goodheartedly':'⠛⠙⠓⠑⠜⠞⠫⠇⠽','goodheartedlys':'⠛⠙⠓⠑⠜⠞⠫⠇⠽⠎','goodheartedness':'⠛⠙⠓⠑⠜⠞⠫⠰⠎','goodheartednesss':'⠛⠙⠓⠑⠜⠞⠫⠰⠎⠎','goodhumor':'⠛⠙⠓⠥⠍⠕⠗','goodhumored':'⠛⠙⠓⠥⠍⠕⠗⠫','goodhumoredly':'⠛⠙⠓⠥⠍⠕⠗⠫⠇⠽','goodhumoredlys':'⠛⠙⠓⠥⠍⠕⠗⠫⠇⠽⠎','goodhumoredness':'⠛⠙⠓⠥⠍⠕⠗⠫⠰⠎','goodhumorednesses':'⠛⠙⠓⠥⠍⠕⠗⠫⠰⠎⠑⠎','goodhumorednessess':'⠛⠙⠓⠥⠍⠕⠗⠫⠰⠎⠑⠎⠎','goodhumorednesss':'⠛⠙⠓⠥⠍⠕⠗⠫⠰⠎⠎','goodhumors':'⠛⠙⠓⠥⠍⠕⠗⠎','goodhumour':'⠛⠙⠓⠥⠍⠳⠗','goodhumoured':'⠛⠙⠓⠥⠍⠳⠗⠫','goodhumouredly':'⠛⠙⠓⠥⠍⠳⠗⠫⠇⠽','goodhumouredlys':'⠛⠙⠓⠥⠍⠳⠗⠫⠇⠽⠎','goodhumouredness':'⠛⠙⠓⠥⠍⠳⠗⠫⠰⠎','goodhumourednesses':'⠛⠙⠓⠥⠍⠳⠗⠫⠰⠎⠑⠎','goodhumourednessess':'⠛⠙⠓⠥⠍⠳⠗⠫⠰⠎⠑⠎⠎','goodhumourednesss':'⠛⠙⠓⠥⠍⠳⠗⠫⠰⠎⠎','goodhumours':'⠛⠙⠓⠥⠍⠳⠗⠎','goodie':'⠛⠙⠊⠑','goodies':'⠛⠙⠊⠑⠎','goodish':'⠛⠙⠊⠩','goodishs':'⠛⠙⠊⠩⠎','goodlier':'⠛⠙⠇⠊⠻','goodliers':'⠛⠙⠇⠊⠻⠎','goodliest':'⠛⠙⠇⠊⠑⠌','goodliests':'⠛⠙⠇⠊⠑⠌⠎','goodliness':'⠛⠙⠇⠊⠰⠎','goodlinesss':'⠛⠙⠇⠊⠰⠎⠎','goodlook':'⠛⠙⠇⠕⠕⠅','goodlooker':'⠛⠙⠇⠕⠕⠅⠻','goodlookers':'⠛⠙⠇⠕⠕⠅⠻⠎','goodlooking':'⠛⠙⠇⠕⠕⠅⠬','goodlookings':'⠛⠙⠇⠕⠕⠅⠬⠎','goodlooks':'⠛⠙⠇⠕⠕⠅⠎','goodly':'⠛⠙⠇⠽','goodlys':'⠛⠙⠇⠽⠎','goodman':'⠛⠙⠍⠁⠝','goodmans':'⠛⠙⠍⠁⠝⠎','goodmen':'⠛⠙⠍⠢','goodmens':'⠛⠙⠍⠢⠎','goodmorning':'⠛⠙⠍⠕⠗⠝⠬','goodmornings':'⠛⠙⠍⠕⠗⠝⠬⠎','goodnature':'⠛⠙⠝⠁⠞⠥⠗⠑','goodnatured':'⠛⠙⠝⠁⠞⠥⠗⠫','goodnaturedly':'⠛⠙⠝⠁⠞⠥⠗⠫⠇⠽','goodnaturedlys':'⠛⠙⠝⠁⠞⠥⠗⠫⠇⠽⠎','goodnaturedness':'⠛⠙⠝⠁⠞⠥⠗⠫⠰⠎','goodnaturednesss':'⠛⠙⠝⠁⠞⠥⠗⠫⠰⠎⠎','goodnatures':'⠛⠙⠝⠁⠞⠥⠗⠑⠎','goodness':'⠛⠙⠰⠎','goodnesses':'⠛⠙⠰⠎⠑⠎','goodnessess':'⠛⠙⠰⠎⠑⠎⠎','goodnesss':'⠛⠙⠰⠎⠎','goodnight':'⠛⠙⠝⠊⠣⠞','goodnights':'⠛⠙⠝⠊⠣⠞⠎','goods':'⠛⠙⠎','goodsize':'⠛⠙⠎⠊⠵⠑','goodsized':'⠛⠙⠎⠊⠵⠫','goodsizes':'⠛⠙⠎⠊⠵⠑⠎','goodtempered':'⠛⠙⠞⠑⠍⠏⠻⠫','goodtemperedly':'⠛⠙⠞⠑⠍⠏⠻⠫⠇⠽','goodtemperedlys':'⠛⠙⠞⠑⠍⠏⠻⠫⠇⠽⠎','goodtime':'⠛⠙⠐⠞','goodtimes':'⠛⠙⠐⠞⠎','goodun':'⠛⠙⠥⠝','gooduns':'⠛⠙⠥⠝⠎','goodwife':'⠛⠙⠺⠊⠋⠑','goodwifes':'⠛⠙⠺⠊⠋⠑⠎','goodwill':'⠛⠙⠺⠊⠇⠇','goodwilled':'⠛⠙⠺⠊⠇⠇⠫','goodwills':'⠛⠙⠺⠊⠇⠇⠎','goodwives':'⠛⠙⠺⠊⠧⠑⠎','goodwivess':'⠛⠙⠺⠊⠧⠑⠎⠎','goody':'⠛⠙⠽','goodyear':'⠛⠙⠽⠑⠜','goodyears':'⠛⠙⠽⠑⠜⠎','goodys':'⠛⠙⠽⠎','grandchildren':'⠛⠗⠯⠡⠝','grandchildrens':'⠛⠗⠯⠡⠝⠎','great':'⠛⠗⠞','greataunt':'⠛⠗⠞⠁⠥⠝⠞','greataunts':'⠛⠗⠞⠁⠥⠝⠞⠎','greatbatch':'⠛⠗⠞⠃⠁⠞⠡','greatbatchs':'⠛⠗⠞⠃⠁⠞⠡⠎','greatcircle':'⠛⠗⠞⠉⠊⠗⠉⠇⠑','greatcircles':'⠛⠗⠞⠉⠊⠗⠉⠇⠑⠎','greatcoat':'⠛⠗⠞⠉⠕⠁⠞','greatcoats':'⠛⠗⠞⠉⠕⠁⠞⠎','greaten':'⠛⠗⠞⠢','greatened':'⠛⠗⠞⠢⠫','greatener':'⠛⠗⠞⠢⠻','greateners':'⠛⠗⠞⠢⠻⠎','greatening':'⠛⠗⠞⠢⠬','greatenings':'⠛⠗⠞⠢⠬⠎','greatens':'⠛⠗⠞⠢⠎','greater':'⠛⠗⠞⠻','greaters':'⠛⠗⠞⠻⠎','greatest':'⠛⠗⠞⠑⠌','greatests':'⠛⠗⠞⠑⠌⠎','greatgrandaunt':'⠛⠗⠞⠛⠗⠯⠁⠥⠝⠞','greatgrandaunts':'⠛⠗⠞⠛⠗⠯⠁⠥⠝⠞⠎','greatgrandchild':'⠛⠗⠞⠛⠗⠯⠡⠊⠇⠙','greatgrandchildren':'⠛⠗⠞⠛⠗⠯⠡⠝','greatgrandchildrens':'⠛⠗⠞⠛⠗⠯⠡⠝⠎','greatgrandchilds':'⠛⠗⠞⠛⠗⠯⠡⠊⠇⠙⠎','greatgranddad':'⠛⠗⠞⠛⠗⠯⠙⠁⠙','greatgranddads':'⠛⠗⠞⠛⠗⠯⠙⠁⠙⠎','greatgranddaughter':'⠛⠗⠞⠛⠗⠯⠙⠁⠥⠣⠞⠻','greatgranddaughters':'⠛⠗⠞⠛⠗⠯⠙⠁⠥⠣⠞⠻⠎','greatgrandfather':'⠛⠗⠞⠛⠗⠯⠐⠋','greatgrandfatherhood':'⠛⠗⠞⠛⠗⠯⠐⠋⠓⠕⠕⠙','greatgrandfatherhoods':'⠛⠗⠞⠛⠗⠯⠐⠋⠓⠕⠕⠙⠎','greatgrandfathers':'⠛⠗⠞⠛⠗⠯⠐⠋⠎','greatgrandma':'⠛⠗⠞⠛⠗⠯⠍⠁','greatgrandmas':'⠛⠗⠞⠛⠗⠯⠍⠁⠎','greatgrandmother':'⠛⠗⠞⠛⠗⠯⠐⠍','greatgrandmotherhood':'⠛⠗⠞⠛⠗⠯⠐⠍⠓⠕⠕⠙','greatgrandmotherhoods':'⠛⠗⠞⠛⠗⠯⠐⠍⠓⠕⠕⠙⠎','greatgrandmothers':'⠛⠗⠞⠛⠗⠯⠐⠍⠎','greatgrandnephew':'⠛⠗⠞⠛⠗⠯⠝⠑⠏⠓⠑⠺','greatgrandnephews':'⠛⠗⠞⠛⠗⠯⠝⠑⠏⠓⠑⠺⠎','greatgrandniece':'⠛⠗⠞⠛⠗⠯⠝⠊⠑⠉⠑','greatgrandnieces':'⠛⠗⠞⠛⠗⠯⠝⠊⠑⠉⠑⠎','greatgrandpa':'⠛⠗⠞⠛⠗⠯⠏⠁','greatgrandparent':'⠛⠗⠞⠛⠗⠯⠏⠜⠢⠞','greatgrandparenthood':'⠛⠗⠞⠛⠗⠯⠏⠜⠢⠞⠓⠕⠕⠙','greatgrandparenthoods':'⠛⠗⠞⠛⠗⠯⠏⠜⠢⠞⠓⠕⠕⠙⠎','greatgrandparents':'⠛⠗⠞⠛⠗⠯⠏⠜⠢⠞⠎','greatgrandpas':'⠛⠗⠞⠛⠗⠯⠏⠁⠎','greatgrandson':'⠛⠗⠞⠛⠗⠯⠎⠕⠝','greatgrandsons':'⠛⠗⠞⠛⠗⠯⠎⠕⠝⠎','greatgranduncle':'⠛⠗⠞⠛⠗⠯⠥⠝⠉⠇⠑','greatgranduncles':'⠛⠗⠞⠛⠗⠯⠥⠝⠉⠇⠑⠎','greathearted':'⠛⠗⠞⠓⠑⠜⠞⠫','greatheartedly':'⠛⠗⠞⠓⠑⠜⠞⠫⠇⠽','greatheartedlys':'⠛⠗⠞⠓⠑⠜⠞⠫⠇⠽⠎','greatheartedness':'⠛⠗⠞⠓⠑⠜⠞⠫⠰⠎','greatheartednesses':'⠛⠗⠞⠓⠑⠜⠞⠫⠰⠎⠑⠎','greatheartednessess':'⠛⠗⠞⠓⠑⠜⠞⠫⠰⠎⠑⠎⠎','greatheartednesss':'⠛⠗⠞⠓⠑⠜⠞⠫⠰⠎⠎','greatly':'⠛⠗⠞⠇⠽','greatlys':'⠛⠗⠞⠇⠽⠎','greatnephew':'⠛⠗⠞⠝⠑⠏⠓⠑⠺','greatnephews':'⠛⠗⠞⠝⠑⠏⠓⠑⠺⠎','greatness':'⠛⠗⠞⠰⠎','greatnesses':'⠛⠗⠞⠰⠎⠑⠎','greatnessess':'⠛⠗⠞⠰⠎⠑⠎⠎','greatnesss':'⠛⠗⠞⠰⠎⠎','greatniece':'⠛⠗⠞⠝⠊⠑⠉⠑','greatnieces':'⠛⠗⠞⠝⠊⠑⠉⠑⠎','greats':'⠛⠗⠞⠎','greatsword':'⠛⠗⠞⠎⠘⠺','greatswords':'⠛⠗⠞⠎⠘⠺⠎','greatuncle':'⠛⠗⠞⠥⠝⠉⠇⠑','greatuncles':'⠛⠗⠞⠥⠝⠉⠇⠑⠎','guyfriend':'⠛⠥⠽⠋⠗','guyfriends':'⠛⠥⠽⠋⠗⠎','hateletter':'⠓⠁⠞⠑⠇⠗','hateletters':'⠓⠁⠞⠑⠇⠗⠎','have':'⠓','headfirst':'⠓⠂⠙⠋⠌','headfirsts':'⠓⠂⠙⠋⠌⠎','hereabout':'⠐⠓⠁⠃','hereabouts':'⠐⠓⠁⠃⠎','hereafter':'⠐⠓⠁⠋','hereafters':'⠐⠓⠁⠋⠎','hereagain':'⠐⠓⠁⠛','hereagains':'⠐⠓⠁⠛⠎','hereagainst':'⠐⠓⠁⠛⠌','hereagainsts':'⠐⠓⠁⠛⠌⠎','hereinabove':'⠐⠓⠔⠁⠃⠧','hereinaboves':'⠐⠓⠔⠁⠃⠧⠎','hereinafter':'⠐⠓⠔⠁⠋','hereinafters':'⠐⠓⠔⠁⠋⠎','hereinagain':'⠐⠓⠔⠁⠛','hereinagains':'⠐⠓⠔⠁⠛⠎','herself':'⠓⠻⠋','herselfs':'⠓⠻⠋⠎','highlypaid':'⠓⠊⠣⠇⠽⠏⠙','highlypaids':'⠓⠊⠣⠇⠽⠏⠙⠎','him':'⠓⠍','himbo':'⠓⠍⠃⠕','himboes':'⠓⠍⠃⠕⠑⠎','himboess':'⠓⠍⠃⠕⠑⠎⠎','himbos':'⠓⠍⠃⠕⠎','hims':'⠓⠊⠍⠎','himself':'⠓⠍⠋','himselfs':'⠓⠍⠋⠎','illpaid':'⠊⠇⠇⠏⠙','illpaids':'⠊⠇⠇⠏⠙⠎','immediate':'⠊⠍⠍','immediately':'⠊⠍⠍⠇⠽','immediatelys':'⠊⠍⠍⠇⠽⠎','immediateness':'⠊⠍⠍⠰⠎','immediatenesss':'⠊⠍⠍⠰⠎⠎','immediates':'⠊⠍⠍⠎','inasmuch':'⠔⠁⠎⠍⠡','inasmuchs':'⠔⠁⠎⠍⠡⠎','insomuch':'⠔⠎⠕⠍⠡','insomuchs':'⠔⠎⠕⠍⠡⠎','it':'⠭','its':'⠭⠎','itself':'⠭⠋','itselfs':'⠭⠋⠎','itss':'⠭⠎⠎','just':'⠚','knockabout':'⠅⠝⠕⠉⠅⠁⠃','knockabouts':'⠅⠝⠕⠉⠅⠁⠃⠎','knowledge':'⠅','ladyfriend':'⠇⠁⠙⠽⠋⠗','ladyfriends':'⠇⠁⠙⠽⠋⠗⠎','layabout':'⠇⠁⠽⠁⠃','layabouts':'⠇⠁⠽⠁⠃⠎','leann':'⠇⠑⠁⠝⠝','leanne':'⠇⠑⠁⠝⠝⠑','letter':'⠇⠗','letterbodies':'⠇⠗⠃⠕⠙⠊⠑⠎','letterbodiess':'⠇⠗⠃⠕⠙⠊⠑⠎⠎','letterbody':'⠇⠗⠃⠕⠙⠽','letterbodys':'⠇⠗⠃⠕⠙⠽⠎','letterbomb':'⠇⠗⠃⠕⠍⠃','letterbombed':'⠇⠗⠃⠕⠍⠃⠫','letterbomber':'⠇⠗⠃⠕⠍⠃⠻','letterbombers':'⠇⠗⠃⠕⠍⠃⠻⠎','letterbombing':'⠇⠗⠃⠕⠍⠃⠬','letterbombings':'⠇⠗⠃⠕⠍⠃⠬⠎','letterbombs':'⠇⠗⠃⠕⠍⠃⠎','letterbox':'⠇⠗⠃⠕⠭','letterboxed':'⠇⠗⠃⠕⠭⠫','letterboxer':'⠇⠗⠃⠕⠭⠻','letterboxers':'⠇⠗⠃⠕⠭⠻⠎','letterboxes':'⠇⠗⠃⠕⠭⠑⠎','letterboxess':'⠇⠗⠃⠕⠭⠑⠎⠎','letterboxing':'⠇⠗⠃⠕⠭⠬','letterboxings':'⠇⠗⠃⠕⠭⠬⠎','letterboxs':'⠇⠗⠃⠕⠭⠎','lettered':'⠇⠗⠫','letterer':'⠇⠗⠻','letterers':'⠇⠗⠻⠎','letterform':'⠇⠗⠿⠍','letterforms':'⠇⠗⠿⠍⠎','letterhead':'⠇⠗⠓⠂⠙','letterheading':'⠇⠗⠓⠂⠙⠬','letterheadings':'⠇⠗⠓⠂⠙⠬⠎','letterheads':'⠇⠗⠓⠂⠙⠎','lettering':'⠇⠗⠬','letterings':'⠇⠗⠬⠎','letterman':'⠇⠗⠍⠁⠝','lettermans':'⠇⠗⠍⠁⠝⠎','lettermen':'⠇⠗⠍⠢','lettermens':'⠇⠗⠍⠢⠎','letteropener':'⠇⠗⠕⠏⠢⠻','letteropeners':'⠇⠗⠕⠏⠢⠻⠎','letterperfect':'⠇⠗⠏⠻⠋⠑⠉⠞','letterperfects':'⠇⠗⠏⠻⠋⠑⠉⠞⠎','letterpress':'⠇⠗⠏⠗⠑⠎⠎','letterpressed':'⠇⠗⠏⠗⠑⠎⠎⠫','letterpresses':'⠇⠗⠏⠗⠑⠎⠎⠑⠎','letterpressess':'⠇⠗⠏⠗⠑⠎⠎⠑⠎⠎','letterpressing':'⠇⠗⠏⠗⠑⠎⠎⠬','letterpressings':'⠇⠗⠏⠗⠑⠎⠎⠬⠎','letterpresss':'⠇⠗⠏⠗⠑⠎⠎⠎','letterquality':'⠇⠗⠟⠥⠁⠇⠰⠽','letterqualitys':'⠇⠗⠟⠥⠁⠇⠰⠽⠎','letters':'⠇⠗⠎','letterspace':'⠇⠗⠎⠏⠁⠉⠑','letterspaced':'⠇⠗⠎⠏⠁⠉⠫','letterspaces':'⠇⠗⠎⠏⠁⠉⠑⠎','letterspacing':'⠇⠗⠎⠏⠁⠉⠬','letterspacings':'⠇⠗⠎⠏⠁⠉⠬⠎','lettertext':'⠇⠗⠞⠑⠭⠞','lettertexts':'⠇⠗⠞⠑⠭⠞⠎','like':'⠇','little':'⠇⠇','littled':'⠇⠇⠙','littleneck':'⠇⠇⠝⠑⠉⠅','littlenecks':'⠇⠇⠝⠑⠉⠅⠎','littleness':'⠇⠇⠰⠎','littlenesses':'⠇⠇⠰⠎⠑⠎','littlenessess':'⠇⠇⠰⠎⠑⠎⠎','littlenesss':'⠇⠇⠰⠎⠎','littler':'⠇⠇⠗','littlers':'⠇⠇⠗⠎','littles':'⠇⠇⠎','littlest':'⠇⠇⠌','littlests':'⠇⠇⠌⠎','lovechildren':'⠇⠕⠧⠑⠡⠝','lovechildrens':'⠇⠕⠧⠑⠡⠝⠎','loveletter':'⠇⠕⠧⠑⠇⠗','loveletters':'⠇⠕⠧⠑⠇⠗⠎','lowlypaid':'⠇⠪⠇⠽⠏⠙','lowlypaids':'⠇⠪⠇⠽⠏⠙⠎','manfriend':'⠍⠁⠝⠋⠗','manfriends':'⠍⠁⠝⠋⠗⠎','menfriends':'⠍⠢⠋⠗⠎','menfriendss':'⠍⠢⠋⠗⠎⠎','midafternoon':'⠍⠊⠙⠁⠋⠝','midafternoons':'⠍⠊⠙⠁⠋⠝⠎','misbraille':'⠍⠊⠎⠃⠗⠇','misbrailled':'⠍⠊⠎⠃⠗⠇⠙','misbrailles':'⠍⠊⠎⠃⠗⠇⠎','misperceive':'⠍⠊⠎⠏⠻⠉⠧','misperceived':'⠍⠊⠎⠏⠻⠉⠧⠙','misperceiver':'⠍⠊⠎⠏⠻⠉⠧⠗','misperceivers':'⠍⠊⠎⠏⠻⠉⠧⠗⠎','misperceives':'⠍⠊⠎⠏⠻⠉⠧⠎','misperceiving':'⠍⠊⠎⠏⠻⠉⠧⠛','misperceivings':'⠍⠊⠎⠏⠻⠉⠧⠛⠎','missaid':'⠍⠊⠎⠎⠙','missaids':'⠍⠊⠎⠎⠙⠎','moneth':'⠍⠕⠝⠑⠹','more':'⠍','morningafter':'⠍⠕⠗⠝⠬⠁⠋','morningafters':'⠍⠕⠗⠝⠬⠁⠋⠎','much':'⠍⠡','muchly':'⠍⠡⠇⠽','muchlys':'⠍⠡⠇⠽⠎','muchness':'⠍⠡⠰⠎','muchnesss':'⠍⠡⠰⠎⠎','muchs':'⠍⠡⠎','must':'⠍⠌','musta':'⠍⠌⠁','mustard':'⠍⠌⠜⠙','mustards':'⠍⠌⠜⠙⠎','mustardy':'⠍⠌⠜⠙⠽','mustardys':'⠍⠌⠜⠙⠽⠎','mustas':'⠍⠌⠁⠎','mustier':'⠍⠌⠊⠻','mustiers':'⠍⠌⠊⠻⠎','mustiest':'⠍⠌⠊⠑⠌','mustiests':'⠍⠌⠊⠑⠌⠎','mustily':'⠍⠌⠊⠇⠽','mustilys':'⠍⠌⠊⠇⠽⠎','mustiness':'⠍⠌⠊⠰⠎','mustinesss':'⠍⠌⠊⠰⠎⠎','musts':'⠍⠌⠎','musty':'⠍⠌⠽','mustys':'⠍⠌⠽⠎','myself':'⠍⠽⠋','myselfs':'⠍⠽⠋⠎','necessary':'⠝⠑⠉','necessarys':'⠝⠑⠉⠎','neither':'⠝⠑⠊','neithers':'⠝⠑⠊⠎','nevers':'⠝⠑⠧⠻⠎','newsletter':'⠝⠑⠺⠎⠇⠗','newsletters':'⠝⠑⠺⠎⠇⠗⠎','none':'⠝⠐⠕','nones':'⠝⠐⠕⠎','nonesuch':'⠝⠐⠕⠎⠡','nonesuchs':'⠝⠐⠕⠎⠡⠎','nonsuch':'⠝⠕⠝⠎⠡','nonsuchs':'⠝⠕⠝⠎⠡⠎','northabout':'⠝⠕⠗⠹⠁⠃','northabouts':'⠝⠕⠗⠹⠁⠃⠎','not':'⠝','oneself':'⠐⠕⠋','oneselfs':'⠐⠕⠋⠎','ourselves':'⠳⠗⠧⠎','ourselvess':'⠳⠗⠧⠎⠎','out':'⠳','overmuch':'⠕⠧⠻⠍⠡','overmuchs':'⠕⠧⠻⠍⠡⠎','overpaid':'⠕⠧⠻⠏⠙','overpaids':'⠕⠧⠻⠏⠙⠎','paid':'⠏⠙','paids':'⠏⠙⠎','penfriend':'⠏⠢⠋⠗','penfriends':'⠏⠢⠋⠗⠎','pensione':'⠏⠢⠎⠊⠕⠝⠑','pensiones':'⠏⠢⠎⠊⠕⠝⠑⠎','people':'⠏','perceive':'⠏⠻⠉⠧','perceived':'⠏⠻⠉⠧⠙','perceiver':'⠏⠻⠉⠧⠗','perceivers':'⠏⠻⠉⠧⠗⠎','perceives':'⠏⠻⠉⠧⠎','perceiving':'⠏⠻⠉⠧⠛','perceivings':'⠏⠻⠉⠧⠛⠎','perhaps':'⠏⠻⠓','perhapses':'⠏⠻⠓⠑⠎','perhapsess':'⠏⠻⠓⠑⠎⠎','perhapss':'⠏⠻⠓⠎','pheres':'⠏⠓⠻⠑⠎','pityard':'⠏⠊⠞⠽⠜⠙','poorlypaid':'⠏⠕⠕⠗⠇⠽⠏⠙','poorlypaids':'⠏⠕⠕⠗⠇⠽⠏⠙⠎','postpaid':'⠏⠕⠌⠏⠙','postpaids':'⠏⠕⠌⠏⠙⠎','preceive':'⠏⠗⠉⠧','preceiver':'⠏⠗⠉⠧⠗','preceivers':'⠏⠗⠉⠧⠗⠎','preceives':'⠏⠗⠉⠧⠎','preceiving':'⠏⠗⠉⠧⠛','preceivings':'⠏⠗⠉⠧⠛⠎','prepaid':'⠏⠗⠑⠏⠙','prepaids':'⠏⠗⠑⠏⠙⠎','purblind':'⠏⠥⠗⠃⠇','purblindly':'⠏⠥⠗⠃⠇⠇⠽','purblindlys':'⠏⠥⠗⠃⠇⠇⠽⠎','purblindness':'⠏⠥⠗⠃⠇⠰⠎','purblindnesses':'⠏⠥⠗⠃⠇⠰⠎⠑⠎','purblindnessess':'⠏⠥⠗⠃⠇⠰⠎⠑⠎⠎','purblindnesss':'⠏⠥⠗⠃⠇⠰⠎⠎','purblinds':'⠏⠥⠗⠃⠇⠎','quick':'⠟⠅','quickdraw':'⠟⠅⠙⠗⠁⠺','quickdraws':'⠟⠅⠙⠗⠁⠺⠎','quicken':'⠟⠅⠢','quickened':'⠟⠅⠢⠫','quickener':'⠟⠅⠢⠻','quickeners':'⠟⠅⠢⠻⠎','quickening':'⠟⠅⠢⠬','quickenings':'⠟⠅⠢⠬⠎','quickens':'⠟⠅⠢⠎','quicker':'⠟⠅⠻','quickers':'⠟⠅⠻⠎','quickest':'⠟⠅⠑⠌','quickests':'⠟⠅⠑⠌⠎','quickfire':'⠟⠅⠋⠊⠗⠑','quickfires':'⠟⠅⠋⠊⠗⠑⠎','quickfiring':'⠟⠅⠋⠊⠗⠬','quickfirings':'⠟⠅⠋⠊⠗⠬⠎','quickfreeze':'⠟⠅⠋⠗⠑⠑⠵⠑','quickfreezes':'⠟⠅⠋⠗⠑⠑⠵⠑⠎','quickfreezing':'⠟⠅⠋⠗⠑⠑⠵⠬','quickfreezings':'⠟⠅⠋⠗⠑⠑⠵⠬⠎','quickfroze':'⠟⠅⠋⠗⠕⠵⠑','quickfrozen':'⠟⠅⠋⠗⠕⠵⠢','quickfrozens':'⠟⠅⠋⠗⠕⠵⠢⠎','quickfrozes':'⠟⠅⠋⠗⠕⠵⠑⠎','quickie':'⠟⠅⠊⠑','quickies':'⠟⠅⠊⠑⠎','quickish':'⠟⠅⠊⠩','quickishly':'⠟⠅⠊⠩⠇⠽','quickishlys':'⠟⠅⠊⠩⠇⠽⠎','quickishs':'⠟⠅⠊⠩⠎','quicklime':'⠟⠅⠇⠊⠍⠑','quicklimes':'⠟⠅⠇⠊⠍⠑⠎','quickly':'⠟⠅⠇⠽','quicklys':'⠟⠅⠇⠽⠎','quickness':'⠟⠅⠰⠎','quicknesses':'⠟⠅⠰⠎⠑⠎','quicknessess':'⠟⠅⠰⠎⠑⠎⠎','quicknesss':'⠟⠅⠰⠎⠎','quicks':'⠟⠅⠎','quicksand':'⠟⠅⠎⠯','quicksands':'⠟⠅⠎⠯⠎','quickset':'⠟⠅⠎⠑⠞','quicksets':'⠟⠅⠎⠑⠞⠎','quicksilver':'⠟⠅⠎⠊⠇⠧⠻','quicksilvered':'⠟⠅⠎⠊⠇⠧⠻⠫','quicksilvering':'⠟⠅⠎⠊⠇⠧⠻⠬','quicksilverings':'⠟⠅⠎⠊⠇⠧⠻⠬⠎','quicksilvers':'⠟⠅⠎⠊⠇⠧⠻⠎','quicksnap':'⠟⠅⠎⠝⠁⠏','quicksnaps':'⠟⠅⠎⠝⠁⠏⠎','quickstep':'⠟⠅⠌⠑⠏','quickstepped':'⠟⠅⠌⠑⠏⠏⠫','quickstepper':'⠟⠅⠌⠑⠏⠏⠻','quicksteppers':'⠟⠅⠌⠑⠏⠏⠻⠎','quickstepping':'⠟⠅⠌⠑⠏⠏⠬','quicksteppings':'⠟⠅⠌⠑⠏⠏⠬⠎','quicksteps':'⠟⠅⠌⠑⠏⠎','quicktempered':'⠟⠅⠞⠑⠍⠏⠻⠫','quicktime':'⠟⠅⠐⠞','quicktimes':'⠟⠅⠐⠞⠎','quickwitted':'⠟⠅⠺⠊⠞⠞⠫','quickwittedly':'⠟⠅⠺⠊⠞⠞⠫⠇⠽','quickwittedlys':'⠟⠅⠺⠊⠞⠞⠫⠇⠽⠎','quickwittedness':'⠟⠅⠺⠊⠞⠞⠫⠰⠎','quickwittednesss':'⠟⠅⠺⠊⠞⠞⠫⠰⠎⠎','quicky':'⠟⠅⠽','quickys':'⠟⠅⠽⠎','quite':'⠟','rabbity':'⠗⠁⠆⠊⠞⠽','rared':'⠗⠁⠗⠫','rather':'⠗','readacross':'⠗⠂⠙⠁⠉⠗','readacrosss':'⠗⠂⠙⠁⠉⠗⠎','readme':'⠗⠂⠙⠍⠑','readmes':'⠗⠂⠙⠍⠑⠎','reave':'⠗⠂⠧⠑','reaved':'⠗⠂⠧⠫','reaves':'⠗⠂⠧⠑⠎','reaving':'⠗⠂⠧⠬','rebraille':'⠗⠑⠃⠗⠇','rebrailled':'⠗⠑⠃⠗⠇⠙','rebrailler':'⠗⠑⠃⠗⠇⠗','rebraillers':'⠗⠑⠃⠗⠇⠗⠎','rebrailles':'⠗⠑⠃⠗⠇⠎','receive':'⠗⠉⠧','received':'⠗⠉⠧⠙','receiver':'⠗⠉⠧⠗','receivers':'⠗⠉⠧⠗⠎','receivership':'⠗⠉⠧⠗⠩⠊⠏','receiverships':'⠗⠉⠧⠗⠩⠊⠏⠎','receives':'⠗⠉⠧⠎','receiving':'⠗⠉⠧⠛','receivings':'⠗⠉⠧⠛⠎','rejoice':'⠗⠚⠉','rejoiced':'⠗⠚⠉⠙','rejoiceful':'⠗⠚⠉⠰⠇','rejoicefully':'⠗⠚⠉⠰⠇⠇⠽','rejoicefullys':'⠗⠚⠉⠰⠇⠇⠽⠎','rejoicefulness':'⠗⠚⠉⠰⠇⠰⠎','rejoicefulnesss':'⠗⠚⠉⠰⠇⠰⠎⠎','rejoicefuls':'⠗⠚⠉⠰⠇⠎','rejoicer':'⠗⠚⠉⠗','rejoicers':'⠗⠚⠉⠗⠎','rejoices':'⠗⠚⠉⠎','rejoicing':'⠗⠚⠉⠛','rejoicingly':'⠗⠚⠉⠛⠇⠽','rejoicinglys':'⠗⠚⠉⠛⠇⠽⠎','rejoicings':'⠗⠚⠉⠛⠎','reletter':'⠗⠑⠇⠗','relettered':'⠗⠑⠇⠗⠫','relettering':'⠗⠑⠇⠗⠬','reletterings':'⠗⠑⠇⠗⠬⠎','reletters':'⠗⠑⠇⠗⠎','repaid':'⠗⠑⠏⠙','repaids':'⠗⠑⠏⠙⠎','rightabout':'⠐⠗⠁⠃','rightabouts':'⠐⠗⠁⠃⠎','roundabout':'⠗⠨⠙⠁⠃','roundabouts':'⠗⠨⠙⠁⠃⠎','roustabout':'⠗⠳⠌⠁⠃','roustabouts':'⠗⠳⠌⠁⠃⠎','runabout':'⠗⠥⠝⠁⠃','runabouts':'⠗⠥⠝⠁⠃⠎','said':'⠎⠙','saidest':'⠎⠙⠑⠌','saidests':'⠎⠙⠑⠌⠎','saids':'⠎⠙⠎','saidst':'⠎⠙⠌','saidsts':'⠎⠙⠌⠎','scattergood':'⠎⠉⠁⠞⠞⠻⠛⠙','scattergoods':'⠎⠉⠁⠞⠞⠻⠛⠙⠎','schoolchildren':'⠎⠡⠕⠕⠇⠡⠝','schoolchildrens':'⠎⠡⠕⠕⠇⠡⠝⠎','schoolfriend':'⠎⠡⠕⠕⠇⠋⠗','schoolfriends':'⠎⠡⠕⠕⠇⠋⠗⠎','shall':'⠩','should':'⠩⠙','shoulda':'⠩⠙⠁','shouldas':'⠩⠙⠁⠎','shouldest':'⠩⠙⠑⠌','shouldests':'⠩⠙⠑⠌⠎','shoulds':'⠩⠙⠎','shouldst':'⠩⠙⠌','shouldsts':'⠩⠙⠌⠎','snowblind':'⠎⠝⠪⠃⠇','snowblindness':'⠎⠝⠪⠃⠇⠰⠎','snowblindnesses':'⠎⠝⠪⠃⠇⠰⠎⠑⠎','snowblindnessess':'⠎⠝⠪⠃⠇⠰⠎⠑⠎⠎','snowblindnesss':'⠎⠝⠪⠃⠇⠰⠎⠎','snowblinds':'⠎⠝⠪⠃⠇⠎','so':'⠎','somesch':'⠎⠕⠍⠑⠎⠉⠓','somesuch':'⠐⠎⠎⠡','somesuchs':'⠐⠎⠎⠡⠎','southabout':'⠎⠳⠹⠁⠃','southabouts':'⠎⠳⠹⠁⠃⠎','stepchildren':'⠌⠑⠏⠡⠝','stepchildrens':'⠌⠑⠏⠡⠝⠎','still':'⠌','stirabout':'⠌⠊⠗⠁⠃','stirabouts':'⠌⠊⠗⠁⠃⠎','struthiones':'⠌⠗⠥⠹⠊⠕⠝⠑⠎','sturiones':'⠌⠥⠗⠊⠕⠝⠑⠎','such':'⠎⠡','suchlike':'⠎⠡⠇⠊⠅⠑','suchlikes':'⠎⠡⠇⠊⠅⠑⠎','suchs':'⠎⠡⠎','supergood':'⠎⠥⠏⠻⠛⠙','supergoods':'⠎⠥⠏⠻⠛⠙⠎','superquick':'⠎⠥⠏⠻⠟⠅','superquicks':'⠎⠥⠏⠻⠟⠅⠎','tailfirst':'⠞⠁⠊⠇⠋⠌','tailfirsts':'⠞⠁⠊⠇⠋⠌⠎','that':'⠞','themselves':'⠮⠍⠧⠎','themselvess':'⠮⠍⠧⠎⠎','thereabout':'⠐⠮⠁⠃','thereabouts':'⠐⠮⠁⠃⠎','thereafter':'⠐⠮⠁⠋','thereafters':'⠐⠮⠁⠋⠎','thereagain':'⠐⠮⠁⠛','thereagains':'⠐⠮⠁⠛⠎','thereagainst':'⠐⠮⠁⠛⠌','thereagainsts':'⠐⠮⠁⠛⠌⠎','thereinafter':'⠐⠮⠔⠁⠋','thereinafters':'⠐⠮⠔⠁⠋⠎','thereinagain':'⠐⠮⠔⠁⠛','thereinagains':'⠐⠮⠔⠁⠛⠎','this':'⠹','thyself':'⠹⠽⠋','thyselfs':'⠹⠽⠋⠎','today':'⠞⠙','todays':'⠞⠙⠎','together':'⠞⠛⠗','togetherness':'⠞⠛⠗⠰⠎','togethernesss':'⠞⠛⠗⠰⠎⠎','togethers':'⠞⠛⠗⠎','tomorrow':'⠞⠍','tomorrows':'⠞⠍⠎','tonight':'⠞⠝','tonights':'⠞⠝⠎','turnabout':'⠞⠥⠗⠝⠁⠃','turnabouts':'⠞⠥⠗⠝⠁⠃⠎','unaccording':'⠥⠝⠁⠉','unaccordingly':'⠥⠝⠁⠉⠇⠽','unaccordinglys':'⠥⠝⠁⠉⠇⠽⠎','unaccordings':'⠥⠝⠁⠉⠎','unblindfold':'⠥⠝⠃⠇⠋⠕⠇⠙','unblindfolded':'⠥⠝⠃⠇⠋⠕⠇⠙⠫','unblindfolding':'⠥⠝⠃⠇⠋⠕⠇⠙⠬','unblindfoldings':'⠥⠝⠃⠇⠋⠕⠇⠙⠬⠎','unblindfolds':'⠥⠝⠃⠇⠋⠕⠇⠙⠎','unbraille':'⠥⠝⠃⠗⠇','unbrailled':'⠥⠝⠃⠗⠇⠙','unbrailles':'⠥⠝⠃⠗⠇⠎','undeceive':'⠥⠝⠙⠉⠧','undeceived':'⠥⠝⠙⠉⠧⠙','undeceiver':'⠥⠝⠙⠉⠧⠗','undeceivers':'⠥⠝⠙⠉⠧⠗⠎','undeceives':'⠥⠝⠙⠉⠧⠎','undeceiving':'⠥⠝⠙⠉⠧⠛','undeceivings':'⠥⠝⠙⠉⠧⠛⠎','undeclare':'⠥⠝⠙⠉⠇','undeclared':'⠥⠝⠙⠉⠇⠙','undeclares':'⠥⠝⠙⠉⠇⠎','underpaid':'⠐⠥⠏⠙','underpaids':'⠐⠥⠏⠙⠎','unfriend':'⠥⠝⠋⠗','unfriendlier':'⠥⠝⠋⠗⠇⠊⠻','unfriendliers':'⠥⠝⠋⠗⠇⠊⠻⠎','unfriendliest':'⠥⠝⠋⠗⠇⠊⠑⠌','unfriendliests':'⠥⠝⠋⠗⠇⠊⠑⠌⠎','unfriendliness':'⠥⠝⠋⠗⠇⠊⠰⠎','unfriendlinesses':'⠥⠝⠋⠗⠇⠊⠰⠎⠑⠎','unfriendlinessess':'⠥⠝⠋⠗⠇⠊⠰⠎⠑⠎⠎','unfriendlinesss':'⠥⠝⠋⠗⠇⠊⠰⠎⠎','unfriendly':'⠥⠝⠋⠗⠇⠽','unfriendlys':'⠥⠝⠋⠗⠇⠽⠎','unfriends':'⠥⠝⠋⠗⠎','unlettered':'⠥⠝⠇⠗⠫','unnecessary':'⠥⠝⠝⠑⠉','unnecessarys':'⠥⠝⠝⠑⠉⠎','unpaid':'⠥⠝⠏⠙','unpaids':'⠥⠝⠏⠙⠎','unperceive':'⠥⠝⠏⠻⠉⠧','unperceived':'⠥⠝⠏⠻⠉⠧⠙','unperceives':'⠥⠝⠏⠻⠉⠧⠎','unperceiving':'⠥⠝⠏⠻⠉⠧⠛','unperceivings':'⠥⠝⠏⠻⠉⠧⠛⠎','unquick':'⠥⠝⠟⠅','unquicks':'⠥⠝⠟⠅⠎','unreceived':'⠥⠝⠗⠉⠧⠙','unrejoice':'⠥⠝⠗⠚⠉','unrejoiced':'⠥⠝⠗⠚⠉⠙','unrejoiceful':'⠥⠝⠗⠚⠉⠰⠇','unrejoicefully':'⠥⠝⠗⠚⠉⠰⠇⠇⠽','unrejoicefullys':'⠥⠝⠗⠚⠉⠰⠇⠇⠽⠎','unrejoicefulness':'⠥⠝⠗⠚⠉⠰⠇⠰⠎','unrejoicefulnesss':'⠥⠝⠗⠚⠉⠰⠇⠰⠎⠎','unrejoicefuls':'⠥⠝⠗⠚⠉⠰⠇⠎','unrejoicer':'⠥⠝⠗⠚⠉⠗','unrejoicers':'⠥⠝⠗⠚⠉⠗⠎','unrejoices':'⠥⠝⠗⠚⠉⠎','unrejoicing':'⠥⠝⠗⠚⠉⠛','unrejoicingly':'⠥⠝⠗⠚⠉⠛⠇⠽','unrejoicinglys':'⠥⠝⠗⠚⠉⠛⠇⠽⠎','unrejoicings':'⠥⠝⠗⠚⠉⠛⠎','unrepaid':'⠥⠝⠗⠑⠏⠙','unrepaids':'⠥⠝⠗⠑⠏⠙⠎','unsaid':'⠥⠝⠎⠙','unsaids':'⠥⠝⠎⠙⠎','us':'⠥','very':'⠧','walkabout':'⠺⠁⠇⠅⠁⠃','walkabouts':'⠺⠁⠇⠅⠁⠃⠎','wellpaid':'⠺⠑⠇⠇⠏⠙','wellpaids':'⠺⠑⠇⠇⠏⠙⠎','westabout':'⠺⠑⠌⠁⠃','westabouts':'⠺⠑⠌⠁⠃⠎','whereabout':'⠐⠱⠁⠃','whereabouts':'⠐⠱⠁⠃⠎','whereafter':'⠐⠱⠁⠋','whereafters':'⠐⠱⠁⠋⠎','whereagain':'⠐⠱⠁⠛','whereagains':'⠐⠱⠁⠛⠎','whereagainst':'⠐⠱⠁⠛⠌','whereagainsts':'⠐⠱⠁⠛⠌⠎','whereinafter':'⠐⠱⠔⠁⠋','whereinafters':'⠐⠱⠔⠁⠋⠎','whereinagain':'⠐⠱⠔⠁⠛','whereinagains':'⠐⠱⠔⠁⠛⠎','which':'⠱','will':'⠺','womanfriend':'⠺⠕⠍⠁⠝⠋⠗','womanfriends':'⠺⠕⠍⠁⠝⠋⠗⠎','womenfriends':'⠺⠕⠍⠢⠋⠗⠎','womenfriendss':'⠺⠕⠍⠢⠋⠗⠎⠎','would':'⠺⠙','woulda':'⠺⠙⠁','wouldas':'⠺⠙⠁⠎','wouldest':'⠺⠙⠑⠌','wouldests':'⠺⠙⠑⠌⠎','woulds':'⠺⠙⠎','wouldst':'⠺⠙⠌','wouldsts':'⠺⠙⠌⠎','you':'⠽','your':'⠽⠗','yours':'⠽⠗⠎','yourself':'⠽⠗⠋','yourselfs':'⠽⠗⠋⠎','yourselves':'⠽⠗⠧⠎','yourselvess':'⠽⠗⠧⠎⠎'};
 
 
 // ════════════════════════════════════════════════════════════
@@ -957,14 +1314,94 @@ function translateG2Seq(word, _tables) {
             }
         }
 
+        // ①⓪ Shortform 前綴（L15-L17）：字首使用，後面不接元音/y
+        // PDF 規則：good/little/first/friend/blind/quick/children 可在字首加後綴使用
+        // 注意：must 也有此規則，但 mustang/mustache 已在 G2_ALWAYS 有 st 處理，不列此
+        if (i === 0 && !isAllCaps && total > 2) {
+            const _SFXVOWELS = new Set(['a','e','i','o','u','y']);
+            const SFXMAP = {
+                'good': '⠛⠙',    // good: at start, not followed by vowel/y
+                'little': '⠇⠇',  // little: at start, not followed by vowel/y
+                'first': '⠋⠌',   // first: at start, not followed by vowel/y
+                'friend': '⠋⠗',  // friend: at start, not followed by vowel/y
+                'blind': '⠃⠇',   // blind: at start, not followed by vowel/y
+                'quick': '⠟⠅',   // quick: at start, not followed by vowel/y
+                'children': '⠡⠝',// children: at start, not followed by vowel/y
+            };
+            for (const [sf, br] of Object.entries(SFXMAP).sort((a,b) => b[0].length - a[0].length)) {
+                if (lw.startsWith(sf) && total > sf.length) {
+                    const nextCh = lw[sf.length];
+                    if (!_SFXVOWELS.has(nextCh)) {
+                        // Use shortform; translate rest with sequence logic
+                        addCap(0);
+                        result += br;
+                        i = sf.length;
+                        break;
+                    }
+                }
+            }
+            if (i > 0) continue; // shortform was used, continue main loop
+        }
+
         // ① G2_ALWAYS：任何位置，最高優先，取最長
-        const aC = Object.keys(_t.always)
+        // 但部分縮寫有額外的位置條件（PDF Lessons 15–19）
+        const _VOWELS_SET = new Set(['a','e','i','o','u']);
+        const _prevCh2 = i > 0 ? lw[i - 1] : '';
+
+        const aAll = Object.keys(_t.always)
             .filter(k => lw.startsWith(k, i))
             .sort((a,b) => b.length - a.length);
-        if (aC.length) {
+
+        let aBest = null;
+        for (const k of aAll) {
+            const afterPos = i + k.length;
+            const afterCh = lw[afterPos] || '';
+            const beforeCh = i > 0 ? lw[i - 1] : '';
+
+            // here (L15 / CTB): heresy/heretic → 不縮（here 後接 s+[iy] 或 ti+c）
+            if (k === 'here') {
+                const suf = lw.slice(i + k.length);
+                if (suf[0] === 's' && 'iy'.includes(suf[1] || '')) { continue; } // heresy
+                if (suf[0] === 't' && suf[1] === 'i' && suf[2] === 'c') { continue; } // heretic
+            }
+            // ever (L15): NOT preceded by e or i
+            if (k === 'ever') {
+                if (beforeCh === 'e' || beforeCh === 'i') { continue; }
+            }
+            // mother (L15): 不可嚴重歪曲發音，'e' 前的 mo 不縮（如 chemotherapy）
+            if (k === 'mother') {
+                if (beforeCh === 'e') { continue; }
+            }
+            // one (L16): NOT preceded by 'o'; NOT followed by d/n/r
+            if (k === 'one') {
+                if (beforeCh === 'o') { continue; }
+                if (afterCh === 'd' || afterCh === 'n' || afterCh === 'r') { continue; }
+            }
+            // under (L16): NOT preceded by a/o; NOT where 'un' is a prefix (word starts with un-)
+            if (k === 'under') {
+                if (beforeCh === 'a' || beforeCh === 'o') { continue; }
+                if (i === 0 && lw.startsWith('un') && total > 2) { continue; }
+            }
+            // had (L19): only where 'a' is short; Hadrian-type (had+r at word start) → skip
+            if (k === 'had') {
+                if (i === 0 && afterCh === 'r') { continue; }
+            }
+            // ou vs ound/ount（L21優先）: 若 MIDEND 有更長的 ou* 匹配，跳過 ou
+            if (k === 'ou' && !isStart) {
+                const longerMidend = Object.keys(_t.midend || {}).find(
+                    m => lw.startsWith(m, i) && m.startsWith('ou') && m.length > 2
+                );
+                if (longerMidend) { continue; }
+            }
+
+            aBest = k;
+            break;
+        }
+
+        if (aBest) {
             addCap(i);
-            result += _t.always[aC[0]];
-            i += aC[0].length;
+            result += _t.always[aBest];
+            i += aBest.length;
             continue;
         }
 
@@ -979,10 +1416,17 @@ function translateG2Seq(word, _tables) {
         }
         // BEGWORD（字首，後面必須有字元）
         if (isStart && !isAllCaps) {
-            const VOWELS = new Set(['a','e','i','o','u']);
             for (const k of Object.keys(_t.begword)) {
                 if (lw.startsWith(k, i) && i + k.length < total && k.length > bestLen) {
-                    if (k === 'be' && VOWELS.has(lw[i + k.length])) continue;
+                    if (k === 'be') {
+                        const suf = lw.slice(i + k.length);
+                        const firstAfter = suf[0] || '';
+                        if (_VOWELS_SET.has(firstAfter) && firstAfter !== 'i') { continue; }
+                        if (!_VOWELS_SET.has(firstAfter)) {
+                            const hasVowelNear = (suf.length > 1 && _VOWELS_SET.has(suf[1]));
+                            if (!hasVowelNear) { continue; }
+                        }
+                    }
                     bestType = 'beg'; bestLen = k.length; bestBr = _t.begword[k]; best = k;
                 }
             }
@@ -1598,17 +2042,64 @@ function tokenizeWithCustom(text) {
                 }
             }
 
-            // 翻譯 run（可能含撇號）
-            const b = translateWordWithApos(run, mode());
-            const hasAlnum = /[a-zA-Z0-9]/.test(run);
-            const hasDigit = /[0-9]/.test(run);
-            const hasAlpha = /[a-zA-Z]/.test(run);
-            // 偵測是否使用了縮寫（G2/自定模式下，與 G1 輸出不同即為縮寫）
-            let isContraction = false;
-            if (hasAlpha && (mode() === 'ueb-g2' || mode() === 'ueb-custom')) {
-                const g1b = translateWordWithApos(run, 'ueb-g1');
-                isContraction = (b !== g1b);
+        // 翻譯 run（可能含撇號）
+        // ── Nemeth 模式：純數字 run → 用 Nemeth 下位數字 ──
+        let b;
+        const hasAlnum = /[a-zA-Z0-9]/.test(run);
+        const hasDigit = /[0-9]/.test(run);
+        const hasAlpha = /[a-zA-Z]/.test(run);
+
+        if (isNemethMode() && hasDigit && !hasAlpha) {
+            // 純數字 → Nemeth
+            // 關鍵：檢查前一個非空格 token 是否為 Nemeth 運算符號
+            // 若是，則跳過數字號（§3.4.1：緊接運算符後不加⠼）
+            let prevNonSpaceTok = null;
+            for (let ti = tokens.length - 1; ti >= 0; ti--) {
+                if (!tokens[ti].isSpace && !tokens[ti].isLineBreak) {
+                    prevNonSpaceTok = tokens[ti]; break;
+                }
             }
+            const skipNumsign = prevNonSpaceTok && prevNonSpaceTok.isNemethOp === true;
+            b = translateNemethInline(run, skipNumsign);
+        } else if (isNemethMode() && hasDigit && hasAlpha) {
+            // Nemeth 英數混合（如 3x、2y、3a）
+            // Nemeth 下位數字與字母字形不重疊，數字後的字母不需字母指示符 ⠰
+            let prevNonSpaceTok = null;
+            for (let ti = tokens.length - 1; ti >= 0; ti--) {
+                if (!tokens[ti].isSpace && !tokens[ti].isLineBreak) {
+                    prevNonSpaceTok = tokens[ti]; break;
+                }
+            }
+            const skipNumsign = prevNonSpaceTok && prevNonSpaceTok.isNemethOp === true;
+            b = '';
+            let inN = false;
+            for (let ci = 0; ci < run.length; ci++) {
+                const c = run[ci];
+                if (/[0-9]/.test(c)) {
+                    if (!inN) {
+                        if (!(ci === 0 && skipNumsign)) b += NEMETH_NUMSIGN;
+                        inN = true;
+                    }
+                    b += NEMETH_DIGIT[c];
+                } else if (/[a-zA-Z]/.test(c)) {
+                    inN = false;
+                    if (/[A-Z]/.test(c)) b += CAP1;
+                    b += UEB_ALPHA[c.toLowerCase()] || c;
+                } else {
+                    inN = false;
+                    b += c;
+                }
+            }
+        } else {
+            b = translateWordWithApos(run, mode());
+        }
+
+        // 偵測是否使用了縮寫（G2/自定模式下，與 G1 輸出不同即為縮寫）
+        let isContraction = false;
+        if (hasAlpha && (mode() === 'ueb-g2' || mode() === 'ueb-custom')) {
+            const g1b = translateWordWithApos(run, 'ueb-g1');
+            isContraction = (b !== g1b);
+        }
             tokens.push({
                 text: run,
                 braille: b,
@@ -1620,6 +2111,38 @@ function tokenizeWithCustom(text) {
         }
 
         // ── 標點 ────────────────────────────────────────────────
+        // Nemeth 模式：數學符號優先用 Nemeth 碼
+        if (isNemethMode() && NEMETH_MATH_PUNCT[ch]) {
+            // 標記是運算符號還是關係符號，供後面數字 token 判斷是否需要數字號
+            const isOp  = new Set(['+','-','−','×','÷','/','*','·','±','∓']).has(ch);
+            const isRel = new Set(['=','<','>','≤','≥','≠','≈','≡','∼','~']).has(ch);
+            // 關係符號前後強制空格（不管原文有無空格）
+            if (isRel) {
+                // 前空格：若前一個 token 不是空格，插入一個
+                if (tokens.length > 0 && !tokens[tokens.length - 1].isSpace && !tokens[tokens.length - 1].isLineBreak) {
+                    tokens.push({ text:'空', braille:'\u2800', isSpace:true, isAutoSpace:true });
+                }
+            }
+            tokens.push({
+                text: ch,
+                braille: NEMETH_MATH_PUNCT[ch],
+                isNemeth: true,
+                isNemethOp:  isOp,
+                isNemethRel: isRel,
+            });
+            i++;
+            // 關係符號後：跳過原文中的空格，並插入一個強制空格
+            if (isRel) {
+                while (i < text.length && (text[i] === ' ' || text[i] === '\u2800')) i++;
+                tokens.push({ text:'空', braille:'\u2800', isSpace:true, isAutoSpace:true });
+            }
+            continue;
+        }
+        // Nemeth 模式：特殊數學符號（多字元 Unicode）— 已含在上面的 NEMETH_MATH_PUNCT
+        if (isNemethMode()) {
+            const nmb = NEMETH_MATH_PUNCT[ch];
+            if (nmb) { tokens.push({ text: ch, braille: nmb, isNemeth: true }); i++; continue; }
+        }
         const p = getPunct(ch, text, i);
         if (p) {
             tokens.push({ text: ch, braille: p }); i++;
@@ -1704,6 +2227,7 @@ function renderParallelView(tokens) {
         if (t.isSpace)   cls += ' token-space';
         if (t.isCustom)  cls += ' custom-rule';
         if (highlightCon && t.isContraction) cls += ' is-contraction';
+        if (t.isNemeth || (isNemethMode() && t.isNumber)) cls += ' is-nemeth';
         g.className = cls;
         g.innerHTML = `<div class="token-text">${escHtml(t.text)}</div>`
                     + `<div class="token-braille ${isAscii?'font-ascii':'font-unicode'}">${escHtml(dispB)}</div>`;
@@ -1986,8 +2510,113 @@ document.getElementById('font-size-slider').addEventListener('input', e=>{
     document.documentElement.style.setProperty('--base-font-size',e.target.value+'px');
     document.getElementById('font-size-val').textContent=e.target.value+'px';
 });
-document.getElementById('input-text').addEventListener('input', render);
+document.getElementById('input-text').addEventListener('input', function() {
+    if (brailleInputMode) syncBrailleDirectOutput();
+    else if (!brailleInputMode) render();
+});
 document.getElementById('cell-limit').addEventListener('input', render);
+
+// ════════════════════════════════════════════════════════════
+//  點字直接輸入模式（Ctrl+B）
+//  — 與自定義規則區共用同一套六點輸入邏輯（bit map、insertRuleCell）
+// ════════════════════════════════════════════════════════════
+let brailleInputMode = false;
+const inputTA = document.getElementById('input-text');
+const bmiPanel = document.getElementById('braille-mode-indicator');
+
+function setBrailleInputMode(active) {
+    brailleInputMode = active;
+    ruleComposerBits = 0;   // 共用 ruleBrailleTA 的 composer 狀態
+    ruleChordFired   = false;
+    bmiPanel.classList.toggle('active', active);
+    if (!active) render(); // 離開時重新翻譯
+}
+
+// 把一個 Unicode 點字格插入主輸入框，並同步輸出區
+function insertInputBrailleCell(unicodeCell) {
+    const isAscii = currentIsAscii();
+    const ch = isAscii ? (BR_TO_ASCII[unicodeCell] || unicodeCell) : unicodeCell;
+    const pos = inputTA.selectionStart;
+    const val = inputTA.value;
+    inputTA.value = val.slice(0, pos) + ch + val.slice(inputTA.selectionEnd);
+    inputTA.setSelectionRange(pos + 1, pos + 1);
+    syncBrailleDirectOutput();
+}
+
+function syncBrailleDirectOutput() {
+    const outArea = document.getElementById('output-text');
+    const isAscii = currentIsAscii();
+    const val = inputTA.value;
+    outArea.value = isAscii
+        ? Array.from(val).map(c => BR_TO_ASCII[c] !== undefined ? BR_TO_ASCII[c] : c).join('')
+        : val;
+    outArea.className = isAscii ? 'font-ascii' : 'font-unicode';
+    // 雙視區：每格顯示點位號
+    const tokens = [];
+    for (const c of val) {
+        if (c === '\n') {
+            tokens.push({ text:'↵', braille:'\n', isLineBreak:true });
+        } else if (c === '\u2800' || c === ' ') {
+            tokens.push({ text:'空', braille:'\u2800', isSpace:true });
+        } else {
+            const cp = c.charCodeAt(0) - 0x2800;
+            const dots = [1,2,3,4,5,6].filter(d => cp & (1 << (d-1))).join('');
+            tokens.push({ text: dots ? `點${dots}` : '⠀', braille: c });
+        }
+    }
+    renderParallelView(tokens);
+}
+
+inputTA.addEventListener('keydown', function(e) {
+    // Ctrl+B：切換點字輸入模式
+    if (e.ctrlKey && (e.key === 'b' || e.key === 'B')) {
+        e.preventDefault();
+        setBrailleInputMode(!brailleInputMode);
+        return;
+    }
+    if (!brailleInputMode) return;
+
+    const code = e.keyCode;
+
+    // Esc：離開點字輸入模式
+    if (code === 27) { e.preventDefault(); setBrailleInputMode(false); return; }
+
+    // Ctrl 組合鍵：放行系統功能（複製/貼上/全選/剪下/復原等）
+    if (e.ctrlKey || e.metaKey) {
+        ruleComposerBits = 0; ruleChordFired = false; return;
+    }
+
+    // Backspace / Delete / 方向鍵 / Home / End / PageUp / PageDown / Tab / Enter：正常運作
+    if ([8, 46, 35, 36, 33, 34, 37, 38, 39, 40, 9, 13].includes(code)) {
+        ruleComposerBits = 0; ruleChordFired = false; return;
+    }
+
+    // 空白鍵 = 空格格 ⠀
+    if (code === 32) {
+        e.preventDefault();
+        insertInputBrailleCell('\u2800');
+        ruleComposerBits = 0; ruleChordFired = false;
+        return;
+    }
+
+    // SDF JKL — 與 ruleBrailleTA 完全相同的 bit map
+    const dotBit = { 83:4, 68:2, 70:1, 74:8, 75:16, 76:32 }[code];
+    if (dotBit !== undefined) { e.preventDefault(); ruleComposerBits |= dotBit; return; }
+
+    e.preventDefault(); // 其他鍵阻止
+});
+
+inputTA.addEventListener('keyup', function(e) {
+    if (!brailleInputMode) return;
+    const dotBit = { 83:4, 68:2, 70:1, 74:8, 75:16, 76:32 }[e.keyCode];
+    if (dotBit === undefined) return;
+    if (!ruleChordFired && ruleComposerBits > 0) {
+        insertInputBrailleCell(String.fromCharCode(0x2800 + ruleComposerBits));
+        ruleChordFired = true;
+    }
+    ruleComposerBits &= ~dotBit;
+    if (ruleComposerBits === 0) ruleChordFired = false;
+});
 document.getElementById('en-mode').addEventListener('change', ()=>{
     const val = document.getElementById('en-mode').value;
     const panel = document.getElementById('ueb-custom-panel');
