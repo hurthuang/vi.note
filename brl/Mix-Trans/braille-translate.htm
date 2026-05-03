@@ -388,10 +388,13 @@
             </label>
         </div>
         <div class="btn-group">
+            <button onclick="openFileDialog()" style="background:#795548;">📂 開啟檔案</button>
             <button onclick="downloadTxt()">💾 儲存點字</button>
             <button class="secondary" onclick="downloadParallelHtml()">📄 匯出雙視</button>
         </div>
     </div>
+    <!-- 隱藏的檔案輸入 -->
+    <input type="file" id="open-file-input" accept=".txt,.docx,.pdf" style="display:none" onchange="handleOpenFile(event)" aria-hidden="true">
     </div>
         <!-- UEB 自定縮寫規則面板 -->
         <div id="ueb-custom-panel" role="region" aria-label="UEB 自定縮寫規則">
@@ -467,7 +470,7 @@
         <div class="input-area">
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
                 <label style="margin:0;">輸入文字：</label>
-                <button onclick="insertCJKSpaces()" title="在中文與英數之間自動插入空格" style="padding:4px 12px;font-size:0.8em;background:#546e7a;">⇔ 中英加空格</button>
+                <button onclick="formatAndInsertCJKSpaces()" title="整理試卷格式並在中文與英數之間自動插入空格" style="padding:4px 12px;font-size:0.8em;background:#546e7a;">📋 格式調整</button>
                 <div id="braille-mode-indicator" role="status" aria-live="polite">點字輸入</div>
             </div>
             <textarea id="input-text" autofocus placeholder="請在此輸入內容...（Ctrl+B 切換點字直接輸入）"></textarea>
@@ -606,10 +609,11 @@ const UEB_ALPHA = {
     'z':'\u2835'
 };
 
-// comp8 大寫 = 小寫點位 + dot 7（+64）
+// comp8 大寫 = 大寫指示符 ⠠（dots 6）+ 小寫字母點字
+const COMP8_CAP_INDICATOR = '\u2820'; // ⠠ dots 6
 const COMP8_UPPER = {};
 for (const [c, u] of Object.entries(UEB_ALPHA))
-    COMP8_UPPER[c.toUpperCase()] = String.fromCharCode(u.charCodeAt(0) + 64);
+    COMP8_UPPER[c.toUpperCase()] = COMP8_CAP_INDICATOR + u;
 
 // comp8 數字：與 UEB 相同，用 lowered a-j（dots 2456 前綴 ⠼ + a-j）
 // 注意：電腦點字數字不加第 8 點，直接用 a-j 的低位形式
@@ -639,7 +643,7 @@ const NEMETH_DIGIT = {
     '7':'\u2836',  // ⠶ dots 2356
     '8':'\u2826',  // ⠦ dots 236
     '9':'\u2814',  // ⠔ dots 35
-    '0':'\u283c',  // ⠼ dots 3456
+    '0':'\u2834',  // ⠴ dots 356
 };
 const NEMETH_NUMSIGN = '\u283c';   // ⠼  dots 3456（數字開始指示符）
 const NEMETH_DECIMAL = '\u2828';   // ⠨  dots 46（小數點）
@@ -2634,32 +2638,6 @@ document.querySelectorAll('input[name="output-format"]').forEach(r=>r.addEventLi
     renderRulesTable();
 }));
 
-// ════════════════════════════════════════════════════════════
-//  中英加空格工具
-// ════════════════════════════════════════════════════════════
-function insertCJKSpaces() {
-    const ta = document.getElementById('input-text');
-    const CJK_RE   = /[\u2E80-\u9FFF\uF900-\uFAFF\uFE30-\uFE4F]/;
-    const ALNUM_RE = /[a-zA-Z0-9]/;
-    const text = ta.value;
-    let result = '';
-    for (let i = 0; i < text.length; i++) {
-        const ch   = text[i];
-        const prev = i > 0 ? text[i - 1] : '';
-        if (prev && (
-            (CJK_RE.test(prev) && ALNUM_RE.test(ch)) ||
-            (ALNUM_RE.test(prev) && CJK_RE.test(ch))
-        )) {
-            // don't double-add if space already there
-            if (result[result.length - 1] !== ' ') result += ' ';
-        }
-        result += ch;
-    }
-    if (result !== text) {
-        ta.value = result;
-        render();
-    }
-}
 
 // ════════════════════════════════════════════════════════════
 //  UEB 自定縮寫規則輔助
@@ -2861,6 +2839,328 @@ function buildCustomG2Tables() {
     }
 
     return { always, anywhere, begword, midword, midend, lowword, sufword, word };
+}
+
+// ════════════════════════════════════════════════════════════
+//  格式調整 + 中英加空格（合併）
+// ════════════════════════════════════════════════════════════
+function formatAndInsertCJKSpaces() {
+    const textarea = document.getElementById('input-text');
+    let text = textarea.value;
+    text = cleanExamText(text);
+    textarea.value = text.trim();
+    render();
+}
+
+function cleanExamText(text) {
+    // ── 0. 全形選項字母 → 半形（半形括號版與全形括號版都處理）──
+    text = text.replace(/[（(][Ａ][）)]/g,'(A)').replace(/[（(][Ｂ][）)]/g,'(B)')
+               .replace(/[（(][Ｃ][）)]/g,'(C)').replace(/[（(][Ｄ][）)]/g,'(D)');
+    // 全形括號答題框 （　） → 先清除（全形空格版）
+    text = text.replace(/（[\s　]{0,4}）\s*/g, '');
+
+    // ── 1. Markdown 殘留清除 ──
+    text = text.replace(/\*\*([^*]+)\*\*/g, '$1').replace(/\*\*/g, '');
+    text = text.replace(/^\|(.+)\|$/gm, (_, inner) =>
+        inner.split('|').map(s => s.trim()).filter(Boolean).join(' ')
+    );
+    text = text.replace(/^\|[\s\-|]+\|$/gm, '');
+
+    // ── 2. 去掉答題括號 (   ) ──（行尾、行首、其餘）
+    text = text.replace(/\(\s{1,4}\)\s*$/gm, '');  // 行尾（半形）
+    text = text.replace(/^\(\s{1,4}\)\s*/gm, '');  // 行首（半形）
+    text = text.replace(/\(\s{1,4}\)\s*/g, '');    // 其餘（半形）
+    text = text.replace(/（[\s　]{0,4}）\s*$/gm, ''); // 行尾（全形）
+    text = text.replace(/^（[\s　]{0,4}）\s*/gm, ''); // 行首（全形）
+    text = text.replace(/（[\s　]{0,4}）\s*/g, '');   // 其餘（全形）
+
+    // ── 3. 前插換行（處理整份文字擠在同一行的情況） ──
+    // 大題標題（一、二、三、...）前換行
+    text = text.replace(/([^\n])([一二三四五六七八九十][、．])/g, '$1\n\n$2');
+    // 小題題號（數字+點 或 數字+、）前換行，後面不接數字避免誤切小數
+    text = text.replace(/([^\n\d])(\d{1,3}\s*[\.。、]\s*)(?=[^\d])/g, '$1\n$2');
+    // 選項 (A)(B)(C)(D) 前換行
+    text = text.replace(/([^\n])(\([A-D]\))/g, '$1\n$2');
+
+    // ── 4. Tab、全形空格 → 半形；行首尾去空白；行內多空格合一 ──
+    text = text.replace(/\t/g, ' ').replace(/　/g, ' ');
+    text = text.split('\n').map(l => l.trim().replace(/ {2,}/g, ' ')).join('\n');
+
+    // ── 4b. 題號後補空格（如 10.文字、34、文字 → 加空格）──
+    text = text.replace(/^(\d{1,3}\s*[\.。、])(?=\S)/gm, '$1 ');
+
+    // ── 4c. 選項標籤後補空格（如 (A)文字 → (A) 文字）──
+    text = text.replace(/^(\([A-D]\))(?=\S)/gm, '$1 ');
+
+    // ── 5. 全形括號 → 半形 ──
+    text = text.replace(/（/g, '(').replace(/）/g, ')');
+
+    // ── 6. 數字與中文間加空格 ──
+    text = text.replace(/(\d)([^\s\d\(\)\{\}\[\]\.,:;\-\+\*\/\\<>!?='"$&%#@`^~｜|a-zA-Z])/g, '$1 $2');
+    text = text.replace(/([^\s\d\(\)\{\}\[\]\.,:;\-\+\*\/\\<>!?='"$&%#@`^~｜|a-zA-Z])(\d)/g, '$1 $2');
+
+    // ── 7. 中英文之間加空格 ──
+    const CJK_RE   = /[\u2E80-\u9FFF\uF900-\uFAFF\uFE30-\uFE4F]/;
+    const ALNUM_RE = /[a-zA-Z0-9]/;
+    let r = '';
+    for (let i = 0; i < text.length; i++) {
+        const ch = text[i], prev = text[i - 1] || '';
+        if (prev && prev !== '\n' && ch !== '\n' &&
+            ((CJK_RE.test(prev) && ALNUM_RE.test(ch)) ||
+             (ALNUM_RE.test(prev) && CJK_RE.test(ch)))) r += ' ';
+        r += ch;
+    }
+    text = r;
+
+    // ── 8. 逐行整理 ──
+    const isOpt  = l => /^\([A-D]\)/.test(l);
+    const isBlank = l => l.trim() === '';
+    const isSectionOrQ = l =>
+        /^[一二三四五六七八九十][、．]/.test(l) ||
+        /^[★※【第]/.test(l) ||
+        /^\d{1,3}\s*[\.。、]/.test(l);
+
+    // 8a. 移除空行、合併選項延續行
+    const clean = text.split('\n').filter(l => !isBlank(l));
+    const merged = [];
+    for (const line of clean) {
+        if (!isOpt(line) && !isSectionOrQ(line) && merged.length > 0 && isOpt(merged[merged.length - 1])) {
+            merged[merged.length - 1] += ' ' + line;
+        } else {
+            merged.push(line);
+        }
+    }
+
+    // 8b. 拆分同行多選項
+    const split = [];
+    for (const line of merged) {
+        if (isOpt(line) && /\([B-D]\)/.test(line)) {
+            line.split(/(?=\([A-D]\))/).map(s => s.trim()).filter(Boolean).forEach(o => split.push(o));
+        } else if (!isOpt(line) && /\(A\)/.test(line)) {
+            const aIdx = line.indexOf('(A)');
+            const qPart = line.slice(0, aIdx).trim();
+            const optPart = line.slice(aIdx);
+            if (qPart) split.push(qPart);
+            optPart.split(/(?=\([A-D]\))/).map(s => s.trim()).filter(Boolean).forEach(o => split.push(o));
+        } else if (!isOpt(line) && /\([B-D]\)/.test(line) && !isSectionOrQ(line)) {
+            const firstB = line.search(/\([B-D]\)/);
+            const aPart = line.slice(0, firstB).trim();
+            const rest = line.slice(firstB);
+            if (aPart) split.push('(A) ' + aPart);
+            rest.split(/(?=\([A-D]\))/).map(s => s.trim()).filter(Boolean).forEach(o => split.push(o));
+        } else {
+            split.push(line);
+        }
+    }
+
+    // 8c. 選項結束後補空行
+    const out = [];
+    for (let i = 0; i < split.length; i++) {
+        const line = split[i];
+        out.push(line);
+        if (isOpt(line)) {
+            const letter = line.match(/^\(([A-D])\)/)[1];
+            const next = split[i + 1];
+            const nextIsOpt = next && isOpt(next);
+            const nextLetter = nextIsOpt ? next.match(/^\(([A-D])\)/)[1] : null;
+            const expectedNext = { A: 'B', B: 'C', C: 'D' }[letter];
+            if (!nextIsOpt || nextLetter !== expectedNext) out.push('');
+        }
+    }
+
+    return out.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+}
+
+// 保留舊名稱供相容
+function insertCJKSpaces() { formatAndInsertCJKSpaces(); }
+function formatOptions()    { formatAndInsertCJKSpaces(); }
+
+// ════════════════════════════════════════════════════════════
+//  開啟檔案（txt / docx / pdf）
+// ════════════════════════════════════════════════════════════
+function openFileDialog() {
+    document.getElementById('open-file-input').click();
+}
+
+async function handleOpenFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    // 重設 input，使同一檔案可再次選取
+    event.target.value = '';
+
+    const ext = file.name.split('.').pop().toLowerCase();
+    const textarea = document.getElementById('input-text');
+
+    if (ext === 'txt') {
+        // ── TXT：直接讀取文字 ──
+        const reader = new FileReader();
+        reader.onload = e => {
+            textarea.value = e.target.result;
+            render();
+        };
+        reader.readAsText(file, 'UTF-8');
+
+    } else if (ext === 'docx') {
+        // ── DOCX：用 JSZip 直接解析 XML，不依賴 mammoth ──
+        if (!window.JSZip) {
+            await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
+        }
+        const arrayBuffer = await file.arrayBuffer();
+        try {
+            const zip = await JSZip.loadAsync(arrayBuffer);
+            const xmlFile = zip.file('word/document.xml');
+            if (!xmlFile) throw new Error('找不到 word/document.xml');
+            const xmlText = await xmlFile.async('string');
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(xmlText, 'application/xml');
+            const ns = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
+
+            // ── 解析 numbering.xml，建立編號查表 ──
+            // numInfo[numId][ilvl] = { fmt, lvlText, start }
+            const numInfo = {};
+            const numCounters = {}; // 追蹤每個 numId+ilvl 的當前計數
+            const numXmlFile = zip.file('word/numbering.xml');
+            if (numXmlFile) {
+                const numXml = await numXmlFile.async('string');
+                const numDoc = parser.parseFromString(numXml, 'application/xml');
+
+                // 先建立 abstractNum 定義
+                const abstractNums = {};
+                for (const an of numDoc.getElementsByTagNameNS(ns, 'abstractNum')) {
+                    const anId = an.getAttribute('w:abstractNumId');
+                    abstractNums[anId] = {};
+                    for (const lvl of an.getElementsByTagNameNS(ns, 'lvl')) {
+                        const ilvl = lvl.getAttribute('w:ilvl');
+                        const fmtEl = lvl.getElementsByTagNameNS(ns, 'numFmt')[0];
+                        const txtEl = lvl.getElementsByTagNameNS(ns, 'lvlText')[0];
+                        const startEl = lvl.getElementsByTagNameNS(ns, 'start')[0];
+                        abstractNums[anId][ilvl] = {
+                            fmt: fmtEl ? fmtEl.getAttribute('w:val') : 'bullet',
+                            lvlText: txtEl ? (txtEl.getAttribute('w:val') || '') : '',
+                            start: startEl ? parseInt(startEl.getAttribute('w:val') || '1') : 1,
+                        };
+                    }
+                }
+                // 建立 num → abstractNum 對照
+                for (const num of numDoc.getElementsByTagNameNS(ns, 'num')) {
+                    const numId = num.getAttribute('w:numId');
+                    const anIdEl = num.getElementsByTagNameNS(ns, 'abstractNumId')[0];
+                    const anId = anIdEl ? anIdEl.getAttribute('w:val') : null;
+                    if (anId && abstractNums[anId]) {
+                        numInfo[numId] = abstractNums[anId];
+                    }
+                }
+            }
+
+            // 將數字轉為對應格式
+            function formatNum(n, fmt) {
+                if (fmt === 'decimal') return String(n);
+                if (fmt === 'upperLetter') return String.fromCharCode(64 + n); // A,B,C...
+                if (fmt === 'lowerLetter') return String.fromCharCode(96 + n); // a,b,c...
+                if (fmt === 'upperRoman') {
+                    const v = ['I','II','III','IV','V','VI','VII','VIII','IX','X'];
+                    return v[n-1] || String(n);
+                }
+                if (fmt === 'lowerRoman') {
+                    const v = ['i','ii','iii','iv','v','vi','vii','viii','ix','x'];
+                    return v[n-1] || String(n);
+                }
+                if (fmt === 'ideographTraditional') {
+                    const v = ['一','二','三','四','五','六','七','八','九','十','十一','十二'];
+                    return v[n-1] || String(n);
+                }
+                return String(n);
+            }
+
+            // 取出所有段落（含表格內的段落）
+            const paragraphs = doc.getElementsByTagNameNS(ns, 'p');
+            const lines = [];
+            for (const p of paragraphs) {
+                // 檢查是否有編號屬性
+                let prefix = '';
+                const numPrEl = p.getElementsByTagNameNS(ns, 'numPr')[0];
+                if (numPrEl) {
+                    const ilvlEl = numPrEl.getElementsByTagNameNS(ns, 'ilvl')[0];
+                    const numIdEl = numPrEl.getElementsByTagNameNS(ns, 'numId')[0];
+                    const ilvl = ilvlEl ? ilvlEl.getAttribute('w:val') : '0';
+                    const numId = numIdEl ? numIdEl.getAttribute('w:val') : null;
+                    if (numId && numId !== '0' && numInfo[numId] && numInfo[numId][ilvl]) {
+                        const def = numInfo[numId][ilvl];
+                        const key = `${numId}_${ilvl}`;
+                        if (def.fmt === 'bullet') {
+                            // 項目符號：直接用 lvlText，若是特殊字元改用 •
+                            const ch = def.lvlText;
+                            prefix = (ch && ch.trim() && ch.charCodeAt(0) > 31) ? ch + ' ' : '• ';
+                        } else {
+                            // 有序編號：計數遞增
+                            if (!numCounters[key]) numCounters[key] = def.start;
+                            const n = numCounters[key]++;
+                            // lvlText 格式如 "%1." 或 "(%1)" — 替換 %數字 為實際數值
+                            let label = def.lvlText.replace(/%\d/g, formatNum(n, def.fmt));
+                            prefix = label + ' ';
+                        }
+                    }
+                }
+                const runs = p.getElementsByTagNameNS(ns, 't');
+                let line = '';
+                for (const r of runs) line += r.textContent;
+                lines.push(prefix + line);
+            }
+            // 移除連續三行以上的空行，保留結構
+            textarea.value = lines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+            render();
+        } catch(err) {
+            alert('DOCX 讀取失敗：' + err.message);
+        }
+
+    } else if (ext === 'pdf') {
+        // ── PDF：透過 pdf.js（CDN）提取文字 ──
+        if (!window.pdfjsLib) {
+            await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+                'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+        const arrayBuffer = await file.arrayBuffer();
+        try {
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            let allLines = [];
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const content = await page.getTextContent({ includeMarkedContent: false });
+                let line = '';
+                for (const item of content.items) {
+                    // MarkedContent divider（無 str 屬性）跳過
+                    if (typeof item.str === 'undefined') continue;
+                    line += item.str;
+                    // hasEOL=true 或 str 本身含換行 → 換行
+                    if (item.hasEOL || item.str.includes('\n')) {
+                        allLines.push(line.trim());
+                        line = '';
+                    }
+                }
+                if (line.trim()) allLines.push(line.trim());
+                allLines.push(''); // 頁間空行
+            }
+            textarea.value = allLines.join('\n').trim();
+            render();
+        } catch(err) {
+            alert('PDF 讀取失敗：' + err.message);
+        }
+
+    } else {
+        alert('不支援的檔案格式，請選擇 .txt、.docx 或 .pdf');
+    }
+}
+
+function loadScript(src) {
+    return new Promise((resolve, reject) => {
+        if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
+        const s = document.createElement('script');
+        s.src = src;
+        s.onload = resolve;
+        s.onerror = () => reject(new Error('無法載入：' + src));
+        document.head.appendChild(s);
+    });
 }
 
 loadRules();
