@@ -46,7 +46,9 @@
         label { font-weight: bold; margin-bottom: 8px; display: block; color: #333; }
         textarea { 
             width: 100%; 
-            height: 300px; 
+            height: 300px;
+            max-height: 300px;
+            overflow-y: scroll;
             padding: 15px; 
             border: 1px solid #ccc; 
             border-radius: 6px; 
@@ -238,6 +240,18 @@
             display: flex; flex-direction: column; align-items: center; 
             padding: 6px; background-color: #fdfdfd; 
             border: 1px solid #e0e0e0; border-radius: 4px; 
+            transition: background-color 0.12s, border-color 0.12s, transform 0.08s;
+        }
+        .token-group:hover {
+            background-color: #e3f2fd !important;
+            border-color: #90caf9 !important;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(33,150,243,0.18);
+        }
+        .token-group:active {
+            transform: translateY(0);
+            background-color: #bbdefb !important;
+            border-color: #42a5f5 !important;
         }
         .token-text { 
             font-size: calc(var(--base-font-size) * 0.6); color: #666; 
@@ -592,7 +606,7 @@
             padding: 12px;
             border: 1px solid #ccc;
             border-radius: 6px;
-            font-size: 15px;
+            font-size: var(--base-font-size);
             line-height: 1.6;
             box-sizing: border-box;
             font-family: "Microsoft JhengHei", monospace;
@@ -619,7 +633,7 @@
             .fwl-hint { display: none; }
             #fmt-wrap-preview { max-height: 180px; padding: 8px 12px; font-size: 13px; }
             #fmt-edit-section { padding: 8px 12px 10px; }
-            #fmt-textarea { height: 200px; font-size: 13px; padding: 8px; }
+            #fmt-textarea { height: 200px; padding: 8px; }
             #fmt-modal-footer { padding: 8px 12px; gap: 6px; }
             #fmt-modal-footer button { font-size: 0.82em !important; padding: 6px 10px !important; }
             #adv-replace-modal { border-radius: 0; width: 100%; max-width: 100%; }
@@ -788,12 +802,13 @@
         </div>
         <div class="btn-group">
             <button onclick="openFileDialog()" style="background:#795548;">📂 開啟檔案</button>
+            <button onclick="saveInputText()" title="將輸入區文字儲存成 .txt 檔案" style="background:#546e7a;">💾 儲存原文</button>
             <button onclick="downloadTxt()">💾 儲存點字</button>
             <button class="secondary" onclick="downloadParallelHtml()">📄 匯出雙視</button>
         </div>
     </div>
     <!-- 隱藏的檔案輸入 -->
-    <input type="file" id="open-file-input" accept=".txt,.docx,.pdf" style="display:none" onchange="handleOpenFile(event)" aria-hidden="true">
+    <input type="file" id="open-file-input" accept=".txt,.docx,.odt,.rtf,.pdf" style="display:none" onchange="handleOpenFile(event)" aria-hidden="true">
     </div>
         <!-- UEB 自定縮寫規則面板 -->
         <div id="ueb-custom-panel" role="region" aria-label="UEB 自定縮寫規則">
@@ -870,7 +885,6 @@
             <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
                 <label style="margin:0;">輸入文字：</label>
                 <button onclick="openFormatModal()" title="開啟格式調整視窗，可手動編輯並選擇取代規則" style="padding:4px 12px;font-size:0.8em;background:#546e7a;">📋 格式調整</button>
-                <button onclick="saveInputText()" title="將輸入區文字儲存成 .txt 檔案" style="padding:4px 12px;font-size:0.8em;background:#1976d2;">💾 儲存</button>
                 <div id="braille-mode-indicator" role="status" aria-live="polite">點字輸入</div>
             </div>
             <textarea id="input-text" autofocus placeholder="請在此輸入內容...（Ctrl+B 切換點字直接輸入）"></textarea>
@@ -990,6 +1004,7 @@
             <div id="fmt-tools-bar">
                 <button class="btn-ftb btn-fmt-run" onclick="fmtRunClean()" title="自動整理試卷格式、中英加空格、清除答題框等">✨ 自動調整</button>
                 <button class="btn-ftb btn-ftb-wrap" onclick="openWrapPanel()" title="分析並互動式預覽哪些換行可以合併">↵ 合併換行…</button>
+                <button class="btn-ftb" id="btn-ftb-braille" onclick="fmtToggleBrailleInput()" title="切換點字六點直接輸入模式（Ctrl+B）" style="background:#5c6bc0!important;">⠿ 點字輸入</button>
                 <div class="ftb-sep"></div>
                 <button class="btn-ftb" id="btn-ftb-replace" style="background:#1976d2!important;" onclick="ftbToggleFindbar()" title="搜尋並取代文字">🔍 取代</button>
                 <button class="btn-ftb" style="background:#6a1b9a!important;" onclick="openAdvReplace()" title="替換頭尾、刪除包圍內容等進階功能">✦ 進階</button>
@@ -2484,6 +2499,22 @@ function tokenizeWithCustom(text) {
     const tokens = []; let i = 0;
     const mode = () => document.getElementById('en-mode').value;
 
+    // 每個 push 都自動帶上來源字元範圍
+    // srcStart = 迴圈頂記錄的 i；srcEnd 在下一個迴圈頂（或 i++ 後）由 finalizeSrc() 補上
+    let _srcStart = 0;
+    let _lastTok  = null;
+    function pushTok(tok) {
+        // 先補上一個 token 的 srcEnd（現在才知道 i 走到哪）
+        if (_lastTok) _lastTok.srcEnd = i;
+        tok.srcStart = _srcStart;
+        tok.srcEnd   = i; // 暫時值，下一個 pushTok 或 finalizeSrc 會修正
+        _lastTok = tok;
+        tokens.push(tok);
+    }
+    function finalizeSrc() {
+        if (_lastTok) _lastTok.srcEnd = i;
+    }
+
     // 引號奇偶計數：奇數次 = 開，偶數次 = 閉
     let dqCount = 0;  // 直雙引號 " (U+0022)
     let sqCount = 0;  // 直單引號 ' (U+0027)
@@ -2498,15 +2529,17 @@ function tokenizeWithCustom(text) {
     }
 
     while (i < text.length) {
+        if (_lastTok) _lastTok.srcEnd = i;  // 補上上一個 token 的真實 srcEnd
+        _srcStart = i;
         const ch = text[i];
 
         // 空白
         if (ch === ' ' || ch === '\u2800') {
-            tokens.push({ text:'空', braille:'\u2800', isSpace:true }); i++; continue;
+            pushTok({ text:'空', braille:'\u2800', isSpace:true }); i++; continue;
         }
         // 換行（重設引號計數，避免跨行污染）
         if (ch === '\n') {
-            tokens.push({ text:'↵', braille:'\n' }); i++;
+            pushTok({ text:'↵', braille:'\n' }); i++;
             dqCount = 0; sqCount = 0;
             continue;
         }
@@ -2516,7 +2549,7 @@ function tokenizeWithCustom(text) {
             const b = isCJKContext(text, i)
                 ? '\u2810\u2810\u2810'   // CTB: ⠐⠐⠐ (dot5×3)
                 : '\u2832\u2832\u2832';  // UEB: ⠲⠲⠲ (dots256×3)
-            tokens.push({ text: '...', braille: b });
+            pushTok({ text: '...', braille: b });
             i += 3;
             continue;
         }
@@ -2528,7 +2561,7 @@ function tokenizeWithCustom(text) {
             const b = lineHasCJK(text, i)
                 ? (isOpen ? '\u2826\u2826' : '\u2834\u2834')  // CTB ⠦⠦/⠴⠴
                 : (isOpen ? '\u2826'        : '\u2834');         // UEB ⠦/⠴
-            tokens.push({ text: ch, braille: b }); i++; continue;
+            pushTok({ text: ch, braille: b }); i++; continue;
         }
 
         // ── 彎曲雙引號 "/"“” → 字元本身已區分開/閉；中文行用雙格 ──
@@ -2537,7 +2570,7 @@ function tokenizeWithCustom(text) {
             const b = lineHasCJK(text, i)
                 ? (isOpen ? '\u2826\u2826' : '\u2834\u2834')  // CTB ⠦⠦/⠴⠴
                 : (isOpen ? '\u2826'        : '\u2834');         // UEB ⠦/⠴
-            tokens.push({ text: ch, braille: b }); i++; continue;
+            pushTok({ text: ch, braille: b }); i++; continue;
         }
 
         // ── 直單引號 ' → 縮寫撇號優先；否則奇=開⠠⠦ 偶=閉⠠⠴；中文行用 CTB ──
@@ -2545,14 +2578,14 @@ function tokenizeWithCustom(text) {
             const prevCh = i > 0 ? text[i-1] : '';
             const nextCh = i + 1 < text.length ? text[i+1] : '';
             if (/[a-zA-Z]/.test(prevCh) && /[a-zA-Z]/.test(nextCh)) {
-                tokens.push({ text: ch, braille: '\u2804' }); i++; continue; // 縮寫撇號 ⠄
+                pushTok({ text: ch, braille: '\u2804' }); i++; continue; // 縮寫撇號 ⠄
             }
             sqCount++;
             const isOpen = (sqCount % 2 === 1);
             const b = lineHasCJK(text, i)
                 ? (isOpen ? '\u2808' : '\u2804')               // CTB ⠈/⠄
                 : (isOpen ? '\u2820\u2826' : '\u2820\u2834'); // UEB ⠠⠦/⠠⠴
-            tokens.push({ text: ch, braille: b }); i++; continue;
+            pushTok({ text: ch, braille: b }); i++; continue;
         }
 
         // ── 彎曲單引號 '/'‘’ → 字元本身已區分開/閉；中文行用 CTB ──
@@ -2561,13 +2594,13 @@ function tokenizeWithCustom(text) {
             const b = lineHasCJK(text, i)
                 ? (isOpen ? '\u2808' : '\u2804')               // CTB ⠈/⠄
                 : (isOpen ? '\u2820\u2826' : '\u2820\u2834'); // UEB ⠠⠦/⠠⠴
-            tokens.push({ text: ch, braille: b }); i++; continue;
+            pushTok({ text: ch, braille: b }); i++; continue;
         }
 
         // 自定義規則（最長優先）
         const cr = customRuleMatch(text, i);
         if (cr) {
-            tokens.push({ text: cr.text, braille: cr.braille, isCustom: true });
+            pushTok({ text: cr.text, braille: cr.braille, isCustom: true });
             i += cr.text.length;
             continue;
         }
@@ -2668,7 +2701,7 @@ function tokenizeWithCustom(text) {
             const g1b = translateWordWithApos(run, 'ueb-g1');
             isContraction = (b !== g1b);
         }
-            tokens.push({
+            pushTok({
                 text: run,
                 braille: b,
                 isEnglish: hasAlpha,
@@ -2688,10 +2721,10 @@ function tokenizeWithCustom(text) {
             if (isRel) {
                 // 前空格：若前一個 token 不是空格，插入一個
                 if (tokens.length > 0 && !tokens[tokens.length - 1].isSpace && !tokens[tokens.length - 1].isLineBreak) {
-                    tokens.push({ text:'空', braille:'\u2800', isSpace:true, isAutoSpace:true });
+                    pushTok({ text:'空', braille:'\u2800', isSpace:true, isAutoSpace:true });
                 }
             }
-            tokens.push({
+            pushTok({
                 text: ch,
                 braille: NEMETH_MATH_PUNCT[ch],
                 isNemeth: true,
@@ -2702,14 +2735,14 @@ function tokenizeWithCustom(text) {
             // 關係符號後：跳過原文中的空格，並插入一個強制空格
             if (isRel) {
                 while (i < text.length && (text[i] === ' ' || text[i] === '\u2800')) i++;
-                tokens.push({ text:'空', braille:'\u2800', isSpace:true, isAutoSpace:true });
+                pushTok({ text:'空', braille:'\u2800', isSpace:true, isAutoSpace:true });
             }
             continue;
         }
         // Nemeth 模式：特殊數學符號（多字元 Unicode）— 已含在上面的 NEMETH_MATH_PUNCT
         if (isNemethMode()) {
             const nmb = NEMETH_MATH_PUNCT[ch];
-            if (nmb) { tokens.push({ text: ch, braille: nmb, isNemeth: true }); i++; continue; }
+            if (nmb) { pushTok({ text: ch, braille: nmb, isNemeth: true }); i++; continue; }
         }
 
         // ── Nemeth 模式：題號句點（數字後的 . 跟著空格/換行/行末）→ 用上位 UEB ⠲ ──
@@ -2726,7 +2759,7 @@ function tokenizeWithCustom(text) {
             const isFollowedByBreak = (nextCh === ' ' || nextCh === '\u2800' || nextCh === '\n' || i + 1 >= text.length);
             if (isAfterNumber && isFollowedByBreak) {
                 // 題號句點：上位 UEB ⠲，不加終止空格（題號後空格由原文的空格處理）
-                tokens.push({ text: ch, braille: '\u2832' }); // ⠲ dots 256
+                pushTok({ text: ch, braille: '\u2832' }); // ⠲ dots 256
                 i++;
                 continue;
             }
@@ -2734,9 +2767,9 @@ function tokenizeWithCustom(text) {
 
         const p = getPunct(ch, text, i);
         if (p) {
-            tokens.push({ text: ch, braille: p }); i++;
+            pushTok({ text: ch, braille: p }); i++;
             if (TERMINAL.has(ch)) {
-                tokens.push({ text:'空', braille:'\u2800', isSpace:true });
+                pushTok({ text:'空', braille:'\u2800', isSpace:true });
                 if (i < text.length && (text[i] === ' ' || text[i] === '\u2800')) i++;
             }
             continue;
@@ -2744,12 +2777,13 @@ function tokenizeWithCustom(text) {
 
         // 中文 / 其他字元
         const b = zhMap.get(ch) || ch;
-        tokens.push({ text: ch, braille: b }); i++;
+        pushTok({ text: ch, braille: b }); i++;
         if (TERMINAL.has(ch)) {
-            tokens.push({ text:'空', braille:'\u2800', isSpace:true });
+            pushTok({ text:'空', braille:'\u2800', isSpace:true });
             if (i < text.length && (text[i] === ' ' || text[i] === '\u2800')) i++;
         }
     }
+    finalizeSrc(); // 補上最後一個 token 的 srcEnd
 
     // ── 中英文邊界自動插入空格 ──────────────────────────────────
     // 規則：CJK 字元和英數之間，若沒有空格則自動插入一個空格 token
@@ -2799,12 +2833,11 @@ function renderParallelView(tokens) {
 
     tokens.forEach(t => {
         if (t.isAutoBreak) {
-            // 自動換行也在雙視區顯示分隔線
             const br = document.createElement('div');
             br.className = 'line-break'; view.appendChild(br);
             return;
         }
-        if (t._hiddenTrailingSpace) return;  // 行尾空格已移除，不在雙視區顯示
+        if (t._hiddenTrailingSpace) return;
         if (t.isLineBreak) {
             const br = document.createElement('div');
             br.className = 'line-break'; view.appendChild(br);
@@ -2820,8 +2853,33 @@ function renderParallelView(tokens) {
         g.className = cls;
         g.innerHTML = `<div class="token-text">${escHtml(t.text)}</div>`
                     + `<div class="token-braille ${isAscii?'font-ascii':'font-unicode'}">${escHtml(dispB)}</div>`;
+
+        // 直接用 token 的來源字元範圍跳轉
+        if (t.srcStart !== undefined) {
+            const s = t.srcStart;
+            const e = (t.srcEnd > t.srcStart) ? t.srcEnd : t.srcStart + 1;
+            g.title  = '點擊跳至輸入區對應位置';
+            g.style.cursor = 'pointer';
+            g.addEventListener('click', function() {
+                parallelJumpToOffset(s, e);
+            });
+        }
+
         view.appendChild(g);
     });
+}
+
+// 點擊雙視 block → 選取對應文字
+function parallelJumpToOffset(selStart, selEnd) {
+    const ta = document.getElementById('input-text');
+    if (!ta) return;
+
+    ta.focus({ preventScroll: true });
+    ta.setSelectionRange(selStart, selEnd);
+
+    const orig = ta.style.outline;
+    ta.style.outline = '3px solid #ff9800';
+    setTimeout(function() { ta.style.outline = orig; }, 600);
 }
 
 // ════════════════════════════════════════════════════════════
@@ -3100,8 +3158,9 @@ document.getElementById('font-size-slider').addEventListener('input', e=>{
     document.getElementById('font-size-val').textContent=e.target.value+'px';
 });
 document.getElementById('input-text').addEventListener('input', function() {
+    if (_suppressInput) return;
     if (brailleInputMode) syncBrailleDirectOutput();
-    else if (!brailleInputMode) render();
+    else render();
 });
 document.getElementById('cell-limit').addEventListener('input', render);
 
@@ -3115,11 +3174,28 @@ const bmiPanel = document.getElementById('braille-mode-indicator');
 
 function setBrailleInputMode(active) {
     brailleInputMode = active;
-    ruleComposerBits = 0;   // 共用 ruleBrailleTA 的 composer 狀態
+    ruleComposerBits = 0;
     ruleChordFired   = false;
     bmiPanel.classList.toggle('active', active);
-    if (!active) render(); // 離開時重新翻譯
+    // 同步格式調整 modal 裡的按鈕狀態
+    var fmtBtn = document.getElementById('btn-ftb-braille');
+    if (fmtBtn) {
+        fmtBtn.style.background = active ? '#283593!important' : '#5c6bc0!important';
+        fmtBtn.textContent = active ? '⠿ 點字輸入中…' : '⠿ 點字輸入';
+    }
+    if (active) {
+        syncBrailleParallelView(); // 進入模式：只更新雙視區，輸出區保留原點字
+    } else {
+        render(); // 離開時重新翻譯
+    }
 }
+
+window.fmtToggleBrailleInput = function() {
+    setBrailleInputMode(!brailleInputMode);
+    // 焦點移到 fmt-textarea，讓六點輸入可直接在格式調整區使用
+    var fmtTa = document.getElementById('fmt-textarea');
+    if (fmtTa) fmtTa.focus();
+};
 
 // 把一個 Unicode 點字格插入主輸入框，並同步輸出區
 function insertInputBrailleCell(unicodeCell) {
@@ -3140,24 +3216,47 @@ function syncBrailleDirectOutput() {
         ? Array.from(val).map(c => BR_TO_ASCII[c] !== undefined ? BR_TO_ASCII[c] : c).join('')
         : val;
     outArea.className = isAscii ? 'font-ascii' : 'font-unicode';
-    // 雙視區：每格顯示點位號
+    syncBrailleParallelView();
+}
+
+// 只更新雙視區，不動輸出區（供進入點字模式時使用）
+function syncBrailleParallelView() {
+    const val = inputTA.value;
     const tokens = [];
     for (const c of val) {
         if (c === '\n') {
             tokens.push({ text:'↵', braille:'\n', isLineBreak:true });
         } else if (c === '\u2800' || c === ' ') {
             tokens.push({ text:'空', braille:'\u2800', isSpace:true });
-        } else {
+        } else if (c >= '\u2801' && c <= '\u28FF') {
             const cp = c.charCodeAt(0) - 0x2800;
             const dots = [1,2,3,4,5,6].filter(d => cp & (1 << (d-1))).join('');
             tokens.push({ text: dots ? `點${dots}` : '⠀', braille: c });
+        } else {
+            tokens.push({ text: c, braille: c });
         }
     }
     renderParallelView(tokens);
 }
 
-inputTA.addEventListener('keydown', function(e) {
-    // Ctrl+B：切換點字輸入模式
+let _suppressInput = false;
+
+// 共用六點輸入處理：在任意 textarea 插入一個點字格
+function insertBrailleCellInto(ta, unicodeCell) {
+    const isAscii = currentIsAscii();
+    const ch = isAscii ? (BR_TO_ASCII[unicodeCell] || unicodeCell) : unicodeCell;
+    const pos = ta.selectionStart;
+    const val = ta.value;
+    _suppressInput = true;
+    ta.value = val.slice(0, pos) + ch + val.slice(ta.selectionEnd);
+    ta.setSelectionRange(pos + 1, pos + 1);
+    _suppressInput = false;
+    // 只有主輸入框才同步雙視區；格式調整區不需要
+    if (ta === inputTA) syncBrailleDirectOutput();
+}
+
+// 共用 keydown 處理邏輯
+function handleBrailleKeydown(e, ta) {
     if (e.ctrlKey && (e.key === 'b' || e.key === 'B')) {
         e.preventDefault();
         setBrailleInputMode(!brailleInputMode);
@@ -3167,44 +3266,45 @@ inputTA.addEventListener('keydown', function(e) {
 
     const code = e.keyCode;
 
-    // Esc：離開點字輸入模式
     if (code === 27) { e.preventDefault(); setBrailleInputMode(false); return; }
-
-    // Ctrl 組合鍵：放行系統功能（複製/貼上/全選/剪下/復原等）
-    if (e.ctrlKey || e.metaKey) {
-        ruleComposerBits = 0; ruleChordFired = false; return;
-    }
-
-    // Backspace / Delete / 方向鍵 / Home / End / PageUp / PageDown / Tab / Enter：正常運作
+    if (e.ctrlKey || e.metaKey) { ruleComposerBits = 0; ruleChordFired = false; return; }
     if ([8, 46, 35, 36, 33, 34, 37, 38, 39, 40, 9, 13].includes(code)) {
         ruleComposerBits = 0; ruleChordFired = false; return;
     }
-
-    // 空白鍵 = 空格格 ⠀
     if (code === 32) {
         e.preventDefault();
-        insertInputBrailleCell('\u2800');
+        insertBrailleCellInto(ta, '\u2800');
         ruleComposerBits = 0; ruleChordFired = false;
         return;
     }
-
-    // SDF JKL — 與 ruleBrailleTA 完全相同的 bit map
     const dotBit = { 83:4, 68:2, 70:1, 74:8, 75:16, 76:32 }[code];
     if (dotBit !== undefined) { e.preventDefault(); ruleComposerBits |= dotBit; return; }
+    e.preventDefault();
+}
 
-    e.preventDefault(); // 其他鍵阻止
-});
-
-inputTA.addEventListener('keyup', function(e) {
+// 共用 keyup 處理邏輯
+function handleBrailleKeyup(e, ta) {
     if (!brailleInputMode) return;
     const dotBit = { 83:4, 68:2, 70:1, 74:8, 75:16, 76:32 }[e.keyCode];
     if (dotBit === undefined) return;
     if (!ruleChordFired && ruleComposerBits > 0) {
-        insertInputBrailleCell(String.fromCharCode(0x2800 + ruleComposerBits));
+        insertBrailleCellInto(ta, String.fromCharCode(0x2800 + ruleComposerBits));
         ruleChordFired = true;
     }
     ruleComposerBits &= ~dotBit;
     if (ruleComposerBits === 0) ruleChordFired = false;
+}
+
+// 主輸入框
+inputTA.addEventListener('keydown', function(e) { handleBrailleKeydown(e, inputTA); });
+inputTA.addEventListener('keyup',   function(e) { handleBrailleKeyup(e, inputTA); });
+
+// 格式調整 textarea（DOM 尚未建立，用事件委派掛在 document）
+document.addEventListener('keydown', function(e) {
+    if (e.target && e.target.id === 'fmt-textarea') handleBrailleKeydown(e, e.target);
+});
+document.addEventListener('keyup', function(e) {
+    if (e.target && e.target.id === 'fmt-textarea') handleBrailleKeyup(e, e.target);
 });
 document.getElementById('en-mode').addEventListener('change', ()=>{
     const val = document.getElementById('en-mode').value;
@@ -3446,10 +3546,11 @@ function cleanExamText(text) {
 
     // ── 1. Markdown 殘留清除 ──
     text = text.replace(/\*\*([^*]+)\*\*/g, '$1').replace(/\*\*/g, '');
+    // Markdown 表格：分隔行（|---|）直接移除，資料行每欄用 tab 分隔
+    text = text.replace(/^\|[\s\-|:]+\|$/gm, '');
     text = text.replace(/^\|(.+)\|$/gm, (_, inner) =>
-        inner.split('|').map(s => s.trim()).filter(Boolean).join(' ')
+        inner.split('|').map(s => s.trim()).filter(Boolean).join('\t')
     );
-    text = text.replace(/^\|[\s\-|]+\|$/gm, '');
 
     // ── 2. 去掉答題括號 ── （各種空白括號格式，含題號前的填答框）
     // 全形版（含空格/全形空格/空）
@@ -3494,6 +3595,17 @@ function cleanExamText(text) {
         r += ch;
     }
     text = r;
+
+    // ── 7b. 中文字之間去除多餘空格 ──
+    // 兩個 CJK 字元之間的空格反覆移除，直到無變化為止
+    {
+        const CJK_BLOCK = /[\u2E80-\u9FFF\uF900-\uFAFF\uFE30-\uFE4F]/;
+        let prev7b;
+        do {
+            prev7b = text;
+            text = text.replace(/([\u2E80-\u9FFF\uF900-\uFAFF\uFE30-\uFE4F]) ([\u2E80-\u9FFF\uF900-\uFAFF\uFE30-\uFE4F])/g, '$1$2');
+        } while (text !== prev7b);
+    }
 
     // ── 8. 逐行整理 ──
     const isOpt  = l => /^\([A-D]\)/.test(l);
@@ -3598,100 +3710,49 @@ async function handleOpenFile(event) {
             const doc = parser.parseFromString(xmlText, 'application/xml');
             const ns = 'http://schemas.openxmlformats.org/wordprocessingml/2006/main';
 
-            // ── 解析 numbering.xml，建立編號查表 ──
-            // numInfo[numId][ilvl] = { fmt, lvlText, start }
-            const numInfo = {};
-            const numCounters = {}; // 追蹤每個 numId+ilvl 的當前計數
-            const numXmlFile = zip.file('word/numbering.xml');
-            if (numXmlFile) {
-                const numXml = await numXmlFile.async('string');
-                const numDoc = parser.parseFromString(numXml, 'application/xml');
 
-                // 先建立 abstractNum 定義
-                const abstractNums = {};
-                for (const an of numDoc.getElementsByTagNameNS(ns, 'abstractNum')) {
-                    const anId = an.getAttribute('w:abstractNumId');
-                    abstractNums[anId] = {};
-                    for (const lvl of an.getElementsByTagNameNS(ns, 'lvl')) {
-                        const ilvl = lvl.getAttribute('w:ilvl');
-                        const fmtEl = lvl.getElementsByTagNameNS(ns, 'numFmt')[0];
-                        const txtEl = lvl.getElementsByTagNameNS(ns, 'lvlText')[0];
-                        const startEl = lvl.getElementsByTagNameNS(ns, 'start')[0];
-                        abstractNums[anId][ilvl] = {
-                            fmt: fmtEl ? fmtEl.getAttribute('w:val') : 'bullet',
-                            lvlText: txtEl ? (txtEl.getAttribute('w:val') || '') : '',
-                            start: startEl ? parseInt(startEl.getAttribute('w:val') || '1') : 1,
-                        };
-                    }
-                }
-                // 建立 num → abstractNum 對照
-                for (const num of numDoc.getElementsByTagNameNS(ns, 'num')) {
-                    const numId = num.getAttribute('w:numId');
-                    const anIdEl = num.getElementsByTagNameNS(ns, 'abstractNumId')[0];
-                    const anId = anIdEl ? anIdEl.getAttribute('w:val') : null;
-                    if (anId && abstractNums[anId]) {
-                        numInfo[numId] = abstractNums[anId];
-                    }
-                }
+            // 從段落元素取出文字
+            function extractParagraphText(p) {
+                const runs = Array.from(p.getElementsByTagName('*'))
+                    .filter(el => el.localName === 't');
+                let text = '';
+                for (const r of runs) text += r.textContent;
+                return text;
             }
 
-            // 將數字轉為對應格式
-            function formatNum(n, fmt) {
-                if (fmt === 'decimal') return String(n);
-                if (fmt === 'upperLetter') return String.fromCharCode(64 + n); // A,B,C...
-                if (fmt === 'lowerLetter') return String.fromCharCode(96 + n); // a,b,c...
-                if (fmt === 'upperRoman') {
-                    const v = ['I','II','III','IV','V','VI','VII','VIII','IX','X'];
-                    return v[n-1] || String(n);
-                }
-                if (fmt === 'lowerRoman') {
-                    const v = ['i','ii','iii','iv','v','vi','vii','viii','ix','x'];
-                    return v[n-1] || String(n);
-                }
-                if (fmt === 'ideographTraditional') {
-                    const v = ['一','二','三','四','五','六','七','八','九','十','十一','十二'];
-                    return v[n-1] || String(n);
-                }
-                return String(n);
-            }
-
-            // 取出所有段落（含表格內的段落）
-            const paragraphs = doc.getElementsByTagNameNS(ns, 'p');
+            // 走 body 直接子節點，區分段落與表格
+            const body = doc.getElementsByTagNameNS(ns, 'body')[0];
             const lines = [];
-            for (const p of paragraphs) {
-                // 檢查是否有編號屬性
-                let prefix = '';
-                const numPrEl = p.getElementsByTagNameNS(ns, 'numPr')[0];
-                if (numPrEl) {
-                    const ilvlEl = numPrEl.getElementsByTagNameNS(ns, 'ilvl')[0];
-                    const numIdEl = numPrEl.getElementsByTagNameNS(ns, 'numId')[0];
-                    const ilvl = ilvlEl ? ilvlEl.getAttribute('w:val') : '0';
-                    const numId = numIdEl ? numIdEl.getAttribute('w:val') : null;
-                    if (numId && numId !== '0' && numInfo[numId] && numInfo[numId][ilvl]) {
-                        const def = numInfo[numId][ilvl];
-                        const key = `${numId}_${ilvl}`;
-                        if (def.fmt === 'bullet') {
-                            // 項目符號：直接用 lvlText，若是特殊字元改用 •
-                            const ch = def.lvlText;
-                            prefix = (ch && ch.trim() && ch.charCodeAt(0) > 31) ? ch + ' ' : '• ';
-                        } else {
-                            // 有序編號：計數遞增
-                            if (!numCounters[key]) numCounters[key] = def.start;
-                            const n = numCounters[key]++;
-                            // lvlText 格式如 "%1." 或 "(%1)" — 替換 %數字 為實際數值
-                            let label = def.lvlText.replace(/%\d/g, formatNum(n, def.fmt));
-                            prefix = label + ' ';
+            for (const node of body.childNodes) {
+                const local = node.localName;
+                if (local === 'p') {
+                    lines.push(extractParagraphText(node));
+                } else if (local === 'tbl') {
+                    // 表格：每列一行，欄位用 tab 分隔
+                    const rows = node.getElementsByTagNameNS(ns, 'tr');
+                    for (const tr of rows) {
+                        const cells = tr.getElementsByTagNameNS(ns, 'tc');
+                        const cellTexts = [];
+                        for (const tc of cells) {
+                            const ps = tc.getElementsByTagNameNS(ns, 'p');
+                            const cellLines = [];
+                            for (const p of ps) {
+                                const t = extractParagraphText(p);
+                                if (t.trim()) cellLines.push(t.trim());
+                            }
+                            cellTexts.push(cellLines.join(' '));
                         }
+                        lines.push(cellTexts.join('\t'));
                     }
+                    lines.push(''); // 表格後空行
                 }
-                const runs = p.getElementsByTagNameNS(ns, 't');
-                let line = '';
-                for (const r of runs) line += r.textContent;
-                lines.push(prefix + line);
             }
             // 移除連續三行以上的空行，保留結構
             textarea.value = lines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
             render();
+            setTimeout(() => {
+                alert('如果文件有自動編號，建議改用複製貼上：\n在 Word 中 Ctrl+A 全選 → Ctrl+C 複製，再到輸入框 Ctrl+V 貼上。');
+            }, 100);
         } catch(err) {
             alert('DOCX 讀取失敗：' + err.message);
         }
@@ -3730,8 +3791,137 @@ async function handleOpenFile(event) {
             alert('PDF 讀取失敗：' + err.message);
         }
 
+    } else if (ext === 'rtf') {
+        // ── RTF：掃描純文字，去除控制碼 ──
+        const reader = new FileReader();
+        reader.onload = e => {
+            let raw = e.target.result;
+            // 移除 RTF 控制字組與群組括號，保留文字內容
+            let out = '';
+            let i = 0;
+            const len = raw.length;
+            while (i < len) {
+                const c = raw[i];
+                if (c === '\\') {
+                    i++;
+                    if (i >= len) break;
+                    const nc = raw[i];
+                    if (nc === '\\') { out += '\\'; i++; }
+                    else if (nc === '{') { out += '{'; i++; }
+                    else if (nc === '}') { out += '}'; i++; }
+                    else if (nc === '\n' || nc === '\r') { out += '\n'; i++; }
+                    else if (nc === '\'') {
+                        // \'xx 16進位字元
+                        const hex = raw.slice(i + 1, i + 3);
+                        const code = parseInt(hex, 16);
+                        // Big5/Windows-1252 高字元暫時忽略，ASCII 範圍保留
+                        if (!isNaN(code) && code < 128) out += String.fromCharCode(code);
+                        i += 3;
+                    } else {
+                        // 控制字（字母+可選數字）：特定字轉義
+                        let word = '';
+                        while (i < len && /[a-zA-Z]/.test(raw[i])) word += raw[i++];
+                        let num = '';
+                        while (i < len && /[-\d]/.test(raw[i])) num += raw[i++];
+                        if (raw[i] === ' ') i++; // 控制字後的分隔空格
+                        if (word === 'par' || word === 'line') out += '\n';
+                        else if (word === 'tab') out += '\t';
+                        else if (word === 'u') {
+                            // \uN — Unicode 字元
+                            const cp = parseInt(num);
+                            if (!isNaN(cp)) out += String.fromCharCode(cp < 0 ? cp + 65536 : cp);
+                            // 跳過替代字元（通常是 \'3f）
+                            if (raw[i] === '\\' && raw[i+1] === '\'') i += 4;
+                        }
+                    }
+                } else if (c === '{' || c === '}') {
+                    i++;
+                } else {
+                    out += c;
+                    i++;
+                }
+            }
+            // 清理多餘空行
+            textarea.value = out.replace(/\r\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+            render();
+        };
+        reader.readAsText(file, 'latin1'); // RTF 標頭是 ASCII
+
+    } else if (ext === 'odt') {
+        // ── ODT：ZIP 解 content.xml，結構類似 OOXML ──
+        if (!window.JSZip) {
+            await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js');
+        }
+        const arrayBuffer = await file.arrayBuffer();
+        try {
+            const zip = await JSZip.loadAsync(arrayBuffer);
+            const xmlFile = zip.file('content.xml');
+            if (!xmlFile) throw new Error('找不到 content.xml');
+            const xmlText = await xmlFile.async('string');
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(xmlText, 'application/xml');
+
+            const textNS  = 'urn:oasis:names:tc:opendocument:xmlns:text:1.0';
+            const tableNS = 'urn:oasis:names:tc:opendocument:xmlns:table:1.0';
+
+            function extractOdtPara(p) {
+                // 取出段落文字，tab 元素轉 \t
+                let t = '';
+                for (const child of p.childNodes) {
+                    if (child.nodeType === 3) { t += child.textContent; }
+                    else if (child.localName === 'tab') { t += '\t'; }
+                    else if (child.localName === 'line-break') { t += '\n'; }
+                    else { t += child.textContent; }
+                }
+                return t;
+            }
+
+            const lines = [];
+            // 走 body > text 的直接子節點
+            const textEl = doc.getElementsByTagNameNS(textNS, 'text')[0]
+                        || doc.querySelector('text');
+            const root = textEl || doc.documentElement;
+
+            function walkNode(node) {
+                const local = node.localName;
+                const ns = node.namespaceURI;
+                if (ns === textNS && local === 'p') {
+                    lines.push(extractOdtPara(node));
+                } else if (ns === textNS && local === 'h') {
+                    lines.push(extractOdtPara(node));
+                } else if (ns === tableNS && local === 'table') {
+                    // 表格：每列一行，欄用 tab 分隔
+                    const rows = node.getElementsByTagNameNS(tableNS, 'table-row');
+                    for (const tr of rows) {
+                        const cells = tr.getElementsByTagNameNS(tableNS, 'table-cell');
+                        const cellTexts = [];
+                        for (const tc of cells) {
+                            const ps = tc.getElementsByTagNameNS(textNS, 'p');
+                            const parts = [];
+                            for (const p of ps) {
+                                const t = extractOdtPara(p).trim();
+                                if (t) parts.push(t);
+                            }
+                            cellTexts.push(parts.join(' '));
+                        }
+                        lines.push(cellTexts.join('\t'));
+                    }
+                    lines.push('');
+                } else {
+                    for (const child of node.childNodes) {
+                        if (child.nodeType === 1) walkNode(child);
+                    }
+                }
+            }
+            walkNode(root);
+            textarea.value = lines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+            render();
+        } catch(err) {
+            alert('ODT 讀取失敗：' + err.message);
+        }
+
     } else {
-        alert('不支援的檔案格式，請選擇 .txt、.docx 或 .pdf');
+        alert('不支援的檔案格式，請選擇 .txt、.docx、.odt、.rtf 或 .pdf');
     }
 }
 
