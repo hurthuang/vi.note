@@ -1953,10 +1953,10 @@ function translateG2Seq(word, _tables) {
                 if (beforeCh === 'o') { continue; }
                 if (afterCh === 'd' || afterCh === 'n' || afterCh === 'r') { continue; }
             }
-            // under (L16): NOT preceded by a/o; NOT where 'un' is a prefix (word starts with un-)
+            // under (L16): NOT preceded by a/o（如 launder, flounder）
+            // 凡含 under 一律縮寫（underwater, underpaid, underived 等均縮）
             if (k === 'under') {
                 if (beforeCh === 'a' || beforeCh === 'o') { continue; }
-                if (i === 0 && lw.startsWith('un') && total > 2) { continue; }
             }
             // had (L19): only where 'a' is short; Hadrian-type (had+r at word start) → skip
             if (k === 'had') {
@@ -2457,7 +2457,29 @@ function translateWordWithApos(run, modeVal) {
     if (main.length > 0) {
         if (modeVal === 'comp8')  mainB = translateComp8(main);
         else if (modeVal === 'ueb-g1') mainB = translateG1(main);
-        else mainB = translateG2Word(main, getActiveG2Tables());
+        else {
+            // 特殊處理：main 可能是 shortform + 尾字母（如 couldn = could + n）
+            // 嘗試以 G2_WORD 鍵值作為前綴匹配，找到最長的 shortform 前綴
+            const _tables = getActiveG2Tables();
+            const mainLow = main.toLowerCase();
+            let sfPrefix = null, sfBraille = null;
+            for (const [k, v] of Object.entries(_tables.word || G2_WORD)) {
+                if (mainLow.startsWith(k) && k.length < main.length) {
+                    if (!sfPrefix || k.length > sfPrefix.length) {
+                        sfPrefix = k; sfBraille = v;
+                    }
+                }
+            }
+            if (sfPrefix) {
+                // 前綴是 shortform，其餘字母逐字輸出（不加縮寫，與 suffix 同邏輯）
+                const rest = main.slice(sfPrefix.length);
+                let restB = '';
+                for (const c of rest.toLowerCase()) restB += UEB_ALPHA[c] || c;
+                mainB = sfBraille + restB;
+            } else {
+                mainB = translateG2Word(main, _tables);
+            }
+        }
     }
 
     // 撇號 = ⠄ (UEB dots 3)
@@ -3198,15 +3220,6 @@ window.fmtToggleBrailleInput = function() {
 };
 
 // 把一個 Unicode 點字格插入主輸入框，並同步輸出區
-function insertInputBrailleCell(unicodeCell) {
-    const isAscii = currentIsAscii();
-    const ch = isAscii ? (BR_TO_ASCII[unicodeCell] || unicodeCell) : unicodeCell;
-    const pos = inputTA.selectionStart;
-    const val = inputTA.value;
-    inputTA.value = val.slice(0, pos) + ch + val.slice(inputTA.selectionEnd);
-    inputTA.setSelectionRange(pos + 1, pos + 1);
-    syncBrailleDirectOutput();
-}
 
 function syncBrailleDirectOutput() {
     const outArea = document.getElementById('output-text');
@@ -3526,16 +3539,6 @@ function buildCustomG2Tables() {
     return { always, anywhere, begword, midword, midend, lowword, sufword, word };
 }
 
-// ════════════════════════════════════════════════════════════
-//  格式調整 + 中英加空格（合併）
-// ════════════════════════════════════════════════════════════
-function formatAndInsertCJKSpaces() {
-    const textarea = document.getElementById('input-text');
-    let text = textarea.value;
-    text = cleanExamText(text);
-    textarea.value = text.trim();
-    render();
-}
 
 function cleanExamText(text) {
     // ── 0. 全形選項字母 → 半形（半形括號版與全形括號版都處理）──
@@ -3667,8 +3670,8 @@ function cleanExamText(text) {
 }
 
 // 保留舊名稱供相容
-function insertCJKSpaces() { formatAndInsertCJKSpaces(); }
-function formatOptions()    { formatAndInsertCJKSpaces(); }
+
+
 
 // ════════════════════════════════════════════════════════════
 //  開啟檔案（txt / docx / pdf）
