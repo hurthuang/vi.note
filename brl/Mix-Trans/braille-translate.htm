@@ -1969,6 +1969,8 @@ function translateG2Seq(word, _tables) {
                 );
                 if (longerMidend) { continue; }
             }
+            // st vs stion/tion（MIDEND 優先）: st 後若緊接 ion，讓 tion 縮寫優先
+            if (k === 'st' && lw.startsWith('ion', i + 2)) { continue; }
 
             aBest = k;
             break;
