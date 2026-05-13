@@ -1187,8 +1187,8 @@ const LOU = (() => {
 
     const TABLE_DEPS = {
         'en-us-comp8.ctb':    ['latinLetterDef8Dots.uti','latinUppercaseComp6.uti','spaces.uti','braille-patterns.cti'],
-        'en-ueb-g1.ctb':      ['en-ueb-chardefs.uti','spaces.uti'],
-        'en-ueb-g2.ctb':      ['en-ueb-chardefs.uti','en-ueb-g1.ctb','spaces.uti'],
+        'en-ueb-g1.ctb':      ['text_nabcc.dis','en-ueb-chardefs.uti','spaces.uti'],
+        'en-ueb-g2.ctb':      ['en-ueb-math.ctb','en-ueb-chardefs.uti','en-ueb-g1.ctb','spaces.uti'],
         'en-ueb-chardefs.uti':['en-chardefs.cti','latinLetterDef6Dots.uti','litdigits6Dots.uti','loweredDigits6Dots.uti'],
     };
 
@@ -1200,9 +1200,26 @@ const LOU = (() => {
         try {
             const resp = await fetch(TABLE_DIR + filename);
             if (!resp.ok) throw new Error(resp.status);
-            const data = new Uint8Array(await resp.arrayBuffer());
+            const arrayBuf = await resp.arrayBuffer();
             try { M.FS.mkdir('/tables'); } catch(e) {}
-            M.FS.writeFile('/tables/' + filename, data);
+            // build-no-tables-utf32.js 的 FS.writeFile 需要字串，不接受 Uint8Array
+            // 用 intArrayFromString 的反向操作：把 bytes 轉成 JS string（latin-1）
+            const bytes = new Uint8Array(arrayBuf);
+            let fileStr = '';
+            for (let b = 0; b < bytes.length; b++) fileStr += String.fromCharCode(bytes[b]);
+            // 過濾舊版 liblouis WASM 不支援的指令（seqdelimiter 等 3.12+ 新增）
+            if (filename.endsWith('.ctb') || filename.endsWith('.uti')) {
+                fileStr = fileStr.split('\n').map(line => {
+                    const t = line.trim();
+                    if (t.startsWith('seqdelimiter') || t.startsWith('seqbeforechars') ||
+                        t.startsWith('seqafterchars') || t.startsWith('seqafterexpression') ||
+                        t.startsWith('seqafterpattern')) {
+                        return '# ' + line; // 註解掉
+                    }
+                    return line;
+                }).join('\n');
+            }
+            M.FS.writeFile('/tables/' + filename, fileStr);
         } catch(e) {
             console.warn('liblouis: 無法載入表格', filename, e.message);
         }
@@ -1239,9 +1256,30 @@ const LOU = (() => {
             let result = null;
             if (ret > 0) {
                 const outLen = M.getValue(outLenPtr, 'i32');
+                // liblouis 輸出的是 NABCC ASCII 字元碼（因 text_nabcc.dis display table）
+                // 需要查反向表轉回 Unicode 點字
+                // NABCC → Unicode 對應（從 BR_TO_ASCII 反查）
+                const NABCC_TO_UNI = {
+                    32:0x2800, 97:0x2801, 49:0x2802, 98:0x2803, 39:0x2804,
+                    107:0x2805, 50:0x2806, 108:0x2807, 96:0x2808, 99:0x2809,
+                    105:0x280a, 102:0x280b, 47:0x280c, 109:0x280d, 115:0x280e,
+                    112:0x280f, 34:0x2810, 101:0x2811, 51:0x2812, 104:0x2813,
+                    57:0x2814, 111:0x2815, 54:0x2816, 114:0x2817, 126:0x2818,
+                    100:0x2819, 106:0x281a, 103:0x281b, 62:0x281c, 110:0x281d,
+                    116:0x281e, 113:0x281f, 44:0x2820, 42:0x2821, 53:0x2822,
+                    60:0x2823, 45:0x2824, 117:0x2825, 56:0x2826, 118:0x2827,
+                    46:0x2828, 37:0x2829, 123:0x282a, 36:0x282b, 43:0x282c,
+                    120:0x282d, 33:0x282e, 38:0x282f, 59:0x2830, 58:0x2831,
+                    52:0x2832, 124:0x2833, 48:0x2834, 122:0x2835, 55:0x2836,
+                    40:0x2837, 95:0x2838, 63:0x2839, 119:0x283a, 125:0x283b,
+                    35:0x283c, 121:0x283d, 41:0x283e, 61:0x283f
+                };
                 let out = '';
-                for (let i = 0; i < outLen; i++)
-                    out += String.fromCharCode(0x2800 + M.getValue(outBuf + i * 4, 'i32'));
+                for (let i = 0; i < outLen; i++) {
+                    const val = M.getValue(outBuf + i * 4, 'i32');
+                    const uni = NABCC_TO_UNI[val];
+                    out += String.fromCharCode(uni !== undefined ? uni : 0x2800 + val);
+                }
                 result = out;
             }
             M._free(inBuf); M._free(outBuf);
@@ -1259,13 +1297,20 @@ const LOU = (() => {
         return _louTranslate(tableFile, text);
     }
 
+    // 整句翻譯：回傳整段點字字串（無 outputPos，用 token 長度切割）
+    function translateSpan(text, mode) {
+        const tableFile = MODE_TABLES[mode];
+        if (!tableFile) return null;
+        return _louTranslate(tableFile, text);
+    }
+
     async function preloadTables() {
         if (!isReady()) { console.warn('liblouis: 模組未就緒'); return; }
         await Promise.all(Object.values(MODE_TABLES).map(f => _loadTableFile(f)));
         console.log('liblouis: 所有英文表格預載完成');
     }
 
-    return { translateEnglish, preloadTables, isReady };
+    return { translateEnglish, translateSpan, preloadTables, isReady };
 })();
 
 // ════════════════════════════════════════════════════════════
@@ -2319,7 +2364,6 @@ function translateEnglish(word) {
     if (LOU.isReady()) {
         const result = LOU.translateEnglish(word, mode);
         if (result !== null) return result;
-        // liblouis 失敗時 fallback 到內建邏輯（不應發生，但保險）
         console.warn('liblouis fallback:', word, mode);
     }
     // fallback：內建邏輯
@@ -2368,6 +2412,88 @@ function customRuleMatch(text, i) {
     return best;
 }
 
+// ════════════════════════════════════════════════════════════
+//  整句英文翻譯（解決逐詞呼叫 context 問題的根本解）
+// ════════════════════════════════════════════════════════════
+// 把 tokenizer 產生的 token 陣列中，連續的英文 token 合併成一個字串，
+// 一次送進 liblouis，再用 outputPos 對應表把點字切回各 token。
+//
+// 適用 token 類型：isEnglish=true 的 token（字母詞）及 isSpace 在英文 span 中間的空格。
+// 不適用：自定義規則、數字、中文、標點、換行、Nemeth。
+//
+// 輸入 tokens（已過 postProcessCaps/Enough）
+// 輸出：tokens 的 braille 欄位被整句翻譯結果覆蓋，isContraction 重新計算
+
+function applySpanTranslation(tokens) {
+    const mode = document.getElementById('en-mode').value;
+    if (mode !== 'ueb-g2' && mode !== 'ueb-custom') return tokens;
+    if (!LOU.isReady()) return tokens;
+
+    const result = tokens.slice();
+    const n = tokens.length;
+
+    // 策略：對每個英文 token，送「前一詞 空格 目標詞 空格 後一詞」給 liblouis，
+    // 減去前綴和後綴的翻譯長度，取出中間段。
+    for (let i = 0; i < n; i++) {
+        const t = result[i];
+        if (!t.isEnglish || t.isCustom || t.isNemeth) continue;
+
+        const word = t.text;
+
+        // 找前一個英文 token
+        let prevWord = '';
+        for (let p = i - 1; p >= 0; p--) {
+            if (result[p].isSpace) continue;
+            if (result[p].isEnglish && !result[p].isCustom) prevWord = result[p].text;
+            break;
+        }
+
+        // 找後一個英文 token
+        let nextWord = '';
+        for (let p = i + 1; p < n; p++) {
+            if (result[p].isSpace) continue;
+            if (result[p].isEnglish && !result[p].isCustom) nextWord = result[p].text;
+            break;
+        }
+
+        // 組合 context 字串並送整句
+        const parts = [];
+        if (prevWord) parts.push(prevWord);
+        parts.push(word);
+        if (nextWord) parts.push(nextWord);
+        const fullText = parts.join(' ');
+
+        const fullBrl = LOU.translateSpan(fullText, mode);
+        if (!fullBrl) continue;
+
+        // 取前綴翻譯長度
+        let prefixLen = 0;
+        if (prevWord) {
+            const prefixBrl = LOU.translateSpan(prevWord + ' ', mode);
+            if (prefixBrl) prefixLen = Array.from(prefixBrl).length;
+        }
+
+        // 取後綴翻譯長度
+        let suffixLen = 0;
+        if (nextWord) {
+            const suffixBrl = LOU.translateSpan(' ' + nextWord, mode);
+            if (suffixBrl) suffixLen = Array.from(suffixBrl).length;
+        }
+
+        const fullArr = Array.from(fullBrl);
+        const wordBrl = fullArr.slice(prefixLen, suffixLen > 0 ? fullArr.length - suffixLen : undefined).join('');
+
+        if (wordBrl) {
+            t.braille = wordBrl;
+            const g1b = translateWordWithApos(word, 'ueb-g1');
+            t.isContraction = (wordBrl !== g1b);
+        }
+    }
+
+    return result;
+}
+
+
 // ── render ──────────────────────────────────────────────────
 function render() {
     if (!isLoaded) return;
@@ -2379,6 +2505,7 @@ function render() {
     let tokens = tokenizeWithCustom(input);
     tokens = postProcessCaps(tokens);
     tokens = postProcessEnough(tokens);
+    tokens = applySpanTranslation(tokens); // 整句翻譯覆蓋英文 span
 
     outArea.className = isAscii ? 'font-ascii' : 'font-unicode';
 
