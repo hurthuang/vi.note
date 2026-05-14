@@ -2762,8 +2762,55 @@ function getActiveG2Tables() {
 }
 
 // tokenize with custom rules taking priority
+// ════════════════════════════════════════════════════════════
+//  Pre-pass：分類 U+0027 為引號或 apostrophe
+//  規則：
+//    空格/行首 + ' + 字母，且後方有對應的 ' + 空格/標點/行尾 → 配對引號
+//    否則 → apostrophe
+//  回傳 Set，內含「是引號」的位置索引
+// ════════════════════════════════════════════════════════════
+function classifyApostrophes(text) {
+    const quotePositions = new Set();
+    const n = text.length;
+    let i = 0;
+    while (i < n) {
+        if (text[i] !== "'") { i++; continue; }
+        const prevCh = i > 0 ? text[i - 1] : '';
+        const nextCh = i + 1 < n ? text[i + 1] : '';
+        // 開引號條件：前面是空格/行首/開括號，後面是字母
+        const isOpenCandidate = /[\s(]/.test(prevCh) || prevCh === ''
+            ? /[A-Za-z]/.test(nextCh)
+            : false;
+        if (isOpenCandidate) {
+            // 前瞻：找對應的閉引號（' 後接空格/標點/行尾）
+            let found = false;
+            for (let j = i + 1; j < n; j++) {
+                if (text[j] !== "'") continue;
+                const afterJ = j + 1 < n ? text[j + 1] : '';
+                const beforeJ = j > 0 ? text[j - 1] : '';
+                // 閉引號條件：前面是字母/數字/標點，後面是空格/標點/行尾/引號
+                if (/[A-Za-z0-9.,!?;:)]/.test(beforeJ) &&
+                    (/[\s.,!?;:)"']/.test(afterJ) || afterJ === '')) {
+                    // 確認中間沒有換行（同一段落內）
+                    const between = text.slice(i + 1, j);
+                    if (!between.includes('\n')) {
+                        quotePositions.add(i); // 開引號
+                        quotePositions.add(j); // 閉引號
+                        found = true;
+                    }
+                    break;
+                }
+            }
+            // found=false → apostrophe，不加入 quotePositions
+        }
+        i++;
+    }
+    return quotePositions;
+}
+
 function tokenizeWithCustom(text) {
     const tokens = []; let i = 0;
+    const apoQuotes = classifyApostrophes(text); // pre-pass：標記哪些 ' 是引號
     const mode = () => document.getElementById('en-mode').value;
 
     // 每個 push 都自動帶上來源字元範圍
@@ -2844,15 +2891,26 @@ function tokenizeWithCustom(text) {
         if (ch === "'") {
             const prevCh = i > 0 ? text[i-1] : '';
             const nextCh = i + 1 < text.length ? text[i+1] : '';
-            if (/[a-zA-Z]/.test(prevCh) && /[a-zA-Z]/.test(nextCh)) {
-                pushTok({ text: ch, braille: '\u2804' }); i++; continue; // 縮寫撇號 ⠄
+            // 用 pre-pass 結果判斷：是引號位置就輸出引號，否則輸出 apostrophe
+            if (apoQuotes.has(i)) {
+                // pre-pass 判定為配對引號
+                const isOpen = apoQuotes._openSet ? apoQuotes._openSet.has(i) : true;
+                // 用索引奇偶判斷開閉（第一個出現的是開）
+                const positions = [...apoQuotes].sort((a,b)=>a-b);
+                const posIdx = positions.indexOf(i);
+                const isOpenQuote = (posIdx % 2 === 0);
+                const b = lineHasCJK(text, i)
+                    ? (isOpenQuote ? '\u2808' : '\u2804')
+                    : (isOpenQuote ? '\u2820\u2826' : '\u2820\u2834');
+                pushTok({ text: ch, braille: b }); i++; continue;
             }
-            sqCount++;
-            const isOpen = (sqCount % 2 === 1);
-            const b = lineHasCJK(text, i)
-                ? (isOpen ? '\u2808' : '\u2804')               // CTB ⠈/⠄
-                : (isOpen ? '\u2820\u2826' : '\u2820\u2834'); // UEB ⠠⠦/⠠⠴
-            pushTok({ text: ch, braille: b }); i++; continue;
+            // 不在 apoQuotes → apostrophe（縮寫、所有格、詞首省略）
+            // 字母間：縮寫（don't）→ 讓後面 run 吸收；其他直接輸出 ⠄
+            if (/[a-zA-Z]/.test(prevCh) && /[a-zA-Z]/.test(nextCh)) {
+                // fall through 到 run 邏輯（run 會吸收撇號+後綴）
+            } else {
+                pushTok({ text: ch, braille: '\u2804' }); i++; continue; // ⠄
+            }
         }
 
         // ── 彎曲單引號 '/’ → 字元本身已區分開/閉；中文行用 CTB ──
@@ -2862,16 +2920,21 @@ function tokenizeWithCustom(text) {
             const prevCh = i > 0 ? text[i - 1] : '';
             const nextCh = i + 1 < text.length ? text[i + 1] : '';
             // 計算目前位置之前未閉合的 U+2018 數量
-            let openCount = 0;
-            for (let k = 0; k < i; k++) {
-                if (text[k] === '\u2018') openCount++;
-                else if (text[k] === '\u2019') openCount = Math.max(0, openCount - 1);
-            }
-            const hasUnmatchedOpen = openCount > 0;
-            // apostrophe 条件：必須是 U+2019，前一個字元是字母，且沒有未閉合的開引號
+            // apostrophe 條件：
+            // 1. U+2019 在字母後（所有格、縮寫），且後面不是引號類
+            // 2. U+2019 前面是空格/行首，後面是字母（詞首省略，如 'twas）
+            const nextIsQuote = /[\u2018\u2019\u201c\u201d\u0022]/.test(nextCh);
+            const isWordInitialApos = ch === '\u2019'
+                && /[A-Za-z]/.test(nextCh)
+                && (/^\s$/.test(prevCh) || prevCh === '');
             const isAposContext = ch === '\u2019'
                 && /[A-Za-z]/.test(prevCh)
-                && !hasUnmatchedOpen;
+                && !nextIsQuote;
+            if (isWordInitialApos) {
+                // 詞首省略（'twas、'tis）→ apostrophe ⠄，不是引號
+                const b = lineHasCJK(text, i) ? '\u2804' : '\u2804'; // ⠄
+                pushTok({ text: ch, braille: b }); i++; continue;
+            }
             if (!isAposContext) {
                 const isOpen = (ch === '\u2018');
                 const b = lineHasCJK(text, i)
@@ -2920,10 +2983,11 @@ function tokenizeWithCustom(text) {
                     i += 1 + sfxLen;
                 } else {
                     // 無縮寫後綴：可能是所有格尾（students'）
-                    // 吸收撇號本身，讓 liblouis 正確處理所有格 apostrophe
+                    // 排除條件：後面緊接引號類字元（表示這是引號內最後一詞，撇號是閉引號）
                     const nextAfterApos = i + 1 < text.length ? text[i + 1] : '';
-                    if (!/[A-Za-z0-9]/.test(nextAfterApos)) {
-                        run = run + text[i]; // 吸收 '/'/' 本身
+                    const nextIsQuote = /[\u2018\u2019\u201c\u201d\u0022]/.test(nextAfterApos);
+                    if (!/[A-Za-z0-9]/.test(nextAfterApos) && !nextIsQuote) {
+                        run = run + text[i]; // 吸收 '/'/' 本身（所有格尾）
                         i += 1;
                     }
                 }
