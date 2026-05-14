@@ -2504,8 +2504,8 @@ function render() {
 
     let tokens = tokenizeWithCustom(input);
     tokens = postProcessCaps(tokens);
-    tokens = postProcessEnough(tokens);
     tokens = applySpanTranslation(tokens); // 整句翻譯覆蓋英文 span
+    tokens = postProcessEnough(tokens);    // 須在整句翻譯後執行
 
     outArea.className = isAscii ? 'font-ascii' : 'font-unicode';
 
@@ -2855,13 +2855,31 @@ function tokenizeWithCustom(text) {
             pushTok({ text: ch, braille: b }); i++; continue;
         }
 
-        // ── 彎曲單引號 '/'‘’ → 字元本身已區分開/閉；中文行用 CTB ──
+        // ── 彎曲單引號 '/’ → 字元本身已區分開/閉；中文行用 CTB ──
+        // 例外：U+2019 在字母旁且前方沒有未閉合的 U+2018 時，視為 apostrophe，
+        // fall through 讓英文 run 吸收（couldn’t、students’ 等）
         if (ch === '\u2018' || ch === '\u2019') {
-            const isOpen = (ch === '\u2018');
-            const b = lineHasCJK(text, i)
-                ? (isOpen ? '\u2808' : '\u2804')               // CTB ⠈/⠄
-                : (isOpen ? '\u2820\u2826' : '\u2820\u2834'); // UEB ⠠⠦/⠠⠴
-            pushTok({ text: ch, braille: b }); i++; continue;
+            const prevCh = i > 0 ? text[i - 1] : '';
+            const nextCh = i + 1 < text.length ? text[i + 1] : '';
+            // 計算目前位置之前未閉合的 U+2018 數量
+            let openCount = 0;
+            for (let k = 0; k < i; k++) {
+                if (text[k] === '\u2018') openCount++;
+                else if (text[k] === '\u2019') openCount = Math.max(0, openCount - 1);
+            }
+            const hasUnmatchedOpen = openCount > 0;
+            // apostrophe 条件：必須是 U+2019，前一個字元是字母，且沒有未閉合的開引號
+            const isAposContext = ch === '\u2019'
+                && /[A-Za-z]/.test(prevCh)
+                && !hasUnmatchedOpen;
+            if (!isAposContext) {
+                const isOpen = (ch === '\u2018');
+                const b = lineHasCJK(text, i)
+                    ? (isOpen ? '\u2808' : '\u2804')               // CTB ⠈/⠄
+                    : (isOpen ? '\u2820\u2826' : '\u2820\u2834'); // UEB ⠠⠦/⠠⠴
+                pushTok({ text: ch, braille: b }); i++; continue;
+            }
+            // isAposContext: fall through 到英文 run 判斷
         }
 
         // 自定義規則（最長優先）
@@ -2900,6 +2918,14 @@ function tokenizeWithCustom(text) {
                     const suffix = text.slice(i+1, i+1+sfxLen);
                     run = run + apostrophe + suffix;
                     i += 1 + sfxLen;
+                } else {
+                    // 無縮寫後綴：可能是所有格尾（students'）
+                    // 吸收撇號本身，讓 liblouis 正確處理所有格 apostrophe
+                    const nextAfterApos = i + 1 < text.length ? text[i + 1] : '';
+                    if (!/[A-Za-z0-9]/.test(nextAfterApos)) {
+                        run = run + text[i]; // 吸收 '/'/' 本身
+                        i += 1;
+                    }
                 }
             }
 
