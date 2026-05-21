@@ -1021,25 +1021,75 @@ async function readPdf(file) {
   document.getElementById('sb-pages').textContent = '頁數：' + pageCount;
 
   let allLines = [];
+
   for (let i = 1; i <= pageCount; i++) {
     const pct = 20 + Math.round(78 * i / pageCount);
     setProgress(pct, `提取文字：第 ${i} / ${pageCount} 頁`);
     const page = await pdf.getPage(i);
     const content = await page.getTextContent({ includeMarkedContent: false });
+    const vp = page.getViewport({ scale: 1 });
+    const pageH = vp.height;
 
-    // 與 braille-translate.htm 相同：依 hasEOL 旗標分行
-    let line = '';
+    // ── 1. 收集所有有效 item，記錄 x/y ──
+    const items = [];
     for (const item of content.items) {
-      if (typeof item.str === 'undefined') continue; // MarkedContent divider
-      line += item.str;
-      if (item.hasEOL || item.str.includes('\n')) {
-        allLines.push(line.trim());
-        line = '';
+      if (typeof item.str === 'undefined' || !item.str.trim()) continue;
+      const x = item.transform[4];
+      const y = pageH - item.transform[5]; // 轉成從頁頂向下的座標
+      items.push({ x, y, str: item.str, eol: item.hasEOL, w: item.width });
+    }
+    if (!items.length) { allLines.push(''); continue; }
+
+    // ── 2. 依 Y 分行（容差 4pt），每行依 X 排序 ──
+    const rows = [];
+    for (const it of items) {
+      const last = rows[rows.length - 1];
+      if (last && Math.abs(last.y - it.y) <= 4) {
+        last.items.push(it);
+      } else {
+        rows.push({ y: it.y, items: [it] });
       }
     }
-    if (line.trim()) allLines.push(line.trim());
+    rows.sort((a, b) => a.y - b.y); // 上到下
+    for (const row of rows) {
+      row.items.sort((a, b) => a.x - b.x);
+    }
+
+    // ── 3. 估算頁面主文左界（眾數 x）──
+    const xCounts = {};
+    for (const row of rows) {
+      const rx = Math.round(row.items[0].x / 5) * 5; // 四捨五入到 5pt
+      xCounts[rx] = (xCounts[rx] || 0) + 1;
+    }
+    const mainX = parseInt(Object.entries(xCounts).sort((a,b) => b[1]-a[1])[0][0]);
+
+    // ── 4. 偵測「縮排文字框」並在前後補空行 ──
+    // 縮排閾值：行首 x 比主文左界大 25pt 以上
+    const INDENT_THRESH = 25;
+    let prevIsBox = false;
+    for (let ri = 0; ri < rows.length; ri++) {
+      const row = rows[ri];
+      const rowX = row.items[0].x;
+      const isBox = (rowX - mainX) >= INDENT_THRESH;
+      const text = row.items.map(it => it.str).join('').trim();
+      if (!text) continue;
+
+      // 框開始：前一行不是框 → 補空行
+      if (isBox && !prevIsBox && allLines.length && allLines[allLines.length-1] !== '') {
+        allLines.push('');
+      }
+      // 框結束：前一行是框，本行不是 → 補空行
+      if (!isBox && prevIsBox) {
+        allLines.push('');
+      }
+
+      allLines.push(text);
+      prevIsBox = isBox;
+    }
     allLines.push(''); // 頁間空行
+    prevIsBox = false;
   }
+
   setProgress(100, '完成');
   return allLines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
 }
@@ -1159,6 +1209,36 @@ function cleanExamText(text) {
     text = text.replace(/\(\s{0,4}\)\s*/g, '');
   }
 
+  // ── 2b. 孤立題號與後續文字框合併 ──
+  // PDF 提取後題號可能單獨成行（因縮排差距補了空行），需接回後續段落
+  {
+    const LONE_QNUM = /^\d{1,3}\s*[\.。、]\s*$/;
+    const isOptLine  = l => /^\([A-D]\)/.test(l.trim());
+    const isSectLine = l => /^[一二三四五六七八九十][、．]/.test(l.trim()) ||
+                            /^[★※【第]/.test(l.trim());
+    const lines2b = text.split('\n');
+    const out2b = [];
+    let i = 0;
+    while (i < lines2b.length) {
+      const cur = lines2b[i].trim();
+      if (LONE_QNUM.test(cur)) {
+        // 向後找第一個非空行
+        let j = i + 1;
+        while (j < lines2b.length && lines2b[j].trim() === '') j++;
+        const next = j < lines2b.length ? lines2b[j].trim() : '';
+        if (next && !isOptLine(next) && !isSectLine(next) && !LONE_QNUM.test(next)) {
+          // 合併：題號 + 空格 + 下一行，跳過中間空行
+          out2b.push(cur + ' ' + next);
+          i = j + 1;
+          continue;
+        }
+      }
+      out2b.push(lines2b[i]);
+      i++;
+    }
+    text = out2b.join('\n');
+  }
+
   // ── 3. 前插換行（整份擠在同行的情況）──
   if (opts.sectionNewline) {
     // 大題標題前換行
@@ -1226,11 +1306,32 @@ function cleanExamText(text) {
     /^\d{1,3}\s*[\.。、]/.test(l);
 
   // 8a. 移除空行、合併選項延續行
+  // 「延續行」：前一行是選項，且本行不是獨立題幹
+  // 題幹判斷（不合併）：
+  //   1. 本行是 isSectionOrQ
+  //   2. 本行以句末標點結尾（有完整語義）
+  //   3. 本行長度 ≥ 15 字（獨立段落）
+  //   4. 本行下一行是 (A) 或新題號（本行是下一題的題幹）
+  const isStem = (line, nextLine) => {
+    const t = line.trim();
+    if (isSectionOrQ(t)) return true;
+    if (/[。？！!?：:]\s*$/.test(t)) return true;
+    if (t.length >= 15) return true;
+    if (nextLine && (isOpt(nextLine.trim()) && /^\(A\)/.test(nextLine.trim()))) return true;
+    if (nextLine && isSectionOrQ(nextLine.trim())) return true;
+    return false;
+  };
+
   const clean = text.split('\n').filter(l => !isBlank(l));
   const merged = [];
-  for (const line of clean) {
-    if (!isOpt(line) && !isSectionOrQ(line) && merged.length > 0 && isOpt(merged[merged.length-1])) {
-      merged[merged.length-1] += ' ' + line;
+  for (let i = 0; i < clean.length; i++) {
+    const line = clean[i];
+    const nextLine = clean[i + 1] || '';
+    const prevMerged = merged[merged.length - 1] || '';
+    if (!isOpt(line) && !isSectionOrQ(line) &&
+        merged.length > 0 && isOpt(prevMerged) &&
+        !isStem(line, nextLine)) {
+      merged[merged.length - 1] += ' ' + line;
     } else {
       merged.push(line);
     }
